@@ -6,6 +6,8 @@ output:
   html_document:
     df_print: paged
 ---
+### Outline 1 
+
 #### Author: 
 Cassandra, Johnson, Gaither
 
@@ -56,6 +58,7 @@ Low
 
 
 
+### Outline 2
 
 #### Author: 
 Lara Moody, Emily Satterwhite, Warren K Bickel. 
