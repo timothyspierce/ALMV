@@ -35,16 +35,19 @@ almv_acs_var <- function(varcode){
   get_acs(geography="county",
           state=state_list,
           variable=varcode,
-          year=2019,
-          geometry = TRUE) %>%
+          year=2019) %>%
     filter(GEOID %in% fip_list) %>%
-    select(GEOID, NAME, estimate)
+    select(NAME, estimate)
 }
-median_income <- almv_acs_get("S2001_C01_002")
-poverty <- almv_acs_get("S1701_C03_001")
-black_pop <- almv_acs_get("B02001_003")
-hs_dropout <- almv_acs_get("B06009_002")
-hs_only <- almv_acs_get("B06009_003")
-ceo <- almv_acs_get("B24114_001")
-almv_acs_var("B24115_003")
+
+almv_acs_hist <- function(varcode){
+  get_acs(geography="county",
+          state=state_list,
+          variable=varcode,
+          year=2019) %>%
+    filter(GEOID %in% fip_list) %>%
+    select(NAME, estimate) %>% 
+    ggplot() + geom_histogram(aes(x = estimate),
+                              binwidth = 1000)
+}
 
