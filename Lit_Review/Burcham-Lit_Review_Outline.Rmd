@@ -1,0 +1,115 @@
+---
+title: "Lit Review Outlines"
+author: "Austin Burcham"
+date: "6/15/2021"
+output:
+  html_document:
+    df_print: paged
+---
+### Outline 1 
+
+#### Author: 
+Cassandra, Johnson, Gaither
+
+#### Date: 
+2019
+
+#### Title: 
+Appalachia’s Big White Ghettos: Exploring the role of Heirs’ property in the reproduction of housing vulnerability in Eastern Kentucky
+
+#### Journal: 
+U.S. Department of Agriculture Forest Service, Southern Research Station.
+
+#### Keywords: 
+Appalachia, heirs’ property, manufactured homes.
+
+#### One or two sentence summary of abstract:
+
+Jointly owned tenancies in common, or heirs’ property, in Appalachia is not usable as collateral for a home mortgage, often leading those who have heirs’ property to instead purchase mobile or manufactured homes, as their financing can be achieved with chattel loans, unlike on-site homes. Mobile/Manufactured homes are more likely to depreciate in value and as a result, wealth accumulation is curtailed and housing vulnerability intensified among those who have claim to heirs’ property, a phenomenon whose prevalence and role in Appalachian poverty is investigated throughout this article.
+
+
+#### Keystone references or citations:
+“A Privilege and a Challenge”: Valuation of Heirs’ Property by African American Landowners and Implications for Forest Management in the Southeastern U.S. (usda.gov)
+
+Land "in Heirs": Building a Hypothesis Concerning Tenancy in Common and the Persistence of Poverty in Central Appalachia on JSTOR
+ 
+#### Assumptions: 
+The issues facing those in jointly owned tenancies with housing vulnerability are separable from other issues (i.e. poor wages, high credit risk)
+Kentucky counties are somewhat generalizable to Appalachia as a whole 
+
+### Statistical methodology: 
+South-Eastern Kentucky counties were analyzed through the use of datasets indicating whether or not a parcel was heirs’ property and whether or not it had a manufactured home developed on it. A linear regression model was used to determine the relationship between heirs’ property and manufactured homes. 1 was associated with an heirs’ property that had a manufactured home and 0 if the heirs’ property did not. 
+
+#### One or two sentence summary of conclusion:
+
+Manufactured home prevalence had a negative association with heir property ownership in 6 of the 8 counties analyzed, but this is possibly a result of the identifiable lack of improvements made to heirs’ property leading to decreased assessed property values in comparison to non-heir property. 
+
+Manufactured home prevalence is a good vulnerability indicator and an outcome factor of heirs’ property ownership. Heir property prevalence is also a useful tool for detecting a specific element of poverty persistence, as it has a smaller scope of measurable and predictable outcomes. 
+
+#### Relevance to our research: 
+Wealth accumulation issues are central to consistent poverty in Appalachia. The lack of utilization of heirs’ property to build wealth, and the propensity of heirs’ property to be low valued and contain limited improvements is another, distinct component to poverty issues in Appalachia. 
+
+Heirs’ property ownership prevalence could be used to identify areas that are currently struggling with broader housing issues. Outcomes of those who own heirs’ property could be assessed at the county level.  
+
+Things you did not understand: Linear regression prediction model ins and outs. What constitutes heirs property, is it exclusive to land? 
+
+#### Value-added (high/medium/low):
+Low 
+
+
+
+### Outline 2
+
+#### Author: 
+Lara Moody, Emily Satterwhite, Warren K Bickel. 
+
+#### Date: 
+2017
+
+Title: Substance Use in Rural Central Appalachia: Current Status and Treatment Considerations
+Journal: National Center for Biotechnology Information
+
+#### Keywords: 
+Addiction, opioid use, Appalachia, treatment, injection drug use, rural
+
+#### One or two sentence summary of abstract:
+Appalachia has one of the highest incidences of substance use and abuse in the nation, with continued increases in usage and abuse with little or no change from programs and funding. Appalachia’s poor health care coverage, lack of access to specialists and lack of trust in the community are just a few of the contributing factors to the issue. 
+
+
+#### Keystone references or citations: 
+Steele Thesis.docx.pdf (uncg.edu)
+Microsoft Word - NORC Final Report (arc.gov)
+download (psu.edu)
+ 
+#### Assumptions: 
+- Continued health care related efforts are among the most effective in solving the issue 
+- Systemic solutions to drug use and abuse issues are preferable to individual ones
+- The combination of factors present in the Appalachian region can be addressed and thought of at a regional level. 
+
+Statistical methodology: N/A
+
+#### One or two sentence summary of conclusion: 
+
+Substance abuse results in the pulling apart of families, decrease in the eligible workforce, increase in crime and the over-burdening of the justice system. Measures such as participatory development of lay health care workers in the community, increased telehealth access, evidence based treatment and syringe exchange should be implemented to decrease community mistrust of medicine, increase access to health care, ensure more effective treatment of the addicted and mitigate the spread of disease in drug usage. 
+
+
+#### Relevance to our research: 
+
+Substance abuse has had and continues to have significant impacts on the Appalachian labor market. Not only do substance abuse issues in the area decrease eligible workers and increase those jailed for their abuse, those engaged in physical labor have a higher risk of developing painkiller abuse issues, as opioid painkillers are commonly prescribed to workers with pain issues. With little regulation from the government, poor education on the risks of opioid use and the targeting of workers from the pharmaceutical industry, workers are at high risk. 
+
+Substance abuse prevalence and employment rates could be assessed, but it would be hard to tell if substance abuse is a symptom or cause of issues. 
+
+Things you did not understand:
+What efforts failed to impact the Appalchian communities drug use and why. 
+
+#### Value-added (high/medium/low):
+Medium-low
+
+
+
+
+
+
+
+
+
