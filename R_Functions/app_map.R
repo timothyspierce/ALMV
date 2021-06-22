@@ -3,6 +3,7 @@ library(tidycensus)
 library(tidyverse)
 library(dplyr)
 library(stringr)
+library(tigris)
 
 counties<-read.csv("ALMV_counties_all.csv", header=T) %>%
   rename(state_code=State)%>%
@@ -10,11 +11,14 @@ counties<-read.csv("ALMV_counties_all.csv", header=T) %>%
   mutate(County=str_trim(County, side="both"))
 counties$state_code=as.character(counties$state_code)
 state_list<-unique(counties$state_code)
+state_list[1] <- "01"
+
 
 
 fips<-read.csv("fips_codes.csv", header=T) %>%
   mutate(state_code= str_sub(FIPS, 1, -4))%>%
   rename(County=Name)
+
 
 fips_merge<-left_join(counties, fips, by=c("County", "state_code"))
 
@@ -49,5 +53,23 @@ almv_acs_hist <- function(varcode){
     select(NAME, estimate) %>% 
     ggplot() + geom_histogram(aes(x = estimate),
                               binwidth = 1000)
+}
+state_borders <- states(cb = T)
+state_borders <- state_borders %>% 
+                  filter(STATEFP %in% state_list)
+#arg tibble, tibble of values with estimate to plot and geometry info
+almv_minimal_map <- function(tibble) {
+  ggplot() + 
+    # graphing the state borders of Appalachian states. 
+    geom_sf(data = state_borders, color = 'black', fill = 'grey')+ 
+    # graphing the estimate in each county, associating 
+    # county fill and border color with the estimate
+    geom_sf(data = tibble, aes(fill = estimate, color = estimate))+ 
+    # applying continuous color scheme to fill and border
+    scale_color_viridis_c() + scale_fill_viridis_c()+ 
+    # removing grid lines
+    coord_sf(datum = NA) +
+    # applying minimal theme
+    theme_minimal()
 }
 
