@@ -25,7 +25,8 @@ almv_acs_map <- function(varcode){
           state=state_list,
           variable=varcode,
           year=2019,
-          geometry = TRUE) %>%
+          geometry = TRUE,
+          survey = "acs1") %>%
     filter(GEOID %in% fip_list) %>%
     select(GEOID, NAME, estimate, geometry) %>% 
     ggplot() + geom_sf(aes(fill=estimate))
@@ -36,6 +37,15 @@ almv_acs_var <- function(varcode){
           state=state_list,
           variable=varcode,
           year=2019) %>%
+    filter(GEOID %in% fip_list) %>%
+    select(NAME, estimate)
+}
+
+almv_acs_table <- function(varcode){
+  get_acs(geography="county",
+          state=state_list,
+          table = varcode,
+          year=2019,survey = "acs1") %>%
     filter(GEOID %in% fip_list) %>%
     select(NAME, estimate)
 }
