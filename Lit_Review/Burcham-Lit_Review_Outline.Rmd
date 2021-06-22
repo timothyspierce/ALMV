@@ -5,8 +5,10 @@ date: "6/15/2021"
 output:
   html_document:
     df_print: paged
+bibliography: C:/Users/austi/Documents/VT DSPG/Applachia/Lit Review/References.bib
 ---
 ### Outline 1 
+@gaither2019appalachia
 
 #### Author: 
 Cassandra, Johnson, Gaither
@@ -58,7 +60,8 @@ Low
 
 
 
-### Outline 2
+### Outline 2 
+@moody2017substance
 
 #### Author: 
 Lara Moody, Emily Satterwhite, Warren K Bickel. 
@@ -104,6 +107,60 @@ What efforts failed to impact the Appalchian communities drug use and why.
 
 #### Value-added (high/medium/low):
 Medium-low
+
+### Outline 3 (Not Done)
+@kratzer2015coal
+
+#### Author: 
+Nate W. Kratzer
+
+#### Date: 
+2015
+
+#### Title: 
+Coal Mining and Population Loss in Appalachia
+
+#### Keywords: 
+N/A
+
+#### One or two sentence summary of abstract:
+
+It has been long theorized that a causal relationship between extractive coal mining and population loss coupled with economic decline in Appalachia exists. In this article, this hypothesis is tested through the analysis of population change and economic decline in 410 Appalachian counties from 2000 to 2010. 
+
+
+#### Keystone references or citations: 
+Deaton, B. James, and Ekaterina Niman. 2012. An empirical examination of the relationship between mining employment and poverty in the Appalachian region. Applied Economics 44 (3): 303–12.
+ 
+#### Assumptions: 
+
+
+#### Statistical methodology:  
+Data on land area, density , total coal production, percent of coal 
+production from surface mining, unemployment rate,
+poverty rate, per capita income, total population, percentage of the population that has completed high school and percentage of the population that has completed college
+in Appalachia was used from 2000 as explanatory variables and data on the percentage of population change, the poverty rate, the unemployment rate, and per capita income in Appalachia was used from 2010 as dependent variables. Ordinary least squares with robust standard errors regression was used to find relationships between each of these explanatory and response variables. 
+
+
+#### One or two sentence summary of conclusion: 
+A link between slowed population growth and coal mining is found in Central, North Central and Northern Appalachia, but none is found between coal production and economic decline. 
+
+
+#### Relevance to our research: 
+It is well known that the proportion of adults in their prime working years has been declining in Appalachia the past few years.. A direct link between coal production and slowed population growth demonstrate that the coal industry has a direct impact on this issue. 
+
+Because of our focus on jobs of the tomorrow, it may be pertinent to use population growth as a metric for this. We could direct analysis on job sectors in Appalachian counties with very stable population growth, or on areas with the worst population decline. 
+
+#### Things you did not understand:
+Ins and outs of Ordinary Linear Regression. 
+
+#### Value-added (high/medium/low): Medium
+Medium-low
+
+## References
+
+
+
+
 
 
 
