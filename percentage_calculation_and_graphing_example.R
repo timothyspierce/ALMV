@@ -13,3 +13,8 @@ Black_percentage <- Black_percentage %>% transmute(
   NAME, geometry, estimate = estimate / summary_est)
 # graph 
 almv_minimal_map(Black_percentage)
+
+# And an interactive map
+library(mapview)
+mapview(Black_percentage, zcol = "estimate", legend = T, 
+        layer.name = "% Black")
