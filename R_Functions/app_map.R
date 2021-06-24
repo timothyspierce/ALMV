@@ -39,10 +39,19 @@ almv_acs_map <- function(varcode){
 almv_acs_var <- function(varcode){
   get_acs(geography="county",
           state=state_list,
-          variable=varcode,
-          year=2019) %>%
-    filter(GEOID %in% fip_list) %>%
-    select(NAME, estimate)
+          variables =varcode,
+          year=2019, geometry = T) %>%
+    filter(GEOID %in% fip_list)
+}
+
+almv_acs_var_summary <- function(varcode, summaryvarcode){
+  tabl <- get_acs(geography="county",
+          state=state_list,
+          variables =varcode,
+          year=2019, geometry = T, summary_var = summaryvarcode) %>%
+    filter(GEOID %in% fip_list)
+  tabl <- tabl %>% transmute(NAME, geometry, estimate = estimate/summary_est)
+  return(tabl)
 }
 
 almv_acs_table <- function(varcode){
