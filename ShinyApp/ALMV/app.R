@@ -404,7 +404,7 @@ body <- dashboardBody(
                             status = "warning",
                             solidHeader = TRUE,
                             collapsible = TRUE,
-                            #width = NULL,
+                            width = NULL,
                             #enable_dropdown = TRUE,
                             #dropdown_icon = "",
                             #dropdown_menu = tagList(selectInput("var","Select a Variable",choices = c("Level of Education","Industry","Home Values","Household Income","Household Size"))),
@@ -449,7 +449,7 @@ body <- dashboardBody(
                             status = "warning",
                             solidHeader = TRUE,
                             collapsible = TRUE,
-                            #width = "100%",
+                            width = NULL,
                             enable_sidebar = FALSE,
                             enable_dropdown = TRUE,
                             dropdown_icon = "",
@@ -557,7 +557,7 @@ body <- dashboardBody(
 
 # UI--------------------------
 ui <- dashboardPage(
-    dashboardHeader(title = "Zimbabwe(Draft)"),
+    dashboardHeader(title = "AMLV(Draft)"),
     sidebar = sidebar,
     body = body
 )
