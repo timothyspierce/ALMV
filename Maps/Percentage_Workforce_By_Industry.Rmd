@@ -41,7 +41,7 @@ top_industry_var_names <- c("Manufacturing", "Retail trade",
 
 top_industry_map <- top_industries_all %>% ggplot() + 
   geom_sf(data = state_borders, color = 'black', fill = 'grey') +
-   geom_sf(data = top_industries_all, aes(fill = variable), show.legend = T) +
+   geom_sf(data = top_industries_all, aes(fill = variable), show.legend = T) + 
   scale_fill_discrete(name = "Industry", labels = top_industry_var_names)+
   coord_sf(datum = NA) + 
   labs(title = "Top Industry by County", subtitle = "Appalachia", 
