@@ -1,0 +1,82 @@
+---
+title: "Percentage_Workforce_By_Industry"
+author: "Austin Burcham"
+date: "6/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidycensus)
+library(tidyverse)
+library(mapview)
+library(sf)
+```
+
+```{r}
+total_var <- "C24050_001"
+industry_varspt1 <- paste0("C24050_00", 2:9)
+industry_varspt2 <- paste0("C24050_0", 10:14)
+industry_vars <- append(industry_varspt1, industry_varspt2)
+
+# Full list of industry percentages by county
+industry_breakdown_all <- get_acs(geography="county",
+          state=state_list,
+          variables = industry_vars,
+          year=2019, geometry = T, summary_var = total_var) %>%
+  filter(GEOID %in% fip_list) %>% 
+  mutate(estimate = estimate/summary_est) %>% 
+  select(-summary_est, -summary_moe, -moe)
+          
+  
+
+# Top industry by county
+top_industries_all <- industry_breakdown_all %>% 
+  group_by(NAME) %>% 
+  top_n(1, wt = estimate) 
+
+
+top_industry_var_names <- c("Manufacturing", "Retail trade", 
+                            "Professional, scientific, and management, and administrative and waste management services", "Educational services, and health care and social assistance", "Arts, entertainment, and recreation, and accommodation and food services")
+
+top_industry_map <- top_industries_all %>% ggplot() + 
+  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
+   geom_sf(data = top_industries_all, aes(fill = variable), show.legend = T) +
+  scale_fill_discrete(name = "Industry", labels = top_industry_var_names)+
+  coord_sf(datum = NA) + 
+  labs(title = "Top Industry by County", subtitle = "Appalachia", 
+       caption = "Data obtained from the ACS 2019 5-year Estimates") + 
+  theme_minimal()
+  
+#Agriculture
+ag_tibble <- almv_acs_var_summary(industry_vars[1], total_var)
+ag_map <- almv_minimal_map(ag_tibble) + labs(title = "Agriculture, forestry, fishing and hunting, and mining", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+ag_map_interactive <- mapview(ag_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+#Construction
+const_tibble <- almv_acs_var_summary(industry_vars[2], total_var)
+const_map <- almv_minimal_map(const_tibble) + labs(title = "Construction", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+const_map_interactive <- mapview(const_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+#Manufacturing 
+manf_tibble <- almv_acs_var_summary(industry_vars[3], total_var)
+manf_map <- almv_minimal_map(manf_tibble) + labs(title = "Manufacturing", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+manf_map_interactive <- mapview(manf_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+# Wholesale Trade
+wholesale_tibble <- almv_acs_var_summary(industry_vars[4], total_var)
+wholesale_map <- almv_minimal_map(wholesale_tibble) + labs(title = "Wholesale Trade", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+wholesale_map_interactive <- mapview(wholesale_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+# Retail Trade
+retail_tibble <- almv_acs_var_summary(industry_vars[5], total_var)
+retail_map <- almv_minimal_map(retail_tibble) + labs(title = "Wholesale Trade", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+retail_map_interactive <- mapview(retail_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+# Transportation and warehousing, and utilities
+transport_tibble <- almv_acs_var_summary(industry_vars[6], total_var)
+transport_map <- almv_minimal_map(transport_tibble) + labs(title = "Transportation and warehousing, and utilities", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+transport_map_interactive <- mapview(transport_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+```
+
