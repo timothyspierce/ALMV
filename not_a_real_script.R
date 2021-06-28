@@ -3,6 +3,7 @@ library(tidycensus)
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
+library(tigris)
 
 almv_minimal_map <- function(tibble) {
   ggplot() + 
@@ -43,20 +44,70 @@ income <- get_acs(geography = "county", variables = varcode,
                summary_var = "B15003_001", geometry = T)
 
 #Map out technology with total population as a summary variable 
-almv_acs_tech_map <- function(varname, varcode){
-  varname <- get_acs(geography="county",
+almv_acs_tech_map <- function(year, varcode, surveytype){
+  map_info <- get_acs(geography="county",
                      state=state_list,
                      variables = varcode,
-                     year=2019, geometry = T, summary_var = "S2801_C01_001") %>%
+                     year=year, survey = surveytype, geometry = T, summary_var = "S2801_C01_001") %>%
     filter(GEOID %in% fip_list)
-  varname <- varname %>% transmute(NAME, geometry, Percent = 100*(estimate/summary_est))
-  almv_minimal_map(varname)
+  map_info <- map_info %>% transmute(NAME, geometry, Percent = 100*(estimate/summary_est))
+  almv_minimal_map(map_info)
 }
 
-compdevice <- almv_acs_tech_map(compdevice, "S2801_C01_002") + labs(title = "With Some Device")
-computer <- almv_acs_tech_map(computer, "S2801_C01_003") + labs(title = "With a Computer")
-internet <- almv_acs_tech_map(internet, "S2801_C01_012") + labs(title = "With Internet")
-no_internet <- almv_acs_tech_map(no_internet, "S2801_C01_019") + labs(title = "Without Internet")
+almv_acs_tech_map_diff <-  function(varcode){
+  techinfo <- get_acs(geography="county",
+                          state=state_list,
+                          variables = varcode,
+                          year=2019, survey = "acs1", geometry = T, summary_var = "S2801_C01_001") %>%
+    filter(GEOID %in% fip_list)
+  techinfo <- techinfo %>% transmute(NAME, geometry, 
+                                     Percent = 100*(techinfo$estimate/techinfo$summary_est))
+  techinfo2015 <- get_acs(geography="county",
+                     state=state_list,
+                     variables = varcode,
+                     year=2015, survey = "acs1", geometry = T, summary_var = "S2801_C01_001") %>%
+    filter(GEOID %in% fip_list)
+  techinfo2015 <- techinfo2015 %>% 
+    transmute(NAME, geometry, Percent = 100*(techinfo2015$estimate/techinfo2015$summary_est)) %>% 
+    arrange(NAME)
+  countiesold <- unique(techinfo2015$NAME)
+  techinfo <- techinfo %>% 
+    filter(NAME %in% countiesold) %>% 
+    arrange(NAME)
+  countiesnew <- unique(techinfo$NAME)
+  techinfo2015 <- techinfo2015 %>% filter(NAME %in% countiesnew)
+  diffVector <- techinfo$Percent - techinfo2015$Percent
+  techinfo <- techinfo %>% mutate(Percent = diffVector)
+  almv_minimal_map(techinfo)
+}
+
+
+compdevice_2019_5 <- almv_acs_tech_map(2019, "S2801_C01_002", "acs5") + labs(title = "With Some Device")
+computer <- almv_acs_tech_map(2019, "S2801_C01_003", "acs5") + labs(title = "With a Computer")
+internet <- almv_acs_tech_map(2019, "S2801_C01_012", "acs5") + labs(title = "With Internet")
+no_internet <- almv_acs_tech_map(2019, "S2801_C01_019", "acs5") + labs(title = "Without Internet")
+
+compdevice_2019_1 <- almv_acs_tech_map(2019, "S2801_C01_002", "acs1") + labs(title = "With Some Device 2019")
+computer_2019_1 <- almv_acs_tech_map(2019, "S2801_C01_003", "acs1") + labs(title = "With a Computer 2019")
+internet_2019_1 <- almv_acs_tech_map(2019, "S2801_C01_012", "acs1") + labs(title = "With Internet 2019")
+no_internet_2019_1 <- almv_acs_tech_map(2019, "S2801_C01_019", "acs1") + labs(title = "Without Internet 2019")
+
+compdevice_2015_1 <- almv_acs_tech_map(2015, "S2801_C01_002", "acs1") + labs(title = "With Some Device 2015")
+computer_2015_1 <- almv_acs_tech_map(2015, "S2801_C01_003", "acs1") + labs(title = "With a Computer 2015")
+internet_2015_1 <- almv_acs_tech_map(2015, "S2801_C01_012", "acs1") + labs(title = "With Internet 2015")
+no_internet_2015_1 <- almv_acs_tech_map(2015, "S2801_C01_019", "acs1") + labs(title = "Without Internet 2015")
+
+compdevice_difference_1 <- almv_acs_tech_map_diff("S2801_C01_002") + labs(title = "With Some Device % Points Change")
+computer_difference_1 <- almv_acs_tech_map_diff("S2801_C01_003") + labs(title = "With a Computer % Points Change")
+internet_difference_1 <- almv_acs_tech_map_diff("S2801_C01_012") + labs(title = "With Internet % Points Change")
+no_internet_difference_1 <- almv_acs_tech_map_diff("S2801_C01_019") + labs(title = "Without Internet % Points Change")
+
+compdevice_difference<-
+  grid.arrange(compdevice_2019_1,compdevice_2015_1,compdevice_difference_1, ncol = 3, top = "Technology in the Households")
+computer_difference<-
+  grid.arrange(computer_2019_1,computer_2015_1,computer_difference_1, ncol = 3, top = "Technology in the Households")
+
+
 
 #Add them together
 grid.arrange(compdevice, computer, internet, no_internet, ncol = 2, top = "Technology in the Households")    
