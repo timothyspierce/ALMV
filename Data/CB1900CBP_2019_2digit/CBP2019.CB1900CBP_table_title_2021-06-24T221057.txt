@@ -1,0 +1,62 @@
+CB1900CBP
+All Sectors: County Business Patterns, including ZIP Code Business Patterns, by Legal Form of Organization and Employment Size Class for the U.S., States, and Selected Geographies: 2019
+<p><b>Release Date:</b> 2021-05-27</p>
+
+<p><b>Release Schedule:</b><br>
+The CBP data in this file were released on April 22, 2021. The ZIP Code Business Patterns (ZBP) data were released on May 27, 2021.</p>
+
+
+<p><b>Key Table Information:</b><br>
+Beginning with reference year 2007, CBP and ZBP data are released using the Noise disclosure methodology to protect confidentiality. See <a href="https://www.census.gov/programs-surveys/cbp/technical-documentation/methodology.html"> Survey Methodology </a> for complete information on the coverage and methodology of the County Business Patterns and ZBP data series.<br>
+Includes only establishments with payrolls.</p>
+<p>ZBP data by employment size class, shown at the 2-6 digit NAICS code levels only contains data on the number of establishments. ZBP data shown for NAICS code 00 (Total for all sectors) contains data on the number of establishments, employment, first quarter payroll, and annual payroll. </p>
+
+<p><b>Data Items and Other Identifying Records:</b><br> 
+This file contains data classified by Legal Form of Organization (CBP U.S. and state level only) and employment size category of the establishment.<br>
+Number of establishments<br>
+Annual payroll ($1,000)<br>
+First-quarter payroll ($1,000)<br>
+Number of employees during the pay period containing March 12<br>
+Noise range for annual payroll, first-quarter payroll, and number of employees during the pay period including March 12 </p>
+
+<p><b>Geography Coverage:</b><br>
+The data are shown at the U.S. level and by State, County, Metropolitan/Micropolitan Statistical Areas, Combined Statistical Areas, 5-digit ZIP code, and Congressional District levels. Also available are data for the District of Columbia, Puerto Rico, and the Island Areas (American Samoa, Guam, the Commonwealth of the Northern Mariana Islands, and the U.S. Virgin Islands) at the state and county equivalent-levels.</p>
+
+<p><b>Industry Coverage:</b><br>
+The data are shown at the 2- through 6- digit NAICS code levels for all sectors with published data, and for NAICS code 00 (Total for all sectors).</p>
+
+<p><b>FTP Download:</b><br>
+Download the entire table at: <a href="https://www2.census.gov/programs-surveys/cbp/data/2019/CB1900CBP.zip"> https://www2.census.gov/programs-surveys/cbp/data/2019/CB1900CBP.zip </a></p>
+
+<p><b>API Information:</b><br>
+County Business Patterns (CBP) data are housed in the County Business Patterns (CBP) API.  For more information, see <a href="https://www.census.gov/data/developers/data-sets/cbp-nonemp-zbp/cbp-api.html"> Census.gov: Developers: Available APIs, County Business Patterns and Nonemployer Statistics (1986-2018): County Business Patterns (CBP) APIs.</a></p>
+
+<p><b>Methodology:</b><br>
+In accordance with U.S. Code, Title 13, Section 9, no data are published that would disclose the operations of an individual employer. The data are subject to nonsampling error such as errors of self-classification, as well as errors of response, nonreporting and coverage. Data users who create their own estimates using data from this file should cite the U.S. Census Bureau as the source of the original data only. </p>
+
+<p>To comply with disclosure avoidance guidelines, data rows with fewer than three contributing establishments are not presented. For detailed information about the methods used to collect and produce statistics, including sampling see <a href="https://www.census.gov/programs-surveys/cbp/technical-documentation/methodology.html"> County Business Patterns: Survey Methodology. </a></p>
+
+<p><b>Symbols:</b><br>
+D - Withheld to avoid disclosing data for individual companies; data are included in higher level totals (used prior to 2017) <br>
+G - Low noise; cell value was changed by less than 2 percent by the application of noise <br>
+H - Moderate noise; cell value was changed by 2 percent or more but less than 5 percent by the application of noise<br>
+J - High noise; cell value was changed by 5 percent or more by the application of noise<br>
+N - Not available or not comparable<br>
+S - Withheld because estimates did not meet publication standards<br>
+X - Not applicable<br>
+r - Revised<br>
+For a complete list of symbols, see <a href="https://www.census.gov/programs-surveys/cbp/about/glossary.html">County Business Partterns (CBP): About this Program: Glossary: Abbreviations and Symbols.</a></p>
+
+<p><b>Source:</b><br>
+U.S. Census Bureau, 2019 County Business Patterns<br>
+For more information about County Business Patterns, see <a href="https://www.census.gov/programs-surveys/cbp.html"> Our Surveys and Programs: County Business Patterns.</a></p>
+
+<p><b>Contact Information:</b><br>
+U.S. Census Bureau<br>
+Economy-Wide Statistics Division<br>
+Business Statistics Branch<br>
+Tel: (301) 763 - 2580 <br>
+Email: <a href="ewd.county.business.patterns@census.gov"> ewd.county.business.patterns@census.gov </a></p>
+
+<p>Note: The Census Bureau did not collect district boundaries for the 117th Congress, in keeping with the practice of not collecting the session which aligns with the decennial census. As a result, County Business Patterns estimates were tabulated using 116th Congressional districts and state and local geographies.</p>
+
