@@ -3,6 +3,8 @@ library(tidycensus)
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
+library(rayshader)
+
 
 almv_minimal_map <- function(tibble) {
   ggplot() + 
