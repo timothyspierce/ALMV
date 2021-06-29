@@ -249,6 +249,16 @@ almv_acs_diff_variable_percent <-  function(varcode, summaryvarcode, year1, year
   
 }
 
+# Map data obtained through almv_acs_diff_variable_percent
+almv_acs_diff_variable_percent_map <- function(data, ncol, limits) {
+ ggplot() + 
+  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
+   geom_sf(data = data , aes(fill = `Percent Change`, color = `Percent Change`)) + 
+   scale_color_viridis_c(option = 'viridis',  limits = limits) + scale_fill_viridis_c(option = 'viridis', limits = limits) + 
+   facet_wrap(facets = ~variable, ncol = ncol) +
+  coord_sf(datum = NA) +
+  theme_bw()
+}
 ```
 
 ```{r, IndustryChange2010-19}
@@ -310,15 +320,5 @@ map_change_2015to2019_11to13 <- almv_acs_diff_variable_percent_map(industry_chan
        caption = "Data obtained from the ACS 2015 and 2019 1-year Estimates")
 ```
 
-```{r}
-almv_acs_diff_variable_percent_map <- function(data, ncol, limits) {
- ggplot() + 
-  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
-   geom_sf(data = data , aes(fill = `Percent Change`, color = `Percent Change`)) + 
-   scale_color_viridis_c(option = 'viridis',  limits = limits) + scale_fill_viridis_c(option = 'viridis', limits = limits) + 
-   facet_wrap(facets = ~variable, ncol = ncol) +
-  coord_sf(datum = NA) +
-  theme_bw()
-}
-```
+
 
