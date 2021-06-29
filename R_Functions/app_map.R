@@ -36,6 +36,20 @@ almv_acs_map <- function(varcode){
     ggplot() + geom_sf(aes(fill=estimate))
 }
 
+
+#Increase granularity to view heterogeneity at the county subdivision level 
+almv_acs_map_subdivision <- function(varcode, sumvar){
+  storevar <- map_dfr(state_list, ~ get_acs(geography = "county subdivision",
+                                            variables = varcode,
+                                            summary_var = sumvar,
+                                            geometry = T,
+                                            state = .)) %>% 
+    mutate(NEWID = substr(as.character(GEOID),1,5)) %>% 
+    filter(NEWID %in% fip_list) %>% 
+    transmute(NAME, geometry, estimate = 100*(estimate/summary_est)) 
+    almv_minimal_map(storevar)
+}
+
 almv_acs_var <- function(varcode){
   get_acs(geography="county",
           state=state_list,
@@ -91,4 +105,7 @@ almv_minimal_map <- function(tibble) {
     # applying minimal theme
     theme_minimal()
 }
+
+
+
 
