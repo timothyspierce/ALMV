@@ -242,10 +242,83 @@ almv_acs_diff_variable_percent <-  function(varcode, summaryvarcode, year1, year
   diffVector <- info_recent$Percent - info_old$Percent
   
   # Mutate that on the recent vector and return 
-  info_recent <- info_recent %>% mutate(Percent = diffVector) 
+  info_recent <- info_recent %>% 
+    mutate(`Percent Change`= diffVector) %>% 
+    select(-Percent)
   return(info_recent)
   
 }
 
+```
+
+```{r, IndustryChange2010-19}
+# Change variable to no longer be varcodes
+industry_change_2010to2019 <- almv_acs_diff_variable_percent(industry_vars, total_var, 2019, 2010, "acs1")
+mapping <- setNames(industry_vars, industry_names)
+args <- c(list(industry_change_2010to2019$variable), mapping)
+industry_change_2010to2019$variable <- do.call(fct_recode, args)
+
+#make variable wrap to fit graphs 
+industry_change_2010to2019$variable <- swr(industry_change_2010to2019$variable)
+
+
+# map 1 through 6
+industry_change_2010to2019_1to6<- industry_change_2010to2019 %>% filter(variable %in% variable[1:6])
+map_change_2010to2019_1to6 <- almv_acs_diff_variable_percent_map(industry_change_2010to2019_1to6, 3, c(-8, 11)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2010 and 2019", 
+       caption = "Data obtained from the ACS 2010 and 2019 1-year Estimates")
+
+# map 7 through 10
+industry_change_2010to2019_7to10<- industry_change_2010to2019 %>% filter(variable %in% variable[7:10])
+
+map_change_2010to2019_7to10 <- almv_acs_diff_variable_percent_map(industry_change_2010to2019_7to10, 4, c(-8, 11)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2010 and 2019", 
+       caption = "Data obtained from the ACS 2010 and 2019 1-year Estimates")
+
+# map 11 through 13
+industry_change_2010to2019_11to13<- industry_change_2010to2019 %>% filter(variable %in% variable[11:13])
+
+map_change_2010to2019_11to13 <- almv_acs_diff_variable_percent_map(industry_change_2010to2019_11to13, 3, c(-8, 11)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2010 and 2019", 
+       caption = "Data obtained from the ACS 2010 and 2019 1-year Estimates")
+```
+
+
+```{r, IndustryChange2015-19}
+# Change variable to no longer be varcodes
+industry_change_2015to2019 <- almv_acs_diff_variable_percent(industry_vars, total_var, 2019, 2015, "acs1")
+mapping <- setNames(industry_vars, industry_names)
+args <- c(list(industry_change_2015to2019$variable), mapping)
+industry_change_2015to2019$variable <- do.call(fct_recode, args)
+
+#make variable wrap to fit graphs 
+industry_change_2015to2019$variable <- swr(industry_change_2015to2019$variable)
+
+
+# map 1 through 6
+industry_change_2015to2019_1to6<- industry_change_2015to2019 %>% filter(variable %in% variable[1:6])
+map_change_2015to2019_1to6 <- almv_acs_diff_variable_percent_map(industry_change_2015to2019_1to6, 3, c(-11,9)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2015 and 2019", 
+       caption = "Data obtained from the ACS 2015 and 2019 1-year Estimates")
+
+# map 7 through 10
+industry_change_2015to2019_7to10<- industry_change_2015to2019 %>% filter(variable %in% variable[7:10])
+
+map_change_2015to2019_7to10 <- almv_acs_diff_variable_percent_map(industry_change_2015to2019_7to10, 4, c(-11,9)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2015 and 2019", 
+       caption = "Data obtained from the ACS 2015 and 2019 1-year Estimates")
+
+# map 11 through 13
+industry_change_2015to2019_11to13<- industry_change_2015to2019 %>% filter(variable %in% variable[11:13])
+
+map_change_2015to2019_11to13 <- almv_acs_diff_variable_percent_map(industry_change_2015to2019_11to13, 3, c(-11,9)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2015 and 2019", 
+       caption = "Data obtained from the ACS 2015 and 2019 1-year Estimates")
+```
+
+```{r}
+almv_acs_diff_variable_percent_map <- function(data, ncol, limits) {
+ ggplot() + 
+  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
+   geom_sf(data = data , aes(fill = `Percent Change`, color = `Percent Change`)) + 
+   scale_color_viridis_c(option = 'viridis',  limits = limits) + scale_fill_viridis_c(option = 'viridis', limits = limits) + 
+   facet_wrap(facets = ~variable, ncol = ncol) +
+  coord_sf(datum = NA) +
+  theme_bw()
+}
 ```
 
