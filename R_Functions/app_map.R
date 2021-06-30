@@ -5,6 +5,7 @@ library(dplyr)
 library(stringr)
 library(tigris)
 
+#Create state list
 counties<-read.csv("ALMV_counties_all.csv", header=T) %>%
   rename(state_code=State)%>%
   mutate(County=str_replace_all(County,"\'|\\.",""))%>%
@@ -13,28 +14,31 @@ counties$state_code=as.character(counties$state_code)
 state_list<-unique(counties$state_code)
 state_list[1] <- "01"
 
-
-
+#Fips Codes
 fips<-read.csv("fips_codes.csv", header=T) %>%
   mutate(state_code= str_sub(FIPS, 1, -4))%>%
   rename(County=Name)
-
-
 fips_merge<-left_join(counties, fips, by=c("County", "state_code"))
-
 fip_list<-sprintf("%05d",fips_merge$FIPS)
 
+#Map by county 
 almv_acs_map <- function(varcode){
   get_acs(geography="county",
           state=state_list,
           variable=varcode,
           year=2019,
           geometry = TRUE,
-          survey = "acs1") %>%
+          survey = "acs5") %>%
     filter(GEOID %in% fip_list) %>%
-    select(GEOID, NAME, estimate, geometry) %>% 
-    ggplot() + geom_sf(aes(fill=estimate))
+    transmute(GEOID, NAME, estimate = log(estimate), geometry) %>% 
+    ggplot() +
+    geom_sf(data = state_borders, color = 'black', fill = 'grey')+ 
+   geom_sf(aes(fill=estimate, color = estimate)) +
+    scale_color_viridis_c() + scale_fill_viridis_c()+ 
+    coord_sf(datum = NA) +
+    theme_minimal()
 }
+
 
 
 #Increase granularity to view heterogeneity at the county subdivision level 
