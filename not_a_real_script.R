@@ -3,12 +3,7 @@ library(tidycensus)
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
-library(rayshader)
-library(av)
-library(purrr)
-library(sf)
 library(tigris)
-
 
 almv_minimal_map <- function(tibble) {
   ggplot() + 
@@ -159,53 +154,3 @@ rich_no_internet <- almv_acs_rich_internet(mid, "S2801_C01_031") + labs(title = 
 
 #Add them together
 grid.arrange(all_no_internet, poor_no_internet, mid_no_internet, rich_no_internet, ncol = 2, top = "No Internet Subscription by Income")
-
-all_no_internet_3d <- almv_acs_tech_map(no_internet, "S2801_C01_019") + labs(title = "Percent without Internet Subscription") 
-plot_gg(all_no_internet_3d)
-
-plot_gg(all_no_internet_3d)
-render_movie(filename = "app_internet.mp4", type = "orbit")
-
-
-
-almv_acs_edu_map_V2 <- function(varname, varcode){
-  varname <- get_acs(geography="county",
-                     state=state_list,
-                     variables =varcode,
-                     year=2019, geometry = T, summary_var = "B15003_001") #%>%
-    # filter(GEOID %in% fip_list)
-  # varname <- varname %>% transmute(NAME, geometry, Percent = 100*(estimate/summary_est))
-  # almv_minimal_map(varname)
-}
-
-tryagain <- map_dfr(state_list, ~ get_acs(geography = "county subdivision",
-                               variables = "B15003_017",
-                               summary_var = "B15003_001",
-                               geometry = T,
-                               state = .)) %>% 
-          mutate(NEWID = substr(as.character(GEOID),1,5)) %>% 
-          filter(NEWID %in% fip_list) %>% 
-          transmute(NAME, geometry, Percent = 100*(estimate/summary_est)) 
-
-tryagain_map <- almv_minimal_map_V2(tryagain)
-plot_gg(tryagain_map)
-render_movie(filename = "hsedubycounty.mp4", type = "orbit")
-
-nrow(tryagain)
-
-almv_minimal_map_V2 <- function(tibble) {
-  ggplot() + 
-    # graphing the state borders of Appalachian states. 
-    geom_sf(data = state_borders, color = 'black', fill = 'grey')+ 
-    # graphing the estimate in each county, associating 
-    # county fill and border color with the estimate
-    geom_sf(data = tibble, aes(fill = Percent, color = Percent))+ 
-    # applying continuous color scheme to fill and border
-    scale_color_viridis_c() + scale_fill_viridis_c()+ 
-    # removing grid lines
-    coord_sf(datum = NA) +
-    # applying minimal theme
-    theme_minimal()
-}
-
-almv_acs_map_subdivision("B15003_017", "B15003_001")

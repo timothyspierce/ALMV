@@ -17,9 +17,10 @@ library(forcats)
 ```
 
 ```{r}
-
-
+# Variable for total amount of workers 
 total_var <- "C24050_001"
+
+# Vector of industry variables to obtain from the acs
 industry_varspt1 <- paste0("C24050_00", 2:9)
 industry_varspt2 <- paste0("C24050_0", 10:14)
 industry_vars <- append(industry_varspt1, industry_varspt2)
@@ -33,8 +34,12 @@ industry_breakdown_all <- get_acs(geography="county",
   mutate(estimate = estimate/summary_est) %>% 
   select(-summary_est, -summary_moe, -moe) %>% 
   
-  
-industry_names <- c("Agriculture, forestry, fishing hunting, and mining","Construction","Manufacturing","Wholesale trade","Retail trade","Transportation, warehousing and utilities","Information", "Finance, insurance, real estate and rental and leasing", "Professional, scientific, management, administrative and waste management services", "Educational services, health care and social assistance", "Arts, entertainment, recreation, accommodation and food services", "Other services, except public administration", "Public administration")
+
+# Names associated with variables 
+industry_names <- variables %>% filter(name %in% industry_vars) 
+industry_names <- str_remove(industry_names$label, "Estimate!!Total!!") 
+
+# industry_names <- c("Agriculture, forestry, fishing hunting, and mining","Construction","Manufacturing","Wholesale trade","Retail trade","Transportation, warehousing and utilities","Information", "Finance, insurance, real estate and rental and leasing", "Professional, scientific, manag ement, administrative and waste management services", "Educational services, health care and social assistance", "Arts, entertainment, recreation, accommodation and food services", "Other services, except public administration", "Public administration")
 
 levels(industry_breakdown_all$variable) <- industry_names
 mapping <- setNames(industry_vars, industry_names)
@@ -203,7 +208,7 @@ industry_breakdown_2010_total <- industry_breakdown_2010 %>%
 ```
 
 
-```{r, change in industry}
+```{r, PercentChangeFunctions}
 # Takes any varcode or vector of varcodes from the acs 
 # and creates a tibble representing
 # the percent point change in that variable over time in Appalachia, 
@@ -250,6 +255,8 @@ almv_acs_diff_variable_percent <-  function(varcode, summaryvarcode, year1, year
 }
 
 # Map data obtained through almv_acs_diff_variable_percent
+# Input data, the ncol for the output of maps and the limits on the scaling
+# for the continuous fill of counties 
 almv_acs_diff_variable_percent_map <- function(data, ncol, limits) {
  ggplot() + 
   geom_sf(data = state_borders, color = 'black', fill = 'grey') +
@@ -264,6 +271,8 @@ almv_acs_diff_variable_percent_map <- function(data, ncol, limits) {
 ```{r, IndustryChange2010-19}
 # Change variable to no longer be varcodes
 industry_change_2010to2019 <- almv_acs_diff_variable_percent(industry_vars, total_var, 2019, 2010, "acs1")
+
+# Change variable codes to meaningful names
 mapping <- setNames(industry_vars, industry_names)
 args <- c(list(industry_change_2010to2019$variable), mapping)
 industry_change_2010to2019$variable <- do.call(fct_recode, args)
@@ -292,8 +301,10 @@ map_change_2010to2019_11to13 <- almv_acs_diff_variable_percent_map(industry_chan
 
 
 ```{r, IndustryChange2015-19}
-# Change variable to no longer be varcodes
+#Obtain acs information for change fro 2015 to 2019
 industry_change_2015to2019 <- almv_acs_diff_variable_percent(industry_vars, total_var, 2019, 2015, "acs1")
+
+# Change variable to no longer be varcodes but meaningful names
 mapping <- setNames(industry_vars, industry_names)
 args <- c(list(industry_change_2015to2019$variable), mapping)
 industry_change_2015to2019$variable <- do.call(fct_recode, args)
