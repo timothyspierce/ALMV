@@ -3,13 +3,11 @@ library(tidycensus)
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
+library(tigris)
 library(rayshader)
 library(av)
 library(purrr)
 library(sf)
-
-
-
 
 almv_minimal_map <- function(tibble) {
   ggplot() + 
@@ -109,6 +107,7 @@ mid_no_internet <- almv_acs_mid_internet(mid, "S2801_C01_027") + labs(title = "2
 rich_no_internet <- almv_acs_rich_internet(mid, "S2801_C01_031") + labs(title = "Over 75k")+ theme(axis.text = element_blank(), axis.ticks = element_blank(), panel.background = element_blank(), legend.position="bottom")
 
 #Add them together
+
 grid.arrange(all_no_internet, poor_no_internet, mid_no_internet, rich_no_internet, ncol = 4, top = "No Internet Subscription by Income")
 
 all_no_internet_3d <- almv_acs_tech_map(no_internet, "S2801_C01_019") + labs(title = "Percent without Internet Subscription") 
@@ -157,3 +156,6 @@ almv_acs_map("S1901_C01_013") + labs(title = "Average Income by County")
 
 income_table_mean <- almv_acs_var("S1901_C01_013")
 View(income_table_mean)
+
+grid.arrange(all_no_internet, poor_no_internet, mid_no_internet, rich_no_internet, ncol = 2, top = "No Internet Subscription by Income")
+
