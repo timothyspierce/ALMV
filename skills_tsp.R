@@ -8,6 +8,7 @@ library(wordcloud)
 library(pdftools)
 library(RColorBrewer)
 library(gridExtra)
+library(readxl)
 
 ddi <- read_ipums_ddi("usa_00003.xml")
 
@@ -17,9 +18,12 @@ data %>%
   filter(STATEFIP %in% state_list) -> app_ipums
 View(app_ipums)
 
+
+
 skills <- read_excel("Skills_Onet.xlsx")
 colnames(skills)[1] <- "soc"
 colnames(skills)[4] <- "skillname"
+
 skills <- mutate(skills, soc = substr(soc,1,7))
 skills <- mutate(skills, soc = gsub("-", "", x = soc))
 #skills <- mutate(skills, skillname = gsub(" ", "",skillname))
@@ -30,18 +34,22 @@ colnames(futurejobs) <- "soc"
 futurejobs <- mutate(futurejobs, soc = substr(soc,1,7))
 futurejobs <- mutate(futurejobs, soc = gsub("-", "", x = soc))
 
+
+
 app_ipums <- app_ipums %>% filter(OCCSOC > 0)
-app_skills <- skills %>% filter(soc %in% app_ipums$OCCSOC)
-no_app_skills <- skills %>% subset(!(soc %in% app_ipums$OCCSOC))
-app_future_jobs <- app_ipums %>% filter(OCCSOC %in% futurejobs$soc)
+
+# Exchange X's for 9's or 199's
+app_ipums_no_x <- app_ipums %>% 
+  mutate(OCCSOC = str_replace_all(OCCSOC, "XXX", "199")) %>% 
+  mutate(OCCSOC = str_replace_all(OCCSOC, "X", "9")) 
+
+
+app_skills <- skills %>% filter(soc %in% app_ipums_no_x$OCCSOC)
+no_app_skills <- skills %>% subset(!(soc %in% app_ipums_no_x$OCCSOC))
+app_future_jobs <- app_ipums_no_x %>% filter(OCCSOC %in% futurejobs$soc)
 app_future_skills <- skills %>% filter(soc %in% app_future_jobs$OCCSOC)
 
 
-app_ipums <- mutate(app_ipums, missing = ifelse(substr(app_ipums$OCCSOC, 6,6)=="X", 1,0))
-sum(app_ipums$missing)
-
-skills <- mutate(skills, missing = ifelse(substr(skills$soc, 6,6)=="X", 1,0))
-View(skills)
 
 make_a_word_cloud <- function(pdfname){
   txt_corpus <- Corpus(VectorSource(pdfname))
