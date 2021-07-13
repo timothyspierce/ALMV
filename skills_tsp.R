@@ -28,6 +28,22 @@ skills <- mutate(skills, soc = substr(soc,1,7))
 skills <- mutate(skills, soc = gsub("-", "", x = soc))
 #skills <- mutate(skills, skillname = gsub(" ", "",skillname))
 
+# Create individual columns for skills and level
+skills_wide <- 
+  skills %>% 
+  pivot_wider(names_from = `Scale Name`, values_from = `Data Value`)
+
+# Create a standardized table for importance level of each skill
+# for each SOC
+skills_standardized <- skills_wide %>% 
+  fill(Importance, .direction = "down") %>% 
+  fill(Level, .direction = "up") %>% 
+  select(soc, skillname, Importance, Level) %>% 
+  unique() %>% 
+  mutate(Level = (Level / 7), Importance = Importance / 5) %>% 
+  mutate(`Importance Level` = Importance * Level) %>% 
+  select(-Importance, -Level)
+
 
 futurejobs <- read_excel("Rapid_Growth.xls")[-c(1:3),1]
 colnames(futurejobs) <- "soc"
@@ -68,11 +84,13 @@ skillsoffuture <- make_a_word_cloud(app_future_skills$skillname)
 grid.arrange(skills, noskills, skillsoffuture)
 
 # Create counts for soc to left_join to skills
-soc_count <- skills %>% count(soc)
-skills_condensed <- skills %>% select(soc, skillname)
+skills_single <- skills %>% filter(`Scale Name` != "Level")
+soc_count <- app_ipums_no_x %>% count(OCCSOC)
+soc_count <- soc_count %>% transmute(soc = OCCSOC, n)
+skills_condensed <- skills_single %>% select(soc, skillname)
 skill_weights <- left_join(skills_condensed, soc_count)
 skill_weights <- skill_weights %>% 
-  transmute(soc, skillname, frequency = n)
+  transmute(soc, skillname, frequency = n) %>% drop_na()
 
 # Create weighted skills vector 
 app_skills_repeated <- c(rep(skill_weights$skillname, skill_weights$frequency))
