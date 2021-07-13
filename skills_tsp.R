@@ -66,3 +66,13 @@ noskills <- make_a_word_cloud(no_app_skills$skillname)
 skillsoffuture <- make_a_word_cloud(app_future_skills$skillname)
 
 grid.arrange(skills, noskills, skillsoffuture)
+
+# Create counts for soc to left_join to skills
+soc_count <- skills %>% count(soc)
+skills_condensed <- skills %>% select(soc, skillname)
+skill_weights <- left_join(skills_condensed, soc_count)
+skill_weights <- skill_weights %>% 
+  transmute(soc, skillname, frequency = n)
+
+# Create weighted skills vector 
+app_skills_repeated <- c(rep(skill_weights$skillname, skill_weights$frequency))
