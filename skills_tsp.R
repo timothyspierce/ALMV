@@ -14,11 +14,21 @@ ddi <- read_ipums_ddi("usa_00003.xml")
 
 data <- read_ipums_micro(ddi)
 
-data %>% 
-  filter(STATEFIP %in% state_list) -> app_ipums
-View(app_ipums)
+data_full_fips <- data %>% 
+  mutate(STATEFIP = as.character(STATEFIP)) %>% 
+  mutate(COUNTYFIP = as.character(COUNTYFIP)) %>% 
+  filter(COUNTYFIP != "0") %>% 
+  mutate(
+    STATEFIP = if_else(nchar(STATEFIP) == 1, paste0("0", STATEFIP), STATEFIP)) %>% 
+  mutate(
+    COUNTYFIP = if_else(nchar(COUNTYFIP) == 1, paste0("00", COUNTYFIP), COUNTYFIP)) %>%
+  mutate(
+    COUNTYFIP = if_else(nchar(COUNTYFIP) == 2, paste0("0", COUNTYFIP), COUNTYFIP)) %>% 
+  unite(STATEFIP, COUNTYFIP, col = "FIP", sep = "")
 
-
+app_ipums <- data_full_fips %>% 
+  filter(FIP %in% fip_list) 
+View(app_ipums) 
 
 skills <- read_excel("Skills_Onet.xlsx")
 colnames(skills)[1] <- "soc"
