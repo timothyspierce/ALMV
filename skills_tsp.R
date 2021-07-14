@@ -68,7 +68,7 @@ skills_standardized <- skills_wide  %>%
   select(-Importance, -Level) %>% 
   unique()
 
-# Create table with one index per SOC by averaging importance
+# Create table with one index per SOC skill by averaging importance
 # levels of "duplicate" (due to limited granularity) soc & skill combinations
 skills_indexed <- skills_standardized %>% 
   group_by(soc, skillname) %>% 
@@ -78,7 +78,7 @@ skills_indexed <- skills_standardized %>%
 # Create a tibble with skills for each soc and their index
 # with associated soc count. 
 skills_indexed_counts <- inner_join(skills_indexed, soc_count)
-skills_indexed_counts
+View(skills_indexed_counts)
 
 # ---------------- stop of Austin work -----------------------------------------
 
