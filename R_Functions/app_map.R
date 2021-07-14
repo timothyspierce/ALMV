@@ -21,7 +21,7 @@ fips<-read.csv("fips_codes.csv", header=T) %>%
 fips_merge<-left_join(counties, fips, by=c("County", "state_code"))
 fip_list<-sprintf("%05d",fips_merge$FIPS)
 
-#Map by county 
+#Map by county using 2019 ACS 5 data. All you need is the variable code— ex. S1901_C01_001 which is table S1901, column 1, variable 1.
 almv_acs_map <- function(varcode){
   get_acs(geography="county",
           state=state_list,
@@ -42,6 +42,7 @@ almv_acs_map <- function(varcode){
 
 
 #Increase granularity to view heterogeneity at the county subdivision level 
+#This is the same map as before but at the county subdivision level. its a lot of data and a bit slow, but it may be helpful.
 almv_acs_map_subdivision <- function(varcode, sumvar){
   storevar <- map_dfr(state_list, ~ get_acs(geography = "county subdivision",
                                             variables = varcode,
@@ -54,6 +55,7 @@ almv_acs_map_subdivision <- function(varcode, sumvar){
     almv_minimal_map(storevar)
 }
 
+#This will pull a single variable for all 420 counties. ex. S1901_C01_001
 almv_acs_var <- function(varcode){
   get_acs(geography="county",
           state=state_list,
@@ -62,6 +64,9 @@ almv_acs_var <- function(varcode){
     filter(GEOID %in% fip_list)
 }
 
+#this is a bit more complicated but much more useful. This produces a percentage. 'varcode' should be the variable of interest. 
+#For example, number of people with PhD, B15003_025 is number of PhD holders. summaryvarcode should be your base number. In this case, total population which B15003_001.
+#This function will give you varcode as a percent of summaryvarcode.
 almv_acs_var_summary <- function(varcode, summaryvarcode){
   tabl <- get_acs(geography="county",
           state=state_list,
@@ -72,15 +77,17 @@ almv_acs_var_summary <- function(varcode, summaryvarcode){
   return(tabl)
 }
 
+#This returns a table. example S1901. All values for all variables in the table.
 almv_acs_table <- function(varcode){
   get_acs(geography="county",
           state=state_list,
           table = varcode,
-          year=2019,survey = "acs1") %>%
+          year=2019,survey = "acs5") %>%
     filter(GEOID %in% fip_list) %>%
     select(NAME, estimate)
 }
 
+#histogram of values for a variable 
 almv_acs_hist <- function(varcode){
   get_acs(geography="county",
           state=state_list,
@@ -91,6 +98,8 @@ almv_acs_hist <- function(varcode){
     ggplot() + geom_histogram(aes(x = estimate),
                               binwidth = 1000)
 }
+
+#austin made this and its a much more aesthetically pleasing map
 state_borders <- states(cb = T)
 state_borders <- state_borders %>% 
                   filter(STATEFP %in% state_list)

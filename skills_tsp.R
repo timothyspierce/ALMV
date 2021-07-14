@@ -8,48 +8,100 @@ library(wordcloud)
 library(pdftools)
 library(RColorBrewer)
 library(gridExtra)
+library(stringr)
 library(readxl)
 
+
+#Read in IPUMS data
 ddi <- read_ipums_ddi("usa_00003.xml")
-
 data <- read_ipums_micro(ddi)
+data %>% filter(STATEFIP %in% state_list) -> app_ipums
 
-data %>% 
-  filter(STATEFIP %in% state_list) -> app_ipums
-View(app_ipums)
+# Filter out unemployed and exchange X's for 9's or 199's
+app_ipums <- app_ipums %>% filter(OCCSOC > 0)
+app_ipums <- app_ipums %>% filter(EMPSTAT == 1)
+app_ipums <- app_ipums %>% 
+  mutate(OCCSOC = str_replace_all(OCCSOC, "XXX", "199")) %>% 
+  mutate(OCCSOC = str_replace_all(OCCSOC, "XX", "99")) %>% 
+  mutate(OCCSOC = str_replace_all(OCCSOC, "X", "9")) 
 
+#Add column for frequency of SOC code (socamt)
+app_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) -> app_ipums
 
+socfreq <- app_ipums[,c("OCCSOC", "socamt")]
+colnames(socfreq) <- c("soc", "socfreq")
+socfreq <- distinct(socfreq)
+View(socfreq)
 
+#Read and adjust skills data
 skills <- read_excel("Skills_Onet.xlsx")
 colnames(skills)[1] <- "soc"
 colnames(skills)[4] <- "skillname"
-
+colnames(skills)[5] <- "id"
 skills <- mutate(skills, soc = substr(soc,1,7))
 skills <- mutate(skills, soc = gsub("-", "", x = soc))
-#skills <- mutate(skills, skillname = gsub(" ", "",skillname))
+skills <- mutate(skills, skillname = gsub(" ", "",skillname))
+View(skills)
 
-
+#Read in and adjust future jobs data
 futurejobs <- read_excel("Rapid_Growth.xls")[-c(1:3),1]
 colnames(futurejobs) <- "soc"
 futurejobs <- mutate(futurejobs, soc = substr(soc,1,7))
 futurejobs <- mutate(futurejobs, soc = gsub("-", "", x = soc))
 
-
-
-app_ipums <- app_ipums %>% filter(OCCSOC > 0)
-
-# Exchange X's for 9's or 199's
-app_ipums_no_x <- app_ipums %>% 
-  mutate(OCCSOC = str_replace_all(OCCSOC, "XXX", "199")) %>% 
-  mutate(OCCSOC = str_replace_all(OCCSOC, "X", "9")) 
-
-
-app_skills <- skills %>% filter(soc %in% app_ipums_no_x$OCCSOC)
-no_app_skills <- skills %>% subset(!(soc %in% app_ipums_no_x$OCCSOC))
-app_future_jobs <- app_ipums_no_x %>% filter(OCCSOC %in% futurejobs$soc)
+#filter skills list
+app_skills <- skills %>% filter(soc %in% app_ipums$OCCSOC)  %>% filter(id == "IM")
+no_app_skills <- skills %>% subset(!(soc %in% app_ipums$OCCSOC))
+app_future_jobs <- app_ipums %>% filter(OCCSOC %in% futurejobs$soc)
 app_future_skills <- skills %>% filter(soc %in% app_future_jobs$OCCSOC)
 
+#Assigning frequency
 
+app_skills_freq <- left_join(app_skills, socfreq, by = "soc") %>% 
+  select(soc, skillname, socfreq) 
+
+app_skills_list <- c(rep(app_skills_freq$skillname, app_skills_freq$socfreq))
+
+View(app_ipums)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+app_skills_freq %>% 
+  group_by(skillname) %>% 
+  summarise(total = sum(socfreq)) -> skillfreq 
+View(skillfreq)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Making a word cloud function
 
 make_a_word_cloud <- function(pdfname){
   txt_corpus <- Corpus(VectorSource(pdfname))
@@ -58,11 +110,18 @@ make_a_word_cloud <- function(pdfname){
   txt_corpus_clean <- tm_map(txt_corpus_clean, stripWhitespace)
   txt_corpus_clean <- tm_map(txt_corpus_clean, removeWords, stopwords())
   inspect(txt_corpus_clean[1:10])
-  wordcloud(txt_corpus_clean, min.freq = 8)
+  wordcloud(txt_corpus_clean, min.freq = 1000)
 }
 
-skills <- make_a_word_cloud(app_skills$skillname)
+
+
+#Printing the word clouds
+skills <- make_a_word_cloud(app_skills_list)
 noskills <- make_a_word_cloud(no_app_skills$skillname)
 skillsoffuture <- make_a_word_cloud(app_future_skills$skillname)
 
-grid.arrange(skills, noskills, skillsoffuture)
+
+wordcloud(app_skills_list, min.freq = 10000)
+
+
+
