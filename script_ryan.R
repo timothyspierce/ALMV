@@ -74,3 +74,4 @@ renter_occupied_table <- almv_acs_var_summary("S2502_C06_001")
 renter_occupied_map <- almv_acs_var_percent_map("S2502_C06_001", "S2502_C01_001")
 
 
+
