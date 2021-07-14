@@ -9,14 +9,11 @@ library(pdftools)
 library(RColorBrewer)
 library(gridExtra)
 library(stringr)
-library(readxl)
-
 
 #Read in IPUMS data
 ddi <- read_ipums_ddi("usa_00003.xml")
 data <- read_ipums_micro(ddi)
 data %>% filter(STATEFIP %in% state_list) -> app_ipums
-
 
 # Filter out unemployed and exchange X's for 9's or 199's
 app_ipums <- app_ipums %>% filter(OCCSOC > 0)
@@ -34,23 +31,6 @@ colnames(socfreq) <- c("soc", "socfreq")
 socfreq <- distinct(socfreq)
 View(socfreq)
 
-data_full_fips <- data %>% 
-  mutate(STATEFIP = as.character(STATEFIP)) %>% 
-  mutate(COUNTYFIP = as.character(COUNTYFIP)) %>% 
-  filter(COUNTYFIP != "0") %>% 
-  mutate(
-    STATEFIP = if_else(nchar(STATEFIP) == 1, paste0("0", STATEFIP), STATEFIP)) %>% 
-  mutate(
-    COUNTYFIP = if_else(nchar(COUNTYFIP) == 1, paste0("00", COUNTYFIP), COUNTYFIP)) %>%
-  mutate(
-    COUNTYFIP = if_else(nchar(COUNTYFIP) == 2, paste0("0", COUNTYFIP), COUNTYFIP)) %>% 
-  unite(STATEFIP, COUNTYFIP, col = "FIP", sep = "")
-
-app_ipums <- data_full_fips %>% 
-  filter(FIP %in% fip_list) 
-View(app_ipums) 
-
-
 #Read and adjust skills data
 skills <- read_excel("Skills_Onet.xlsx")
 colnames(skills)[1] <- "soc"
@@ -58,24 +38,8 @@ colnames(skills)[4] <- "skillname"
 colnames(skills)[5] <- "id"
 skills <- mutate(skills, soc = substr(soc,1,7))
 skills <- mutate(skills, soc = gsub("-", "", x = soc))
-
 skills <- mutate(skills, skillname = gsub(" ", "",skillname))
 
-# Create individual columns for skills and level
-skills_wide <- 
-  skills %>% 
-  pivot_wider(names_from = `Scale Name`, values_from = `Data Value`)
-
-# Create a standardized table for importance level of each skill
-# for each SOC
-skills_standardized <- skills_wide %>% 
-  fill(Importance, .direction = "down") %>% 
-  fill(Level, .direction = "up") %>% 
-  select(soc, skillname, Importance, Level) %>% 
-  unique() %>% 
-  mutate(Level = (Level / 7), Importance = Importance / 5) %>% 
-  mutate(`Importance Level` = Importance * Level) %>% 
-  select(-Importance, -Level)
 
 #Read in and adjust future jobs data
 futurejobs <- read_excel("Rapid_Growth.xls")[-c(1:3),1]
@@ -99,12 +63,6 @@ app_skills_list <- c(rep(app_skills_freq$skillname, app_skills_freq$socfreq))
 
 
 
-app_skills_freq %>% 
-  group_by(skillname) %>% 
-  summarise(total = sum(socfreq)) -> skillfreq 
-
-
-
 #Making a word cloud function
 
 make_a_word_cloud <- function(pdfname){
@@ -124,19 +82,8 @@ skills <- make_a_word_cloud(app_skills_list)
 noskills <- make_a_word_cloud(no_app_skills$skillname)
 skillsoffuture <- make_a_word_cloud(app_future_skills$skillname)
 
+
 wordcloud(app_skills_list, min.freq = 10000)
 
-grid.arrange(skills, noskills, skillsoffuture)
 
-# Create counts for soc to left_join to skills
-skills_single <- skills %>% filter(`Scale Name` != "Level")
-soc_count <- app_ipums_no_x %>% count(OCCSOC)
-soc_count <- soc_count %>% transmute(soc = OCCSOC, n)
-skills_condensed <- skills_single %>% select(soc, skillname)
-skill_weights <- left_join(skills_condensed, soc_count)
-skill_weights <- skill_weights %>% 
-  transmute(soc, skillname, frequency = n) %>% drop_na()
-
-# Create weighted skills vector 
-app_skills_repeated <- c(rep(skill_weights$skillname, skill_weights$frequency))
 
