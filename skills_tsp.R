@@ -27,28 +27,15 @@ app_ipums <- app_ipums %>%
   mutate(OCCSOC = str_replace_all(OCCSOC, "X", "9")) 
 
 #Add column for frequency of SOC code (socamt)
-app_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) -> app_ipums
+app_ipums <- app_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) 
 
+#Create tibble of soc's with their associated frequencies in Appalachian states
 socfreq <- app_ipums[,c("OCCSOC", "socamt")]
 colnames(socfreq) <- c("soc", "socfreq")
 socfreq <- distinct(socfreq)
 View(socfreq)
 
-data_full_fips <- data %>% 
-  mutate(STATEFIP = as.character(STATEFIP)) %>% 
-  mutate(COUNTYFIP = as.character(COUNTYFIP)) %>% 
-  filter(COUNTYFIP != "0") %>% 
-  mutate(
-    STATEFIP = if_else(nchar(STATEFIP) == 1, paste0("0", STATEFIP), STATEFIP)) %>% 
-  mutate(
-    COUNTYFIP = if_else(nchar(COUNTYFIP) == 1, paste0("00", COUNTYFIP), COUNTYFIP)) %>%
-  mutate(
-    COUNTYFIP = if_else(nchar(COUNTYFIP) == 2, paste0("0", COUNTYFIP), COUNTYFIP)) %>% 
-  unite(STATEFIP, COUNTYFIP, col = "FIP", sep = "")
 
-app_ipums <- data_full_fips %>% 
-  filter(FIP %in% fip_list) 
-View(app_ipums) 
 
 
 #Read and adjust skills data
@@ -61,21 +48,39 @@ skills <- mutate(skills, soc = gsub("-", "", x = soc))
 
 skills <- mutate(skills, skillname = gsub(" ", "",skillname))
 
-# Create individual columns for skills and level
+# Create skills tibble with individual columns for importance and level
+# Select only the soc's, skillnames and their associated importance and level
 skills_wide <- 
   skills %>% 
-  pivot_wider(names_from = `Scale Name`, values_from = `Data Value`)
-
-# Create a standardized table for importance level of each skill
-# for each SOC
-skills_standardized <- skills_wide %>% 
+  pivot_wider(names_from = `Scale Name`, values_from = `Data Value`) %>% 
   fill(Importance, .direction = "down") %>% 
   fill(Level, .direction = "up") %>% 
   select(soc, skillname, Importance, Level) %>% 
-  unique() %>% 
+  unique()
+
+# Create a standardized table with new "Importance level" column,
+# created through the product of each importance and level ranking 
+# on a scale from 0 to 1. 
+
+skills_standardized <- skills_wide  %>% 
   mutate(Level = (Level / 7), Importance = Importance / 5) %>% 
   mutate(`Importance Level` = Importance * Level) %>% 
-  select(-Importance, -Level)
+  select(-Importance, -Level) %>% 
+  unique()
+
+# Create table with one index per SOC by averaging importance
+# levels of "duplicate" (due to limited granularity) soc & skill combinations
+skills_indexed <- skills_standardized %>% 
+  group_by(soc, skillname) %>% 
+  mutate(`index` = mean(`Importance Level`)) %>% 
+  select(-`Importance Level`)
+
+# Create a tibble with skills for each soc and their index
+# with associated soc count. 
+skills_indexed_counts <- inner_join(skills_indexed, soc_count)
+skills_indexed_counts
+
+# ---------------- stop of Austin work -----------------------------------------
 
 #Read in and adjust future jobs data
 futurejobs <- read_excel("Rapid_Growth.xls")[-c(1:3),1]
@@ -128,15 +133,31 @@ wordcloud(app_skills_list, min.freq = 10000)
 
 grid.arrange(skills, noskills, skillsoffuture)
 
-# Create counts for soc to left_join to skills
-skills_single <- skills %>% filter(`Scale Name` != "Level")
-soc_count <- app_ipums_no_x %>% count(OCCSOC)
-soc_count <- soc_count %>% transmute(soc = OCCSOC, n)
-skills_condensed <- skills_single %>% select(soc, skillname)
-skill_weights <- left_join(skills_condensed, soc_count)
-skill_weights <- skill_weights %>% 
-  transmute(soc, skillname, frequency = n) %>% drop_na()
+
+
+## Potential useful functions for later (Austin)
 
 # Create weighted skills vector 
 app_skills_repeated <- c(rep(skill_weights$skillname, skill_weights$frequency))
 
+
+# Below is code to filter data to include only those who live in 
+# identifiable Appalachian Counties. 
+
+# Tibble with data only on those who can be identified as living in an Appalachian County
+# data_full_fips <- data %>% 
+#   mutate(STATEFIP = as.character(STATEFIP)) %>% 
+#   mutate(COUNTYFIP = as.character(COUNTYFIP)) %>% 
+#   filter(COUNTYFIP != "0") %>% 
+#   mutate(
+#     STATEFIP = if_else(nchar(STATEFIP) == 1, paste0("0", STATEFIP), STATEFIP)) %>% 
+#   mutate(
+#     COUNTYFIP = if_else(nchar(COUNTYFIP) == 1, paste0("00", COUNTYFIP), COUNTYFIP)) %>%
+#   mutate(
+#     COUNTYFIP = if_else(nchar(COUNTYFIP) == 2, paste0("0", COUNTYFIP), COUNTYFIP)) %>% 
+#   unite(STATEFIP, COUNTYFIP, col = "FIP", sep = "") %>% 
+#   mutate(FIP = as.numeric(FIP))
+
+# app_ipums <- data_full_fips %>% 
+#   filter(FIP %in% fip_list) 
+# View(app_ipums) 
