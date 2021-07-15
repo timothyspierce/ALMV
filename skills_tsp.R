@@ -19,6 +19,8 @@ data %>% filter(STATEFIP %in% state_list) -> app_ipums
 
 
 # Filter out unemployed and exchange X's for 9's or 199's
+app_ipums <- data %>% 
+  filter(STATEFIP %in% state_list) 
 app_ipums <- app_ipums %>% filter(OCCSOC > 0)
 app_ipums <- app_ipums %>% filter(EMPSTAT == 1)
 app_ipums <- app_ipums %>% 
@@ -73,11 +75,12 @@ skills_standardized <- skills_wide  %>%
 skills_indexed <- skills_standardized %>% 
   group_by(soc, skillname) %>% 
   mutate(`index` = mean(`Importance Level`)) %>% 
-  select(-`Importance Level`)
+  select(-`Importance Level`) %>% 
+  unique() %>% ungroup()
 
 # Create a tibble with skills for each soc and their index
 # with associated soc count. 
-skills_indexed_counts <- inner_join(skills_indexed, soc_count)
+skills_indexed_counts <- right_join(skills_indexed, socfreq)
 View(skills_indexed_counts)
 
 # ---------------- stop of Austin work -----------------------------------------
