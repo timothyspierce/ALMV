@@ -12,6 +12,7 @@ library(stringr)
 library(readxl)
 
 
+
 #Read in IPUMS data
 ddi <- read_ipums_ddi("usa_00003.xml")
 data <- read_ipums_micro(ddi)
@@ -79,8 +80,13 @@ skills_wide <-
   pivot_wider(names_from = `Scale Name`, values_from = `Data Value`) %>% 
   fill(Importance, .direction = "down") %>% 
   fill(Level, .direction = "up") %>% 
-  select(soc, skillname, Importance, Level) %>% 
+  select(soc, Title, skillname, Importance, Level) %>% 
   unique()
+skills_wide <- skills_wide %>% 
+  group_by(soc, skillname) %>% 
+  mutate(Importance = mean(Importance)) %>% 
+  mutate(Level = mean(Level)) %>% 
+  distinct()
 
 # Change soc's to match skills info, making socs not in o*net 
 # end in 1 rather than 0. 
@@ -93,13 +99,13 @@ altered_na_socs <- socs_na %>%
   mutate(soc = str_replace_all(soc, "0$", "1")) %>% 
   select(soc, socfreq)
 ## Aggregate all similar socs
-soc_not_na <- socs %>% filter(!is.na(Importance)) %>% select(soc, socfreq)
+soc_not_na <- socs %>% filter(!is.na(Importance)) %>% select(soc, socfreq) %>% distinct()
 ## Combine similar and altered socs into one
 altered_socs_freq <- bind_rows(soc_not_na, altered_na_socs)
 
 # Create a standardized table with new "Importance level" column,
 # created through the product of each importance and level ranking 
-# on a scale from 0 to 1. 
+# on a scale from 0 to 1.   
 
 skills_standardized <- skills_wide  %>% 
   mutate(Level = (Level / 7), Importance = Importance / 5) %>% 
@@ -123,6 +129,33 @@ View(skills_indexed_counts)
 # Determine which soc's are null
 null_socs <- skills_indexed_counts %>% filter(is.na(index))
 View(null_socs)
+
+# Create an indexed counts with only soc's in common 
+skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
+View(skills_index_common)
+
+# Create table having importance and level with counts 
+skills_importance_level_common <- 
+  inner_join(skills_wide, altered_socs_freq) %>% 
+  mutate(Importance = Importance/5, Level = Level/7)
+View(skills_importance_level_common)
+# ----------------- Curiosity---------------------------------------------------
+summary(skills_index_common$index)
+high_index_skills <- skills_index_common %>% filter(index > 0.4)
+View(high_index_skills)
+high_index_skill_counts <- high_index_skills %>% 
+  group_by(skillname) %>% 
+  summarise(count = sum(socfreq))
+View(high_index_skill_counts)
+low_index_skills <- skills_index_common %>% filter(index < 0.2 & index > 0.15)
+View(low_index_skills)
+low_index_skill_counts <- low_index_skills %>% 
+  group_by(skillname) %>% 
+  summarise(count = sum(socfreq))
+View(low_index_skill_counts)
+
+
+
 # ---------------- stop of Austin work -----------------------------------------
 
 #Read in and adjust future jobs data
