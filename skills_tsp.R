@@ -13,18 +13,19 @@ library(readxl)
 library(tidyr)
 library(tidyverse)
 
+#Read in IPUMS data and PUMAs for Appalachia
+ddi <- read_ipums_ddi("usa_00007.xml")
 
-
-#Read in IPUMS data
-ddi <- read_ipums_ddi("Data/usa_00003.xml")
 data <- read_ipums_micro(ddi)
-app_ipums <- data %>% filter(STATEFIP %in% state_list) 
-
+app_pumas_2010 <- read_csv("2010_PUMAs_App.csv")
+app_pumas_2010 <- app_pumas_2010 %>% 
+  rename(PUMA = PUMACE10, STATEFIP = STATEFP10) %>% 
+  mutate(PUMA = as.numeric(PUMA), STATEFIP = as.numeric(STATEFIP))
+app_ipums <- 
+  semi_join(data, app_pumas_2010)
 
 
 # Filter out unemployed and exchange X's for 9's or 199's
-app_ipums <- data %>% 
-  filter(STATEFIP %in% state_list) 
 app_ipums <- app_ipums %>% filter(OCCSOC > 0)
 app_ipums <- app_ipums %>% filter(EMPSTAT == 1)
 app_ipums <- app_ipums %>% 
@@ -82,8 +83,8 @@ skills_wide <-
   pivot_wider(names_from = `Scale Name`, values_from = `Data Value`) %>% 
   fill(Importance, .direction = "down") %>% 
   fill(Level, .direction = "up") %>% 
-  select(soc, Title, skillname, Importance, Level) %>% 
-  unique()
+  select(soc, skillname, Importance, Level) %>% 
+  distinct()
 skills_wide <- skills_wide %>% 
   group_by(soc, skillname) %>% 
   mutate(Importance = mean(Importance)) %>% 
@@ -92,16 +93,16 @@ skills_wide <- skills_wide %>%
 
 # Change soc's to match skills info, making socs not in o*net 
 # end in 1 rather than 0. 
-socs <- right_join(skills_wide, socfreq) %>% select(soc, Importance, socfreq)
+
 ## Find soc's only in socfreq
-socs_na <- socs %>% filter(is.na(Importance))
+socs_na <- anti_join(socfreq, skills_wide)
 ## change those soc's to end in 1 that end in 0
 altered_na_socs <- socs_na %>% 
   mutate(soc = str_replace_all(soc, "00$", "99")) %>% 
   mutate(soc = str_replace_all(soc, "0$", "1")) %>% 
   select(soc, socfreq)
 ## Aggregate all similar socs
-soc_not_na <- socs %>% filter(!is.na(Importance)) %>% select(soc, socfreq) %>% distinct()
+soc_not_na <- semi_join(socfreq, skills_wide)
 ## Combine similar and altered socs into one
 altered_socs_freq <- bind_rows(soc_not_na, altered_na_socs)
 
@@ -111,6 +112,7 @@ altered_socs_freq <- bind_rows(soc_not_na, altered_na_socs)
 
 skills_standardized <- skills_wide  %>% 
   mutate(Level = (Level / 7), Importance = Importance / 5) %>% 
+  # Consider dividing by 6.01(max value observed in App)
   mutate(`Importance Level` = Importance * Level) %>% 
   select(-Importance, -Level) %>% 
   unique()
@@ -147,24 +149,80 @@ app_weighted_skills <- mutate(app_weighted_skills, pctweight = skillweight / sum
 
 # Create table having importance and level with counts 
 skills_importance_level_common <- 
-  inner_join(skills_wide, altered_socs_freq) %>% 
-  mutate(Importance = Importance/5, Level = Level/7)
+  inner_join(skills_wide, altered_socs_freq) 
 View(skills_importance_level_common)
 # ----------------- Curiosity---------------------------------------------------
+# Index ------------------------------------------------------------------------
+# Frequencies of jobs with soc and job titles
+job_freq <- inner_join(altered_socs_freq, skills) %>% select(soc, Title, socfreq) %>% distinct()
+
+# Summarize index values to determine arbitrary cutoff 
 summary(skills_index_common$index)
-high_index_skills <- skills_index_common %>% filter(index > 0.4)
+index_boxplot <- 
+  skills_index_common %>% ggplot() + 
+  geom_boxplot(aes(x = index), fill = "coral") + 
+  labs(title = "Summary of Index values") + theme_minimal()
+
+# Index is currently halway between 3rd Quarter and Max. 
+high_index_cutoff <- (0.78359 + 0.28971) / 2
+
+# Create data table of soc and skill combinations with high index ratings
+high_index_skills <- skills_index_common %>% filter(index > high_index_cutoff)
+
 View(high_index_skills)
+
+# Create counts of individuals who have high indexed skills 
 high_index_skill_counts <- high_index_skills %>% 
   group_by(skillname) %>% 
   summarise(count = sum(socfreq))
 View(high_index_skill_counts)
+
+# Create data table of soc and skill combinations with low index ratings
+# Note that 0.2 is about the median, .15 was chosen to obtain skills that 
+# people do at least possess
 low_index_skills <- skills_index_common %>% filter(index < 0.2 & index > 0.15)
 View(low_index_skills)
+
+# Create counts of individuals who have low indexed skills 
 low_index_skill_counts <- low_index_skills %>% 
   group_by(skillname) %>% 
   summarise(count = sum(socfreq))
 View(low_index_skill_counts)
 
+# Impotance and Level ---------------------------------------------------------
+
+# Create summaries of importance and level ratings to create
+# arbitrary cutoffs
+summary(skills_importance_level_common$Importance)
+summary(skills_importance_level_common$Level)
+
+# Alter data table to best graph
+skills_long <-  
+  skills_importance_level_common %>%
+  pivot_longer(cols = c(Importance, Level), 
+               names_to = "Index", 
+               values_to = "Rating")
+# Graph importance and level boxplots to better assess cutoffs 
+importance_level_boxplot <- skills_long %>%
+  ggplot(aes(x = Rating, fill = Index)) + 
+  geom_boxplot() + 
+  facet_wrap(~Index) +
+  theme_bw() + 
+  theme(legend.position = "none") 
+# Create cutoffs (currently halfway between max and 3rd qtr.)
+importance_cutoff_high<- (3.120 + 4.880 ) / 2
+level_cutoff_high <- (3.250 + 5.880 )/2
+
+# Create soc and skill combinations with high importance and level
+high_importance_and_level <- skills_importance_level_common %>% 
+  filter(Importance > importance_cutoff_high & Level > level_cutoff_high)
+
+# Get counts of individuals with those skills 
+high_importance_and_level_counts <- 
+  high_importance_and_level %>% 
+  group_by(skillname) %>% 
+  summarise(count = sum(socfreq))
+View(high_importance_and_level_counts)
 
 
 # ---------------- stop of Austin work -----------------------------------------
