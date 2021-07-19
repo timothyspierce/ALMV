@@ -10,11 +10,13 @@ library(RColorBrewer)
 library(gridExtra)
 library(stringr)
 library(readxl)
+library(tidyr)
+library(tidyverse)
 
 
 
 #Read in IPUMS data
-ddi <- read_ipums_ddi("usa_00003.xml")
+ddi <- read_ipums_ddi("Data/usa_00003.xml")
 data <- read_ipums_micro(ddi)
 app_ipums <- data %>% filter(STATEFIP %in% state_list) 
 
@@ -44,7 +46,7 @@ View(socfreq)
 
 
 #Read and adjust skills data
-skills <- read_excel("Skills_Onet.xlsx")
+skills <- read_excel("Data/Skills_Onet.xlsx")
 colnames(skills)[1] <- "soc"
 colnames(skills)[4] <- "skillname"
 colnames(skills)[5] <- "id"
@@ -53,12 +55,12 @@ skills <- mutate(skills, soc = gsub("-", "", x = soc))
 
 skills <- mutate(skills, skillname = gsub(" ", "",skillname))
 
-
+View(new_socs)
 # Change soc codes from 2010 to 2019
-new_socs <- read_csv("2010_to_2019_Crosswalk.csv")
+new_socs <- read.csv("Data/2010_to_2019_Crosswalk.csv")
 new_socs <- new_socs %>% 
-  mutate(soc = `O*NET-SOC 2010 Code`) %>% 
-  mutate(soc_2019 =`O*NET-SOC 2019 Code` ) %>% 
+  mutate(soc = `O.NET.SOC.2010.Code`) %>% 
+  mutate(soc_2019 =`O.NET.SOC.2019.Code` ) %>% 
   mutate(soc = substr(soc,1,7)) %>% 
   mutate(soc = gsub("-", "", x = soc)) %>% 
   mutate(soc_2019 = substr(soc_2019,1,7)) %>% 
@@ -71,7 +73,7 @@ skills <- inner_join(skills, new_socs, by = "soc") %>%
 skills <- distinct(skills)
 
 
-
+View(skills)
 
 # Create skills tibble with individual columns for importance and level
 # Select only the soc's, skillnames and their associated importance and level
@@ -133,6 +135,15 @@ View(null_socs)
 # Create an indexed counts with only soc's in common 
 skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
 View(skills_index_common)
+
+#Create weighted index of skills in Appalachian Labor Market
+skills_index_common <- mutate(skills_index_common, weighted = index*socfreq)
+
+app_weighted_skills <- skills_index_common %>% group_by(skillname) %>% summarize(skillweight = sum(weighted))
+View(app_weighted_skills)
+
+app_weighted_skills <- mutate(app_weighted_skills, pctweight = skillweight / sum(skillweight))
+
 
 # Create table having importance and level with counts 
 skills_importance_level_common <- 
