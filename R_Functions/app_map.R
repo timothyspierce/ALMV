@@ -118,7 +118,3 @@ almv_minimal_map <- function(tibble) {
     # applying minimal theme
     theme_minimal()
 }
-
-
-
-

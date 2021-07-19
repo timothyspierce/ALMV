@@ -10,11 +10,12 @@ library(RColorBrewer)
 library(gridExtra)
 library(stringr)
 library(readxl)
-
-
+library(tidyr)
+library(tidyverse)
 
 #Read in IPUMS data and PUMAs for Appalachia
 ddi <- read_ipums_ddi("usa_00007.xml")
+
 data <- read_ipums_micro(ddi)
 app_pumas_2010 <- read_csv("2010_PUMAs_App.csv")
 app_pumas_2010 <- app_pumas_2010 %>% 
@@ -34,19 +35,40 @@ app_ipums <- app_ipums %>%
   mutate(OCCSOC = str_replace_all(OCCSOC, "YY", "99")) 
 
 
-
+# Filter for appalachian areas in individual states
+va_ipums <- app_ipums %>% filter(STATEFIP == 51)
+ky_ipums <- app_ipums %>% filter(STATEFIP == 21)
+wv_ipums <- app_ipums %>% filter(STATEFIP == 54)
 #Add column for frequency of SOC code (socamt)
 app_ipums <- app_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) 
-
-#Create tibble of soc's with their associated frequencies in Appalachian states
+va_ipums <- va_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) 
+ky_ipums <- ky_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) 
+wv_ipums <- wv_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) 
+#Create tibble of soc's with their associated frequencies in Appalachia
 socfreq <- app_ipums[,c("OCCSOC", "socamt")]
 colnames(socfreq) <- c("soc", "socfreq")
 socfreq <- distinct(socfreq)
 View(socfreq)
 
+va_socfreq <- va_ipums[,c("OCCSOC", "socamt")]
+colnames(va_socfreq) <- c("soc", "socfreq")
+va_socfreq <- distinct(va_socfreq)
+View(va_socfreq)
+
+ky_socfreq <- ky_ipums[,c("OCCSOC", "socamt")]
+colnames(ky_socfreq) <- c("soc", "socfreq")
+ky_socfreq <- distinct(ky_socfreq)
+View(ky_socfreq)
+
+wv_socfreq <- wv_ipums[,c("OCCSOC", "socamt")]
+colnames(wv_socfreq) <- c("soc", "socfreq")
+wv_socfreq <- distinct(wv_socfreq)
+View(wv_socfreq)
+
+
 
 #Read and adjust skills data
-skills <- read_excel("Skills_Onet.xlsx")
+skills <- read_excel("Data/Skills_Onet.xlsx")
 colnames(skills)[1] <- "soc"
 colnames(skills)[4] <- "skillname"
 colnames(skills)[5] <- "id"
@@ -55,12 +77,12 @@ skills <- mutate(skills, soc = gsub("-", "", x = soc))
 
 skills <- mutate(skills, skillname = gsub(" ", "",skillname))
 
-
+View(new_socs)
 # Change soc codes from 2010 to 2019
-new_socs <- read_csv("2010_to_2019_Crosswalk.csv")
+new_socs <- read.csv("Data/2010_to_2019_Crosswalk.csv")
 new_socs <- new_socs %>% 
-  mutate(soc = `O*NET-SOC 2010 Code`) %>% 
-  mutate(soc_2019 =`O*NET-SOC 2019 Code` ) %>% 
+  mutate(soc = `O.NET.SOC.2010.Code`) %>% 
+  mutate(soc_2019 =`O.NET.SOC.2019.Code` ) %>% 
   mutate(soc = substr(soc,1,7)) %>% 
   mutate(soc = gsub("-", "", x = soc)) %>% 
   mutate(soc_2019 = substr(soc_2019,1,7)) %>% 
@@ -73,7 +95,7 @@ skills <- inner_join(skills, new_socs, by = "soc") %>%
 skills <- distinct(skills)
 
 
-
+View(skills)
 
 # Create skills tibble with individual columns for importance and level
 # Select only the soc's, skillnames and their associated importance and level
@@ -124,6 +146,8 @@ skills_indexed <- skills_standardized %>%
   select(-`Importance Level`) %>% 
   unique() %>% ungroup()
 
+
+
 # Create a tibble with skills for each soc and their index
 # with associated soc count. 
 skills_indexed_counts <- right_join(skills_indexed, altered_socs_freq)
@@ -136,6 +160,35 @@ View(null_socs)
 # Create an indexed counts with only soc's in common 
 skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
 View(skills_index_common)
+
+va_skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
+View(skills_index_common)
+
+skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
+View(skills_index_common)
+
+skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
+View(skills_index_common)
+
+
+#Create weighted index of skills in Appalachian Labor Market
+skills_index_common <- mutate(skills_index_common, weighted = index*socfreq)
+
+app_weighted_skills <- skills_index_common %>% group_by(skillname) %>% summarize(skillweight = sum(weighted))
+View(app_weighted_skills)
+
+app_weighted_skills <- mutate(app_weighted_skills, pctweight = skillweight / sum(skillweight))
+View(app_weighted_skills)
+
+app_weighted_skills %>% ggplot() + 
+  geom_col(aes(x = pctweight, y = reorder(skillname, pctweight)), fill = "coral") +
+  labs(x = "Percent Weight", y = "Skill", title = "Weighted Appalachian Skills") + 
+  theme_minimal() + 
+  scale_x_continuous(
+    expand = c(0,0), limits = c(0, max(app_weighted_skills$pctweight)), 
+    labels = scales::percent)
+
+
 
 # Create table having importance and level with counts 
 skills_importance_level_common <- 
