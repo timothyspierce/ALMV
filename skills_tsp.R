@@ -39,17 +39,22 @@ app_ipums <- app_ipums %>%
 va_ipums <- app_ipums %>% filter(STATEFIP == 51)
 ky_ipums <- app_ipums %>% filter(STATEFIP == 21)
 wv_ipums <- app_ipums %>% filter(STATEFIP == 54)
+
 #Add column for frequency of SOC code (socamt)
-app_ipums <- app_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) 
+app_ipums <- app_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n())
+
+# Do the same for each state 
 va_ipums <- va_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) 
 ky_ipums <- ky_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) 
 wv_ipums <- wv_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) 
-#Create tibble of soc's with their associated frequencies in Appalachia
+
+#Create tibble of soc's with their associated frequencies in Appalachia 
 socfreq <- app_ipums[,c("OCCSOC", "socamt")]
 colnames(socfreq) <- c("soc", "socfreq")
 socfreq <- distinct(socfreq)
 View(socfreq)
 
+# Do the same for each state 
 va_socfreq <- va_ipums[,c("OCCSOC", "socamt")]
 colnames(va_socfreq) <- c("soc", "socfreq")
 va_socfreq <- distinct(va_socfreq)
@@ -78,6 +83,7 @@ skills <- mutate(skills, soc = gsub("-", "", x = soc))
 skills <- mutate(skills, skillname = gsub(" ", "",skillname))
 
 View(new_socs)
+
 # Change soc codes from 2010 to 2019
 new_socs <- read.csv("Data/2010_to_2019_Crosswalk.csv")
 new_socs <- new_socs %>% 
@@ -117,14 +123,19 @@ skills_wide <- skills_wide %>%
 
 ## Find soc's only in socfreq
 socs_na <- anti_join(socfreq, skills_wide)
+
+# Do the same for each state 
 va_socs_na <- anti_join(va_socfreq, skills_wide)
 wv_socs_na <- anti_join(wv_socfreq, skills_wide)
 ky_socs_na <- anti_join(ky_socfreq, skills_wide)
+
 ## change those soc's to end in 1 that end in 0
 altered_na_socs <- socs_na %>% 
   mutate(soc = str_replace_all(soc, "00$", "99")) %>% 
   mutate(soc = str_replace_all(soc, "0$", "1")) %>% 
   select(soc, socfreq)
+
+# Do the same for each state 
 va_altered_na_socs <- va_socs_na %>% 
   mutate(soc = str_replace_all(soc, "00$", "99")) %>% 
   mutate(soc = str_replace_all(soc, "0$", "1")) %>% 
@@ -140,11 +151,15 @@ ky_altered_na_socs <- ky_socs_na %>%
 
 ## Aggregate all similar socs
 soc_not_na <- semi_join(socfreq, skills_wide)
+
+# And for each state 
 va_soc_not_na <- semi_join(va_socfreq, skills_wide)
 wv_soc_not_na <- semi_join(wv_socfreq, skills_wide)
 ky_soc_not_na <- semi_join(ky_socfreq, skills_wide)
+
 ## Combine similar and altered socs into one
 altered_socs_freq <- bind_rows(soc_not_na, altered_na_socs)
+
 va_altered_socs_freq <- bind_rows(va_soc_not_na, va_altered_na_socs)
 wv_altered_socs_freq <- bind_rows(wv_soc_not_na, wv_altered_na_socs)
 ky_altered_socs_freq <- bind_rows(ky_soc_not_na, ky_altered_na_socs)
@@ -179,10 +194,11 @@ View(skills_indexed_counts)
 null_socs <- skills_indexed_counts %>% filter(is.na(index))
 View(null_socs)
 
-# Create an indexed counts with only soc's in common 
+# Create an indexed counts with only soc's in common to those in Appalachia
 skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
 View(skills_index_common)
 
+# Do the same for each state 
 va_skills_index_common <- inner_join(skills_indexed, va_altered_socs_freq)
 View(va_skills_index_common)
 
@@ -220,6 +236,7 @@ View(wv_app_weighted_skills)
 ky_app_weighted_skills <- mutate(ky_app_weighted_skills, pctweight = (skillweight / sum(skillweight) * 100))
 View(ky_app_weighted_skills)
 
+# Plot weighted skills for Appalachia and each state of interest 
 app_weighted_skills %>% ggplot() + 
   geom_col(aes(x = pctweight, y = reorder(skillname, pctweight)), fill = "coral") +
   labs(x = "Density Index", y = "Skillname", title = "Weighted Appalachian Skills") + 
@@ -253,6 +270,32 @@ ky_app_weighted_skills %>% ggplot() +
 skills_importance_level_common <- 
   inner_join(skills_wide, altered_socs_freq) 
 View(skills_importance_level_common)
+
+# Jobs of Future ---------------------------------------------------------------
+# Read in jobs of future
+future_jobs <- read_excel(
+  "Rapid_Growth.xls", skip = 4, col_names = c("soc", "occupation"))
+
+# Alter soc codes to match our format
+future_jobs <- future_jobs %>% 
+  mutate(soc = str_replace_all(soc, pattern = "-", replacement = "")) %>% 
+  mutate(soc = str_sub(soc, 1, 6))
+# semi_join to obtain skill indices only in jobs of the future
+future_jobs_skills <- semi_join(skills_indexed, future_jobs)
+
+# Sum indices for each skill and soc combination to obtain 
+# indices for skills of the future. 
+skills_future <- future_jobs_skills %>% 
+  group_by(skillname) %>% 
+  summarize(index = sum(index))
+
+# Visualize skills of the future
+skills_future %>% ggplot() +
+  geom_col(aes(x = index, y = reorder(skillname, index)), fill = "salmon")  + 
+  labs(x = "Index", y = "Skillname", title = "Skills of the Future") + 
+  theme_minimal() + 
+  scale_x_continuous(expand = c(0,0), limits = c(0, 130))
+
 # ----------------- Curiosity---------------------------------------------------
 # Index ------------------------------------------------------------------------
 # Frequencies of jobs with soc and job titles
