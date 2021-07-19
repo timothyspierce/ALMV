@@ -117,15 +117,37 @@ skills_wide <- skills_wide %>%
 
 ## Find soc's only in socfreq
 socs_na <- anti_join(socfreq, skills_wide)
+va_socs_na <- anti_join(va_socfreq, skills_wide)
+wv_socs_na <- anti_join(wv_socfreq, skills_wide)
+ky_socs_na <- anti_join(ky_socfreq, skills_wide)
 ## change those soc's to end in 1 that end in 0
 altered_na_socs <- socs_na %>% 
   mutate(soc = str_replace_all(soc, "00$", "99")) %>% 
   mutate(soc = str_replace_all(soc, "0$", "1")) %>% 
   select(soc, socfreq)
+va_altered_na_socs <- va_socs_na %>% 
+  mutate(soc = str_replace_all(soc, "00$", "99")) %>% 
+  mutate(soc = str_replace_all(soc, "0$", "1")) %>% 
+  select(soc, socfreq)
+wv_altered_na_socs <- wv_socs_na %>% 
+  mutate(soc = str_replace_all(soc, "00$", "99")) %>% 
+  mutate(soc = str_replace_all(soc, "0$", "1")) %>% 
+  select(soc, socfreq)
+ky_altered_na_socs <- ky_socs_na %>% 
+  mutate(soc = str_replace_all(soc, "00$", "99")) %>% 
+  mutate(soc = str_replace_all(soc, "0$", "1")) %>% 
+  select(soc, socfreq)
+
 ## Aggregate all similar socs
 soc_not_na <- semi_join(socfreq, skills_wide)
+va_soc_not_na <- semi_join(va_socfreq, skills_wide)
+wv_soc_not_na <- semi_join(wv_socfreq, skills_wide)
+ky_soc_not_na <- semi_join(ky_socfreq, skills_wide)
 ## Combine similar and altered socs into one
 altered_socs_freq <- bind_rows(soc_not_na, altered_na_socs)
+va_altered_socs_freq <- bind_rows(va_soc_not_na, va_altered_na_socs)
+wv_altered_socs_freq <- bind_rows(wv_soc_not_na, wv_altered_na_socs)
+ky_altered_socs_freq <- bind_rows(ky_soc_not_na, ky_altered_na_socs)
 
 # Create a standardized table with new "Importance level" column,
 # created through the product of each importance and level ranking 
@@ -161,33 +183,70 @@ View(null_socs)
 skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
 View(skills_index_common)
 
-va_skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
-View(skills_index_common)
+va_skills_index_common <- inner_join(skills_indexed, va_altered_socs_freq)
+View(va_skills_index_common)
 
-skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
-View(skills_index_common)
+wv_skills_index_common <- inner_join(skills_indexed, wv_altered_socs_freq)
+View(wv_skills_index_common)
 
-skills_index_common <- inner_join(skills_indexed, altered_socs_freq)
-View(skills_index_common)
+ky_skills_index_common <- inner_join(skills_indexed, ky_altered_socs_freq)
+View(ky_skills_index_common)
 
 
 #Create weighted index of skills in Appalachian Labor Market
 skills_index_common <- mutate(skills_index_common, weighted = index*socfreq)
+va_skills_index_common <- mutate(va_skills_index_common, weighted = index*socfreq)
+wv_skills_index_common <- mutate(wv_skills_index_common, weighted = index*socfreq)
+ky_skills_index_common <- mutate(ky_skills_index_common, weighted = index*socfreq)
 
 app_weighted_skills <- skills_index_common %>% group_by(skillname) %>% summarize(skillweight = sum(weighted))
+va_app_weighted_skills <- va_skills_index_common %>% group_by(skillname) %>% summarize(skillweight = sum(weighted))
+wv_app_weighted_skills <- wv_skills_index_common %>% group_by(skillname) %>% summarize(skillweight = sum(weighted))
+ky_app_weighted_skills <- ky_skills_index_common %>% group_by(skillname) %>% summarize(skillweight = sum(weighted))
+View(app_weighted_skills)
+View(va_app_weighted_skills)
+View(wv_app_weighted_skills)
+View(ky_app_weighted_skills)
+
+app_weighted_skills <- mutate(app_weighted_skills, pctweight = (skillweight / sum(skillweight) * 100))
 View(app_weighted_skills)
 
-app_weighted_skills <- mutate(app_weighted_skills, pctweight = skillweight / sum(skillweight))
-View(app_weighted_skills)
+va_app_weighted_skills <- mutate(va_app_weighted_skills, pctweight = (skillweight / sum(skillweight) * 100))
+View(va_app_weighted_skills)
+
+wv_app_weighted_skills <- mutate(wv_app_weighted_skills, pctweight = (skillweight / sum(skillweight) * 100))
+View(wv_app_weighted_skills)
+
+ky_app_weighted_skills <- mutate(ky_app_weighted_skills, pctweight = (skillweight / sum(skillweight) * 100))
+View(ky_app_weighted_skills)
 
 app_weighted_skills %>% ggplot() + 
   geom_col(aes(x = pctweight, y = reorder(skillname, pctweight)), fill = "coral") +
-  labs(x = "Percent Weight", y = "Skill", title = "Weighted Appalachian Skills") + 
+  labs(x = "Density Index", y = "Skillname", title = "Weighted Appalachian Skills") + 
   theme_minimal() + 
   scale_x_continuous(
-    expand = c(0,0), limits = c(0, max(app_weighted_skills$pctweight)), 
-    labels = scales::percent)
+    expand = c(0,0), limits = c(0, max(app_weighted_skills$pctweight)))
 
+va_app_weighted_skills %>% ggplot() + 
+  geom_col(aes(x = pctweight, y = reorder(skillname, pctweight)), fill = "seagreen") +
+  labs(x = "Density Index", y = "Skillname", title = "Weighted Appalachian Virginia Skills") + 
+  theme_minimal() + 
+  scale_x_continuous(
+    expand = c(0,0), limits = c(0, max(va_app_weighted_skills$pctweight)))
+
+wv_app_weighted_skills %>% ggplot() + 
+  geom_col(aes(x = pctweight, y = reorder(skillname, pctweight)), fill = "goldenrod1") +
+  labs(x = "Density Index", y = "Skillname", title = "Weighted West Virginia Skills") + 
+  theme_minimal() + 
+  scale_x_continuous(
+    expand = c(0,0), limits = c(0, max(wv_app_weighted_skills$pctweight)))
+
+ky_app_weighted_skills %>% ggplot() + 
+  geom_col(aes(x = pctweight, y = reorder(skillname, pctweight)), fill = "orangered") +
+  labs(x = "Density Index", y = "Skillname", title = "Weighted Kentucky Appalachian Skills") + 
+  theme_minimal() + 
+  scale_x_continuous(
+    expand = c(0,0), limits = c(0, max(ky_app_weighted_skills$pctweight)))
 
 
 # Create table having importance and level with counts 
