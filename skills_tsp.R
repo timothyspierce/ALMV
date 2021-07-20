@@ -1,6 +1,4 @@
 library(ipumsr)
-library(dplyr)
-library(ggplot2)
 library(NLP)
 library(tm)
 library(SnowballC)
@@ -8,13 +6,11 @@ library(wordcloud)
 library(pdftools)
 library(RColorBrewer)
 library(gridExtra)
-library(stringr)
 library(readxl)
-library(tidyr)
 library(tidyverse)
 
 #Read in IPUMS data and PUMAs for Appalachia
-ddi <- read_ipums_ddi("usa_00007.xml")
+ddi <- read_ipums_ddi("usa_00008.xml")
 
 data <- read_ipums_micro(ddi)
 app_pumas_2010 <- read_csv("2010_PUMAs_App.csv")
@@ -25,7 +21,8 @@ app_ipums <-
   semi_join(data, app_pumas_2010)
 
 
-# Filter out unemployed and exchange X's for 9's or 199's
+# Filter out unemployed and exchange OCCSOC's 
+## that have X's for 9's
 app_ipums <- app_ipums %>% filter(OCCSOC > 0)
 app_ipums <- app_ipums %>% filter(EMPSTAT == 1)
 app_ipums <- app_ipums %>% 
@@ -49,31 +46,35 @@ ky_ipums <- ky_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n())
 wv_ipums <- wv_ipums %>%  group_by(OCCSOC) %>% mutate(socamt = n()) 
 
 #Create tibble of soc's with their associated frequencies in Appalachia 
-socfreq <- app_ipums[,c("OCCSOC", "socamt")]
-colnames(socfreq) <- c("soc", "socfreq")
-socfreq <- distinct(socfreq)
+socfreq <- app_ipums %>% 
+  group_by(OCCSOC) %>% 
+  summarise(socfreq = sum(PERWT)) %>% 
+  rename(soc = OCCSOC)
 View(socfreq)
 
 # Do the same for each state 
-va_socfreq <- va_ipums[,c("OCCSOC", "socamt")]
-colnames(va_socfreq) <- c("soc", "socfreq")
-va_socfreq <- distinct(va_socfreq)
+va_socfreq <- va_ipums %>% 
+  group_by(OCCSOC) %>% 
+  summarise(socfreq = sum(PERWT)) %>% 
+  rename(soc = OCCSOC)
 View(va_socfreq)
 
-ky_socfreq <- ky_ipums[,c("OCCSOC", "socamt")]
-colnames(ky_socfreq) <- c("soc", "socfreq")
-ky_socfreq <- distinct(ky_socfreq)
+ky_socfreq <- ky_ipums %>% 
+  group_by(OCCSOC) %>% 
+  summarise(socfreq = sum(PERWT)) %>% 
+  rename(soc = OCCSOC)
 View(ky_socfreq)
 
-wv_socfreq <- wv_ipums[,c("OCCSOC", "socamt")]
-colnames(wv_socfreq) <- c("soc", "socfreq")
-wv_socfreq <- distinct(wv_socfreq)
+wv_socfreq <- wv_ipums %>% 
+  group_by(OCCSOC) %>% 
+  summarise(socfreq = sum(PERWT)) %>% 
+  rename(soc = OCCSOC)
 View(wv_socfreq)
 
 
 
 #Read and adjust skills data
-skills <- read_excel("Data/Skills_Onet.xlsx")
+skills <- read_excel("Skills_Onet.xlsx")
 colnames(skills)[1] <- "soc"
 colnames(skills)[4] <- "skillname"
 colnames(skills)[5] <- "id"
@@ -82,10 +83,9 @@ skills <- mutate(skills, soc = gsub("-", "", x = soc))
 
 skills <- mutate(skills, skillname = gsub(" ", "",skillname))
 
-View(new_socs)
 
 # Change soc codes from 2010 to 2019
-new_socs <- read.csv("Data/2010_to_2019_Crosswalk.csv")
+new_socs <- read.csv("2010_to_2019_Crosswalk.csv")
 new_socs <- new_socs %>% 
   mutate(soc = `O.NET.SOC.2010.Code`) %>% 
   mutate(soc_2019 =`O.NET.SOC.2019.Code` ) %>% 
@@ -169,7 +169,7 @@ ky_altered_socs_freq <- bind_rows(ky_soc_not_na, ky_altered_na_socs)
 # on a scale from 0 to 1.   
 
 skills_standardized <- skills_wide  %>% 
-  mutate(Level = (Level / 7), Importance = Importance / 5) %>% 
+  mutate(Level = (Level / max(skills_wide$Level)), Importance = Importance / 5) %>% 
   # Consider dividing by 6.01(max value observed in App)
   mutate(`Importance Level` = Importance * Level) %>% 
   select(-Importance, -Level) %>% 
@@ -289,12 +289,18 @@ skills_future <- future_jobs_skills %>%
   group_by(skillname) %>% 
   summarize(index = sum(index))
 
+skills_future <- skills_future %>% mutate(pctweight = (index/sum(skills_future$index)) * 100)
+
 # Visualize skills of the future
 skills_future %>% ggplot() +
-  geom_col(aes(x = index, y = reorder(skillname, index)), fill = "salmon")  + 
-  labs(x = "Index", y = "Skillname", title = "Skills of the Future") + 
-  theme_minimal() + 
-  scale_x_continuous(expand = c(0,0), limits = c(0, 130))
+  geom_col(aes(x = pctweight, y = reorder(skillname, index)), fill = "salmon") +  
+  labs(x = "Index", y = "Skillname", title = "Skills of the Future") +
+  theme_minimal() +
+  scale_x_continuous(expand = c(0,0), limits = c(0, max(skills_future$pctweight)))
+
+# Compare 
+comparison <- bind_cols(skills_future, app_weighted_skills$pctweight)
+comparison <- comparison %>% mutate(diff = pctweight - ...4)
 
 # ----------------- Curiosity---------------------------------------------------
 # Index ------------------------------------------------------------------------
