@@ -1,0 +1,13 @@
+name: dspg_sample_shiny_app
+title: dspg_sample_shiny_app
+username:
+account: dspgtools
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4308470
+bundleId: 4745648
+url: https://dspgtools.shinyapps.io/dspg_sample_shiny_app/
+when: 1624415692.54513
+lastSyncTime: 1624415692.54513
+asMultiple: FALSE
+asStatic: FALSE
