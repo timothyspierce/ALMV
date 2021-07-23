@@ -9,13 +9,29 @@ library(htmltools)
 create_chloropleth_map_pal <- function(data) {
   colorNumeric(palette = "viridis", domain = data$estimate)
 }
+
 # Function to create percent chlorpleth map for any acs data
 # Requires acs data with geometry, variable to be mapped must be 
 # called "estimate"
 # Only input required the data to be made into a choropleth map, 
 # the color palette for the map, labels for the map and a title 
 # for the map. 
-create_chloropleth_map <- function(data, pal, labels, title) {
+create_chloropleth_map  <- function(data, pal, labels, title) {
+  data %>% leaflet %>% addTiles %>% 
+    addPolygons(
+      color = ~pal(estimate), 
+      label = labels,
+      popup = labels,
+      stroke = T,
+      smoothFactor = 0,
+      fillOpacity = 0.65, 
+      weight = 0.85, 
+      highlightOptions = highlightOptions(fillOpacity = 1)) %>% 
+    addLegend(pal = pal, values = ~estimate, title = title)
+}
+
+# Function to create percent chlorpleth map for any acs percent data. 
+create_chloropleth_map_percent <- function(data, pal, labels, title) {
   data %>% leaflet %>% addTiles %>% 
     addPolygons(
     color = ~pal(estimate), 
@@ -23,8 +39,8 @@ create_chloropleth_map <- function(data, pal, labels, title) {
     popup = labels,
     stroke = T,
     smoothFactor = 0,
-    fillOpacity = 0.5, 
-    weight = 0.7, 
+    fillOpacity = 0.65, 
+    weight = 0.85, 
     highlightOptions = highlightOptions(fillOpacity = 1)) %>% 
     addLegend(pal = pal, values = ~estimate, title = title, 
               labFormat = labelFormat(suffix = "%", transform = function(estimate) 100 * estimate))
