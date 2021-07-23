@@ -24,7 +24,6 @@ app_ipums <-
 # Filter out unemployed and exchange OCCSOC's 
 ## that have X's for 9's
 app_ipums <- app_ipums %>% filter(OCCSOC > 0)
-app_ipums <- app_ipums %>% filter(EMPSTAT == 1)
 app_ipums <- app_ipums %>% 
   mutate(OCCSOC = str_replace_all(OCCSOC, "XXX", "199")) %>% 
   mutate(OCCSOC = str_replace_all(OCCSOC, "XX", "99")) %>% 
