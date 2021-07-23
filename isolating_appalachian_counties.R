@@ -1,12 +1,6 @@
 library(ipumsr)
-library(NLP)
+library(tidyverse)
 library(tm)
-library(SnowballC)
-library(wordcloud)
-library(pdftools)
-library(RColorBrewer)
-library(gridExtra)
-library(stringr)
 library(readxl)
 library(tigris)
 library(sf)
@@ -47,6 +41,13 @@ pumas_2010_app <- puma_crosswalk_app %>% group_by(State10, PUMA10) %>%
 
 # Obtain list of PUMA sfs for Appalchian states
 options(tigris_use_cache = TRUE)
+counties<-read.csv("ALMV_counties_all.csv", header=T) %>%
+  rename(state_code=State)%>%
+  mutate(County=str_replace_all(County,"\'|\\.",""))%>%
+  mutate(County=str_trim(County, side="both"))
+counties$state_code=as.character(counties$state_code)
+state_list<-unique(counties$state_code)
+state_list[1] <- "01"
 puma_geoms_list <- lapply(state_list, function(x) {
   pumas(state = x, cb = T)
 })
