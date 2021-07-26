@@ -10,6 +10,7 @@ library(readxl)
 library(tidyverse)
 
 #Read in IPUMS data and PUMAs for Appalachia
+
 ddi <- read_ipums_ddi("usa_00008.xml")
 
 data <- read_ipums_micro(ddi)
@@ -117,6 +118,12 @@ skills_wide <- skills_wide %>%
   mutate(Level = mean(Level)) %>% 
   distinct()
 
+View(skills_wide)
+normalize <- skills_wide %>% mutate(Importance = Importance/5) %>% mutate(Level = Level/6.12)
+View(normalize)
+ggplot(normalize,aes(x=Importance,y = Level)) + geom_point() + geom_smooth(method = lm)
+skilllevelreg <- lm(normalize$Importance ~ normalize$Level)
+summary(skilllevelreg)
 # Change soc's to match skills info, making socs not in o*net 
 # end in 1 rather than 0. 
 
@@ -181,7 +188,6 @@ skills_indexed <- skills_standardized %>%
   mutate(`index` = mean(`Importance Level`)) %>% 
   select(-`Importance Level`) %>% 
   unique() %>% ungroup()
-
 
 
 # Create a tibble with skills for each soc and their index
@@ -456,3 +462,7 @@ app_skills_repeated <- c(rep(skill_weights$skillname, skill_weights$frequency))
 # app_ipums <- data_full_fips %>% 
 #   filter(FIP %in% fip_list) 
 # View(app_ipums) 
+
+
+
+
