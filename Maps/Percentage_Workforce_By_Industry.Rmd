@@ -333,3 +333,7 @@ map_change_2015to2019_11to13 <- almv_acs_diff_variable_percent_map(industry_chan
 
 
 
+```{r}
+bruh <- get_acs(geography = "public use microdata area", variables = industry_vars, year = 2019)
+```
+

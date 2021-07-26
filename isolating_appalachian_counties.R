@@ -1,16 +1,9 @@
 library(ipumsr)
-library(dplyr)
-library(ggplot2)
-library(NLP)
+library(tidyverse)
 library(tm)
-library(SnowballC)
-library(wordcloud)
-library(pdftools)
-library(RColorBrewer)
-library(gridExtra)
-library(stringr)
 library(readxl)
 library(tigris)
+library(sf)
 
 
 # Read in IPUMS data with APPAL and PUMA variables
@@ -48,6 +41,13 @@ pumas_2010_app <- puma_crosswalk_app %>% group_by(State10, PUMA10) %>%
 
 # Obtain list of PUMA sfs for Appalchian states
 options(tigris_use_cache = TRUE)
+counties<-read.csv("ALMV_counties_all.csv", header=T) %>%
+  rename(state_code=State)%>%
+  mutate(County=str_replace_all(County,"\'|\\.",""))%>%
+  mutate(County=str_trim(County, side="both"))
+counties$state_code=as.character(counties$state_code)
+state_list<-unique(counties$state_code)
+state_list[1] <- "01"
 puma_geoms_list <- lapply(state_list, function(x) {
   pumas(state = x, cb = T)
 })
@@ -59,6 +59,25 @@ pumas_2010_app <- pumas_2010_app %>%
   rename(STATEFP10 = State10, PUMACE10 = PUMA10)
 puma_app_geoms <- semi_join(as.data.frame(puma_geoms), pumas_2010_app)
 
+# Obtain ARC definition of Appalachian counties
+app_counties <- counties(state = state_list, cb = T)
+app_counties <- app_counties %>%
+  unite(STATEFP, COUNTYFP, col = "FIP", sep = "") 
+app_counties <- as.data.frame(app_counties)
+
+# Obtain list of FIPS
+fips<-read.csv("fips_codes.csv", header=T) %>%
+  mutate(state_code= str_sub(FIPS, 1, -4))%>%
+  rename(County=Name)
+fips_merge<-left_join(counties, fips, by=c("County", "state_code"))
+fip_list<-sprintf("%05d",fips_merge$FIPS)
+fip_list <- as_tibble(fip_list) %>% rename(FIP = value)
+
+#Limit app_counties to app_counties
+app_counties <- semi_join(app_counties, fip_list)
+
 # Plot 
-ggplot(st_as_sf(puma_app_geoms)) + geom_sf(fill = "coral2") + theme_minimal() +
+ggplot() + geom_sf(data = st_as_sf(puma_app_geoms), fill = "coral2", color = "black" ) + 
+  theme_minimal() +
+  geom_sf(data = st_as_sf(app_counties), fill = "grey", color = NA) + 
   coord_sf(datum = NA)
