@@ -15,6 +15,10 @@ library(readr)
 library(stringr)
 library(shinyjs)
 
+
+#Setting working directory
+setwd("G:/My Drive/PhD/Internship/Appalachia/Repo/ALMV/ShinyApp")
+
 prettyblue <- "#232D4B"
 navBarBlue <- '#427EDC'
 options(spinner.color = prettyblue, spinner.color.background = '#ffffff', spinner.size = 3, spinner.type = 7)
@@ -183,46 +187,28 @@ jscode <- "function getUrlVars() {
            }
            "
 
-# user -------------------------------------------------------------
-ui <- navbarPage(title = "I'm a title!",
+ui <- navbarPage(title = "ALMV",
+
                  selected = "overview",
                  theme = shinytheme("lumen"),
                  tags$head(tags$style('.selectize-dropdown {z-index: 10000}')),
                  useShinyjs(),
-                 # main -----------------------------------------------------------
-                 # tabPanel("Home", value = "home",
-                 #          fluidRow(style = "margin: 6px;",
-                 #                   align = "center",
-                 #                   br("", style = "padding-top:10px;"),
-                 #                   img(src = "uva-dspg-logo.jpg", class = "topimage", width = "20%", style = "display: block; margin-left: auto; margin-right: auto;"),
-                 #                   br(""),
-                 #                   h2(strong("Addressing Barriers to Health in Patrick County, Virginia"),
-                 #                   br(""),
-                 #                   h4("Data Science for the Public Good Program"),
-                 #                   h4("University of Virginia"),
-                 #                   h4("Biocomplexity Insititute"),
-                 #                   br(),
-                 #                   br(),
-                 #                   br(),
-                 #                   br(),
-                 #                   br(),
-                 #                   p(tags$small(em('Last updated: August 2020')))
-                 #                   )
-                 #          )
-                 # ),
+                 
+                 # Overview-----------------------------------------------------------
 
-                 # main -----------------------------------------------------------
                  tabPanel("Overview", value = "overview",
                           fluidRow(style = "margin: 2px;",
                                    align = "center",
                                    # br("", style = "padding-top:2px;"),
                                    # img(src = "uva-dspg-logo.jpg", class = "topimage", width = "20%", style = "display: block; margin-left: auto; margin-right: auto;"),
                                    br(""),
-                                   h1(strong("Addressing Barriers to Health in Patrick County, Virginia"),
+                                   
+                                   h1(strong("Appalachian Labor Markets: Preparing for Jobs of the Future"),
                                       br(""),
                                       h4("Data Science for the Public Good Program"),
-                                      h4("University of Virginia"),
-                                      h4("Biocomplexity Insititute"),
+                                      h4("Virginia Tech"),
+                                      
+
                                       br()
                                    )
                           ),
@@ -287,9 +273,10 @@ ui <- navbarPage(title = "I'm a title!",
                           fluidRow(align = "center",
                                    p(tags$small(em('Last updated: August 2020'))))
                  ),
+                 
+                 # Appalachia Region-----------------------------------------------------------
+                 tabPanel("Appalachian Region", value = "region",
 
-                 # socio -----------------------------------------------------------
-                 tabPanel("Sociodemographics", value = "socio",
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Patrick County Residents' Sociodemographic Characteristics"), align = "center"),
                                    p("", style = "padding-top:10px;"),
@@ -324,8 +311,10 @@ ui <- navbarPage(title = "I'm a title!",
                                    ))
                                           ),
 
-                 # older -----------------------------------------------------------
-                 tabPanel("Older Adults", value = "older",
+
+                 # Jobs -----------------------------------------------------------
+                 tabPanel("Jobs", value = "jobs",
+
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Older Adults in Patrick County"), align = "center"),
                                    p("", style = "padding-top:10px;"),
@@ -383,8 +372,9 @@ ui <- navbarPage(title = "I'm a title!",
                           )
                  ),
 
-                 # wifi-----------------------------------------------------------
-                 tabPanel("Connectivity", value = "connectivity",
+                 # Skills-----------------------------------------------------------
+                 tabPanel("Skills", value = "skills",
+
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Digital Connectivity in Patrick County"), align = "center"),
                                    p("", style = "padding-top:10px;"),
@@ -459,8 +449,9 @@ ui <- navbarPage(title = "I'm a title!",
                           )
                  ),
 
-                 # ems -----------------------------------------------------------
-                 tabPanel("Health Care Access", value = "ems",
+                 # Labor Market -----------------------------------------------------------
+                 tabPanel("Labor Market", value = "labomarket",
+
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Health Care Access in Patrick County"), align = "center"),
                                    p("", style = "padding-top:10px;"),
@@ -513,86 +504,87 @@ ui <- navbarPage(title = "I'm a title!",
                           )
                  ),
 
-                 # food -----------------------------------------------------------
-                 tabPanel("Food Access", value =  "food",
-                          fluidRow(style = "margin: 6px;",
-                                   h1(strong("Food Access in Patrick County"), align = "center"),
-                                   p("", style = "padding-top:10px;"),
-                                   column(5,
-                                          h4(strong("Food Access in Rural Areas")),
-                                          p("Social determinants of health shape food access, a key factor in negative health outcomes. Rural area residents frequently face difficulties in accessing
-                                             healthy and nutritious food, and experience high rates of chronic illnesses like heart disease and diabetes, resulting in higher mortality rates and lower
-                                             life expectancy compared to urban areas. Facilitating  access to nutritious and high-quality foods can lead to decreases in chronic disease prevalence.
-                                             Many Patrick County residents suffer from conditions like diabetes and obesity, and providing healthy food may support disease prevention."),
-                                          p("We analyzed multiple data sources to give Patrick County actionable information on their residents’ food access that can inform county efforts ensuring equitable food access for all."),
-                                          p("First, we examined", strong("food access at multiple distance thresholds by age and socioeconomic status."), "We used the 2017 United States Department of
-                                             Agriculture (USDA) Food Access Research Atlas, a central database created by the Economic Research Service that provides access indicators for different social groups.
-                                             We created census tract-level maps that identify Patrick County areas where residents may have difficulty accessing nutritious foods, and highlight geographies
-                                             where this is the case for particularly vulnerable groups like low-income individuals and older adults."),
-                                          p("Second, to better understand how residents must travel to obtain food, we constructed isochrones—shapes covering places within reach in the
-                                             same time frame given a start location and a mode of transportation—from Patrick County", strong("residential properties to locations of grocery stores
-                                             and farmers’ markets."), "We used Google Maps to identify these locations' latitude and longitude. We extracted locations of
-                                             Patrick County residential properties from 2019 CoreLogic, a proprietary dataset for US real estate with information on building characteristics.
-                                             Finally, we used the TravelTime Application Programming Interface (API) to calculate 10- and 15-minute car travel times from grocery locations. TravelTime
-                                             API aggregates data from Open Street Maps, transport timetables and speed profiles to generate isochrones. This allowed us to identify food deserts, or clusters
-                                             of properties that cannot reach a location with healthy food within a selected travel time range. These areas in the county could benefit from programs
-                                             facilitating access to produce."),
-                                          p("Finally, Patrick County offers", strong("access to free food"), "at multiple locations. For community members that struggle with food security, these locations can
-                                             offer temporary assistance. We used GoogleMaps to locate food banks, food pantries, and community meal sites, geocoded their addresses, and mapped
-                                             these resources along with notes on their target audiences.")
-                                   ),
-                                   column(7,
-                                          tabsetPanel(
-                                            tabPanel("Food Access",
-                                                     p(""),
-                                                     selectInput("usdadrop", "Select Variable:", width = "100%", choices = c(
-                                                       "Percent Population with Low Food Access at 1 Mile" = "lapop1share",
-                                                       "Percent Population with Low Food Access at 10 Miles" = "lapop10share",
-                                                       "Percent Children with Low Food Access at 1 Mile" = "lakids1share",
-                                                       "Percent Children with Low Food Access at 10 Miles" = "lakids10share",
-                                                       "Percent Low Income Population with Low Food Access at 1 Mile" = "lalowi1share",
-                                                       "Percent Low Income Population with Low Food Access at 10 Miles" = "lalowi10share",
-                                                       "Percent Older Adults with Low Food Access at 1 Mile" = "laseniors1share",
-                                                       "Percent Older Adults with Low Food Access at 10 Miles" = "laseniors10share")
-                                                     ),
-                                                     p(strong("Map of Access at Census Tract Level")),
-                                                     withSpinner(leafletOutput("usdaplot")),
-                                                     p(tags$small("Data Source: USDA Food Access Research Atlas, 2017"))
-                                            ),
-                                            tabPanel("Grocery and Farmers' Market Coverage",
-                                                     p(""),
-                                                     selectInput("grocdrop", "Select Location:", width = "100%", choices = c(
-                                                       "Mountain Meadow Farm and Craft Market",
-                                                       "Lowes Foods of Stuart",
-                                                       "Patrick County Local Farmers Market",
-                                                       "Stuart Farmers Market",
-                                                       "W & W Produce",
-                                                       "Walmart Supercenter",
-                                                       "Poor Farmers Farm")),
-                                                     p(strong("Percent Households Covered")),
-                                                     withSpinner(tableOutput("groctable")),
-                                                     p(strong("Map of Coverage")),
-                                                     withSpinner(leafletOutput("grocplot")),
-                                                     p(tags$small("Data Source: Google Maps; TravelTime API; CoreLogic, 2019."))
-                                            ),
-                                            tabPanel("Food Deserts",
-                                                     p(""),
-                                                     p(strong("Percent Households Covered")),
-                                                     withSpinner(tableOutput("allgrctable")),
-                                                     p(strong("Map of Food Deserts")),
-                                                     withSpinner(leafletOutput("allgroc")),
-                                                     p(tags$small("Data Source: Google Maps; TravelTime API; CoreLogic, 2019."))
-                                            ),
-                                            tabPanel("Food Security Resources",
-                                                     p(""),
-                                                     p(strong("Map of Food Security Resources")),
-                                                     withSpinner(leafletOutput("othermap")),
-                                                     p(tags$small("Data Source: Google Maps."))
-                                            )
-                                          )
-                                   )
-                          )
-                 ),
+                 # # Extra tab-----------------------------------------------------------
+                 # tabPanel("Food", value =  "food",
+                 #          fluidRow(style = "margin: 6px;",
+                 #                   h1(strong("Food Access in Patrick County"), align = "center"),
+                 #                   p("", style = "padding-top:10px;"),
+                 #                   column(5,
+                 #                          h4(strong("Food Access in Rural Areas")),
+                 #                          p("Social determinants of health shape food access, a key factor in negative health outcomes. Rural area residents frequently face difficulties in accessing
+                 #                             healthy and nutritious food, and experience high rates of chronic illnesses like heart disease and diabetes, resulting in higher mortality rates and lower
+                 #                             life expectancy compared to urban areas. Facilitating  access to nutritious and high-quality foods can lead to decreases in chronic disease prevalence.
+                 #                             Many Patrick County residents suffer from conditions like diabetes and obesity, and providing healthy food may support disease prevention."),
+                 #                          p("We analyzed multiple data sources to give Patrick County actionable information on their residents’ food access that can inform county efforts ensuring equitable food access for all."),
+                 #                          p("First, we examined", strong("food access at multiple distance thresholds by age and socioeconomic status."), "We used the 2017 United States Department of
+                 #                             Agriculture (USDA) Food Access Research Atlas, a central database created by the Economic Research Service that provides access indicators for different social groups.
+                 #                             We created census tract-level maps that identify Patrick County areas where residents may have difficulty accessing nutritious foods, and highlight geographies
+                 #                             where this is the case for particularly vulnerable groups like low-income individuals and older adults."),
+                 #                          p("Second, to better understand how residents must travel to obtain food, we constructed isochrones—shapes covering places within reach in the
+                 #                             same time frame given a start location and a mode of transportation—from Patrick County", strong("residential properties to locations of grocery stores
+                 #                             and farmers’ markets."), "We used Google Maps to identify these locations' latitude and longitude. We extracted locations of
+                 #                             Patrick County residential properties from 2019 CoreLogic, a proprietary dataset for US real estate with information on building characteristics.
+                 #                             Finally, we used the TravelTime Application Programming Interface (API) to calculate 10- and 15-minute car travel times from grocery locations. TravelTime
+                 #                             API aggregates data from Open Street Maps, transport timetables and speed profiles to generate isochrones. This allowed us to identify food deserts, or clusters
+                 #                             of properties that cannot reach a location with healthy food within a selected travel time range. These areas in the county could benefit from programs
+                 #                             facilitating access to produce."),
+                 #                          p("Finally, Patrick County offers", strong("access to free food"), "at multiple locations. For community members that struggle with food security, these locations can
+                 #                             offer temporary assistance. We used GoogleMaps to locate food banks, food pantries, and community meal sites, geocoded their addresses, and mapped
+                 #                             these resources along with notes on their target audiences.")
+                 #                   ),
+                 #                   column(7,
+                 #                          tabsetPanel(
+                 #                            tabPanel("Food Access",
+                 #                                     p(""),
+                 #                                     selectInput("usdadrop", "Select Variable:", width = "100%", choices = c(
+                 #                                       "Percent Population with Low Food Access at 1 Mile" = "lapop1share",
+                 #                                       "Percent Population with Low Food Access at 10 Miles" = "lapop10share",
+                 #                                       "Percent Children with Low Food Access at 1 Mile" = "lakids1share",
+                 #                                       "Percent Children with Low Food Access at 10 Miles" = "lakids10share",
+                 #                                       "Percent Low Income Population with Low Food Access at 1 Mile" = "lalowi1share",
+                 #                                       "Percent Low Income Population with Low Food Access at 10 Miles" = "lalowi10share",
+                 #                                       "Percent Older Adults with Low Food Access at 1 Mile" = "laseniors1share",
+                 #                                       "Percent Older Adults with Low Food Access at 10 Miles" = "laseniors10share")
+                 #                                     ),
+                 #                                     p(strong("Map of Access at Census Tract Level")),
+                 #                                     withSpinner(leafletOutput("usdaplot")),
+                 #                                     p(tags$small("Data Source: USDA Food Access Research Atlas, 2017"))
+                 #                            ),
+                 #                            tabPanel("Grocery and Farmers' Market Coverage",
+                 #                                     p(""),
+                 #                                     selectInput("grocdrop", "Select Location:", width = "100%", choices = c(
+                 #                                       "Mountain Meadow Farm and Craft Market",
+                 #                                       "Lowes Foods of Stuart",
+                 #                                       "Patrick County Local Farmers Market",
+                 #                                       "Stuart Farmers Market",
+                 #                                       "W & W Produce",
+                 #                                       "Walmart Supercenter",
+                 #                                       "Poor Farmers Farm")),
+                 #                                     p(strong("Percent Households Covered")),
+                 #                                     withSpinner(tableOutput("groctable")),
+                 #                                     p(strong("Map of Coverage")),
+                 #                                     withSpinner(leafletOutput("grocplot")),
+                 #                                     p(tags$small("Data Source: Google Maps; TravelTime API; CoreLogic, 2019."))
+                 #                            ),
+                 #                            tabPanel("Food Deserts",
+                 #                                     p(""),
+                 #                                     p(strong("Percent Households Covered")),
+                 #                                     withSpinner(tableOutput("allgrctable")),
+                 #                                     p(strong("Map of Food Deserts")),
+                 #                                     withSpinner(leafletOutput("allgroc")),
+                 #                                     p(tags$small("Data Source: Google Maps; TravelTime API; CoreLogic, 2019."))
+                 #                            ),
+                 #                            tabPanel("Food Security Resources",
+                 #                                     p(""),
+                 #                                     p(strong("Map of Food Security Resources")),
+                 #                                     withSpinner(leafletOutput("othermap")),
+                 #                                     p(tags$small("Data Source: Google Maps."))
+                 #                            )
+                 #                          )
+                 #                   )
+                 #          )
+                 # ),
+
                  # data -----------------------------------------------------------
                  tabPanel("Data and Measures", value = "data",
                           fluidRow(style = "margin: 6px;",
@@ -2624,6 +2616,9 @@ server <- function(input, output, session) {
   }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
 
 }
+
+
+# Run the App-------------
 
 shinyApp(ui = ui, server = server)
 
