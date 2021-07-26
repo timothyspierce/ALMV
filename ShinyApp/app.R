@@ -15,6 +15,7 @@ library(readr)
 library(stringr)
 library(shinyjs)
 
+
 #Setting working directory
 setwd("G:/My Drive/PhD/Internship/Appalachia/Repo/ALMV/ShinyApp")
 
@@ -186,25 +187,28 @@ jscode <- "function getUrlVars() {
            }
            "
 
-# UI -------------------------------------------------------------
 ui <- navbarPage(title = "ALMV",
+
                  selected = "overview",
                  theme = shinytheme("lumen"),
                  tags$head(tags$style('.selectize-dropdown {z-index: 10000}')),
                  useShinyjs(),
                  
                  # Overview-----------------------------------------------------------
+
                  tabPanel("Overview", value = "overview",
                           fluidRow(style = "margin: 2px;",
                                    align = "center",
                                    # br("", style = "padding-top:2px;"),
                                    # img(src = "uva-dspg-logo.jpg", class = "topimage", width = "20%", style = "display: block; margin-left: auto; margin-right: auto;"),
                                    br(""),
+                                   
                                    h1(strong("Appalachian Labor Markets: Preparing for Jobs of the Future"),
                                       br(""),
                                       h4("Data Science for the Public Good Program"),
                                       h4("Virginia Tech"),
                                       
+
                                       br()
                                    )
                           ),
@@ -269,9 +273,10 @@ ui <- navbarPage(title = "ALMV",
                           fluidRow(align = "center",
                                    p(tags$small(em('Last updated: August 2020'))))
                  ),
-
+                 
                  # Appalachia Region-----------------------------------------------------------
                  tabPanel("Appalachian Region", value = "region",
+
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Patrick County Residents' Sociodemographic Characteristics"), align = "center"),
                                    p("", style = "padding-top:10px;"),
@@ -306,8 +311,10 @@ ui <- navbarPage(title = "ALMV",
                                    ))
                                           ),
 
+
                  # Jobs -----------------------------------------------------------
                  tabPanel("Jobs", value = "jobs",
+
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Older Adults in Patrick County"), align = "center"),
                                    p("", style = "padding-top:10px;"),
@@ -367,6 +374,7 @@ ui <- navbarPage(title = "ALMV",
 
                  # Skills-----------------------------------------------------------
                  tabPanel("Skills", value = "skills",
+
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Digital Connectivity in Patrick County"), align = "center"),
                                    p("", style = "padding-top:10px;"),
@@ -443,6 +451,7 @@ ui <- navbarPage(title = "ALMV",
 
                  # Labor Market -----------------------------------------------------------
                  tabPanel("Labor Market", value = "labomarket",
+
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Health Care Access in Patrick County"), align = "center"),
                                    p("", style = "padding-top:10px;"),
@@ -575,6 +584,7 @@ ui <- navbarPage(title = "ALMV",
                  #                   )
                  #          )
                  # ),
+
                  # data -----------------------------------------------------------
                  tabPanel("Data and Measures", value = "data",
                           fluidRow(style = "margin: 6px;",
@@ -2607,6 +2617,8 @@ server <- function(input, output, session) {
 
 }
 
+
 # Run the App-------------
+
 shinyApp(ui = ui, server = server)
 

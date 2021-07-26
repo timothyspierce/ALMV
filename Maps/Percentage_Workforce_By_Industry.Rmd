@@ -1,0 +1,339 @@
+---
+title: "Percentage_Workforce_By_Industry"
+author: "Austin Burcham"
+date: "6/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidycensus)
+library(tidyverse)
+library(mapview)
+library(sf)
+library(tigris)
+library(stringr)
+library(forcats)
+```
+
+```{r}
+# Variable for total amount of workers 
+total_var <- "C24050_001"
+
+# Vector of industry variables to obtain from the acs
+industry_varspt1 <- paste0("C24050_00", 2:9)
+industry_varspt2 <- paste0("C24050_0", 10:14)
+industry_vars <- append(industry_varspt1, industry_varspt2)
+
+# Full list of industry percentages by county
+industry_breakdown_all <- get_acs(geography="county",
+          state=state_list,
+          variables = industry_vars,
+          year=2019, geometry = T, summary_var = total_var) %>%
+  filter(GEOID %in% fip_list) %>% 
+  mutate(estimate = estimate/summary_est) %>% 
+  select(-summary_est, -summary_moe, -moe) %>% 
+  
+
+# Names associated with variables 
+industry_names <- variables %>% filter(name %in% industry_vars) 
+industry_names <- str_remove(industry_names$label, "Estimate!!Total!!") 
+
+# industry_names <- c("Agriculture, forestry, fishing hunting, and mining","Construction","Manufacturing","Wholesale trade","Retail trade","Transportation, warehousing and utilities","Information", "Finance, insurance, real estate and rental and leasing", "Professional, scientific, manag ement, administrative and waste management services", "Educational services, health care and social assistance", "Arts, entertainment, recreation, accommodation and food services", "Other services, except public administration", "Public administration")
+
+levels(industry_breakdown_all$variable) <- industry_names
+mapping <- setNames(industry_vars, industry_names)
+args <- c(list(industry_breakdown_all$variable), mapping)
+industry_breakdown_all$variable <- do.call(fct_recode, args)
+
+
+# Top industry by county
+top_industries_all <- industry_breakdown_all %>% 
+  group_by(NAME) %>% 
+  top_n(1, wt = estimate) 
+
+
+top_industry_var_names <- c("Manufacturing", "Retail trade", 
+                            "Professional, scientific,management, administrative and waste management services", "Educational services, health care and social assistance", "Arts, entertainment, recreation, and accommodation and food services")
+
+top_industry_map <- top_industries_all %>% ggplot() + 
+  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
+   geom_sf(data = top_industries_all, aes(fill = variable), show.legend = T) + 
+  scale_fill_discrete(name = "Industry", labels = top_industry_var_names)+
+  coord_sf(datum = NA) + 
+  labs(title = "Top Industry by County", subtitle = "Appalachia", 
+       caption = "Data obtained from the ACS 2019 5-year Estimates") + 
+  theme_minimal()
+# Bottom industries map 
+bottom_industry_all <- industry_breakdown_all %>% 
+  group_by(NAME) %>% 
+  top_n(-1, wt = estimate) 
+
+bottom_industry_map <- bottom_industry_all %>% ggplot() + 
+  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
+   geom_sf(data = bottom_industry_all, aes(fill = variable), show.legend = T) + 
+  coord_sf(datum = NA) + 
+  labs(title = "Bottom Industry by County", subtitle = "Appalachia 2019", 
+       caption = "Data obtained from the ACS 2019 5-year Estimates") + 
+  theme_minimal()
+  
+  
+# Facet wrap by industry
+state_borders <- states(cb = T)
+state_borders <- state_borders %>% 
+                  filter(STATEFP %in% state_list)
+
+swr <- function(string, nwrap= 23) {
+  paste(strwrap(string, width=nwrap), collapse="\n")
+}
+swr <- Vectorize(swr)
+industry_breakdown_all$variable <- swr(industry_breakdown_all$variable)
+
+  by_industry <- ggplot() +
+  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
+     geom_sf(data = industry_breakdown_all, aes(fill = estimate, color = estimate)) +
+    facet_wrap(~variable) + 
+    scale_color_viridis_c() + scale_fill_viridis_c()+
+    coord_sf(datum = NA) +
+    theme_bw() + 
+    labs(title = "Proportion of Workers in Industry by County", subtitle = "Appalachia 2019", 
+         caption = "Source: ACS 2019 5-year Estimate")
+
+  by_industry_1to6 <- ggplot() +
+  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
+     geom_sf(data = industry_breakdown_all, aes(fill = estimate, color = estimate)) +
+    facet_wrap(~variable[1:6], nrow = 2, ncol = 3) + 
+    scale_color_viridis_c() + scale_fill_viridis_c()+
+    coord_sf(datum = NA) +
+    theme_bw() + 
+    labs(title = "Proportion of Workers in Industry by County", subtitle = "Appalachia 2019", 
+         caption = "Source: ACS 2019 5-year Estimate")
+  
+  
+  
+  by_industry_7to10 <- ggplot() +
+  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
+     geom_sf(data = industry_breakdown_all, aes(fill = estimate, color = estimate)) +
+    facet_wrap(~variable[7:10], ncol = 4) + 
+    scale_color_viridis_c() + scale_fill_viridis_c()+
+    coord_sf(datum = NA) +
+    theme_bw() + 
+    labs(title = "Proportion of Workers in Industry by County", subtitle = "Appalachia 2019", 
+         caption = "Source: ACS 2019 5-year Estimate")
+  
+  
+  by_industry_11to13 <- ggplot() +
+  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
+     geom_sf(data = industry_breakdown_all, aes(fill = estimate, color = estimate)) +
+    facet_wrap(~variable[11:13], ncol = 3) + 
+    scale_color_viridis_c() + scale_fill_viridis_c()+
+    coord_sf(datum = NA) +
+    theme_bw() + 
+    labs(title = "Proportion of Workers in Industry by County", subtitle = "Appalachia 2019", 
+         caption = "Source: ACS 2019 5-year Estimate")
+
+  
+#Agriculture
+ag_tibble <- almv_acs_var_summary(industry_vars[1], total_var)
+ag_map <- almv_minimal_map(ag_tibble) + labs(title = "Agriculture, forestry, fishing and hunting, and mining", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+ag_map_interactive <- mapview(ag_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+#Construction
+const_tibble <- almv_acs_var_summary(industry_vars[2], total_var)
+const_map <- almv_minimal_map(const_tibble) + labs(title = "Construction", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+const_map_interactive <- mapview(const_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+#Manufacturing 
+manf_tibble <- almv_acs_var_summary(industry_vars[3], total_var)
+manf_map <- almv_minimal_map(manf_tibble) + labs(title = "Manufacturing", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+manf_map_interactive <- mapview(manf_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+# Wholesale Trade
+wholesale_tibble <- almv_acs_var_summary(industry_vars[4], total_var)
+wholesale_map <- almv_minimal_map(wholesale_tibble) + labs(title = "Wholesale Trade", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+wholesale_map_interactive <- mapview(wholesale_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+# Retail Trade
+retail_tibble <- almv_acs_var_summary(industry_vars[5], total_var)
+retail_map <- almv_minimal_map(retail_tibble) + labs(title = "Wholesale Trade", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+retail_map_interactive <- mapview(retail_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+# Transportation and warehousing, and utilities
+transport_tibble <- almv_acs_var_summary(industry_vars[6], total_var)
+transport_map <- almv_minimal_map(transport_tibble) + labs(title = "Transportation and warehousing, and utilities", subtitle = "Appalachia", caption = "Data obtained from the ACS 2019 5-year Estimates")
+transport_map_interactive <- mapview(transport_tibble, zcol = 'estimate', legend = T, layer.name = 'Proportion')
+
+```
+
+```{r}
+industry_breakdown_2019 <- get_acs(geography="county",
+          state=state_list,
+          variables = industry_vars,
+          year=2019, summary_var = total_var) %>%
+  filter(GEOID %in% fip_list) 
+
+industry_breakdown_2010 <- get_acs(geography="county",
+          state=state_list,
+          variables = industry_vars,
+          year=2010, summary_var = total_var) %>%
+  filter(GEOID %in% fip_list) 
+
+total_2019_workers <- sum(industry_breakdown_2019$summary_est)
+
+mapping <- setNames(industry_vars, industry_names)
+args <- c(list(industry_breakdown_2019$variable), mapping)
+industry_breakdown_2019$variable <- do.call(fct_recode, args)
+industry_breakdown_2010$variable <- do.call(fct_recode, args)
+
+industry_breakdown_2019_total <- industry_breakdown_2019 %>% 
+  group_by(variable) %>% 
+  select(NAME, variable, estimate) %>% 
+  pivot_wider(names_from = variable, values_from = estimate) %>%
+  select(-NAME)  %>% 
+  summarize_all(sum) %>% 
+  pivot_longer(cols = everything(), names_to = "Industry", values_to = "Estimate") %>% 
+  mutate(Estimate = 100 * (Estimate / sum(Estimate))) 
+  
+
+industry_breakdown_2010_total <- industry_breakdown_2010 %>% 
+  group_by(variable) %>% 
+  select(NAME, variable, estimate) %>% 
+  pivot_wider(names_from = variable, values_from = estimate) %>%
+  select(-NAME)  %>% 
+  summarize_all(sum) %>% 
+  pivot_longer(cols = everything(), names_to = "Industry", values_to = "Estimate") %>% 
+  mutate(Estimate = 100 * (Estimate / sum(Estimate)))
+
+
+```
+
+
+```{r, PercentChangeFunctions}
+# Takes any varcode or vector of varcodes from the acs 
+# and creates a tibble representing
+# the percent point change in that variable over time in Appalachia, 
+# along with sf information to graph the change 
+almv_acs_diff_variable_percent <-  function(varcode, summaryvarcode, year1, year2,
+                                    summarytype){
+  # Obtain recent acs info and filter 
+  info_recent <- get_acs(geography="county",
+                          state=state_list,
+                          variables = varcode,
+                          year=year1, survey = summarytype, 
+                         geometry = T, summary_var = summaryvarcode) %>%
+    filter(GEOID %in% fip_list) %>%
+    transmute(NAME, geometry, variable, Percent = 100*(estimate/summary_est)) %>% 
+    na.omit()
+  
+  # Obtain old acs info and filter 
+  info_old <- get_acs(geography="county",
+                     state=state_list,
+                     variables = varcode,
+                     year=year2, survey = summarytype ,geometry = T, summary_var = summaryvarcode) %>%
+    filter(GEOID %in% fip_list) %>% 
+    na.omit() %>% 
+    transmute(NAME, geometry,variable, Percent = 100*(estimate/summary_est)) %>% 
+    arrange(NAME)
+  
+  # Ensure all counties are the same in both old and recent info 
+  countiesold <- unique(info_old$NAME)
+  info_recent <- info_recent %>% 
+    filter(NAME %in% countiesold) %>% 
+    arrange(NAME)
+  countiesnew <- unique(info_recent$NAME)
+  info_old <- info_old %>% filter(NAME %in% countiesnew)
+  
+  #Create a difference in percent vector
+  diffVector <- info_recent$Percent - info_old$Percent
+  
+  # Mutate that on the recent vector and return 
+  info_recent <- info_recent %>% 
+    mutate(`Percent Change`= diffVector) %>% 
+    select(-Percent)
+  return(info_recent)
+  
+}
+
+# Map data obtained through almv_acs_diff_variable_percent
+# Input data, the ncol for the output of maps and the limits on the scaling
+# for the continuous fill of counties 
+almv_acs_diff_variable_percent_map <- function(data, ncol, limits) {
+ ggplot() + 
+  geom_sf(data = state_borders, color = 'black', fill = 'grey') +
+   geom_sf(data = data , aes(fill = `Percent Change`, color = `Percent Change`)) + 
+   scale_color_viridis_c(option = 'viridis',  limits = limits) + scale_fill_viridis_c(option = 'viridis', limits = limits) + 
+   facet_wrap(facets = ~variable, ncol = ncol) +
+  coord_sf(datum = NA) +
+  theme_bw()
+}
+```
+
+```{r, IndustryChange2010-19}
+# Change variable to no longer be varcodes
+industry_change_2010to2019 <- almv_acs_diff_variable_percent(industry_vars, total_var, 2019, 2010, "acs1")
+
+# Change variable codes to meaningful names
+mapping <- setNames(industry_vars, industry_names)
+args <- c(list(industry_change_2010to2019$variable), mapping)
+industry_change_2010to2019$variable <- do.call(fct_recode, args)
+
+#make variable wrap to fit graphs 
+industry_change_2010to2019$variable <- swr(industry_change_2010to2019$variable)
+
+
+# map 1 through 6
+industry_change_2010to2019_1to6<- industry_change_2010to2019 %>% filter(variable %in% variable[1:6])
+map_change_2010to2019_1to6 <- almv_acs_diff_variable_percent_map(industry_change_2010to2019_1to6, 3, c(-8, 11)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2010 and 2019", 
+       caption = "Data obtained from the ACS 2010 and 2019 1-year Estimates")
+
+# map 7 through 10
+industry_change_2010to2019_7to10<- industry_change_2010to2019 %>% filter(variable %in% variable[7:10])
+
+map_change_2010to2019_7to10 <- almv_acs_diff_variable_percent_map(industry_change_2010to2019_7to10, 4, c(-8, 11)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2010 and 2019", 
+       caption = "Data obtained from the ACS 2010 and 2019 1-year Estimates")
+
+# map 11 through 13
+industry_change_2010to2019_11to13<- industry_change_2010to2019 %>% filter(variable %in% variable[11:13])
+
+map_change_2010to2019_11to13 <- almv_acs_diff_variable_percent_map(industry_change_2010to2019_11to13, 3, c(-8, 11)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2010 and 2019", 
+       caption = "Data obtained from the ACS 2010 and 2019 1-year Estimates")
+```
+
+
+```{r, IndustryChange2015-19}
+#Obtain acs information for change fro 2015 to 2019
+industry_change_2015to2019 <- almv_acs_diff_variable_percent(industry_vars, total_var, 2019, 2015, "acs1")
+
+# Change variable to no longer be varcodes but meaningful names
+mapping <- setNames(industry_vars, industry_names)
+args <- c(list(industry_change_2015to2019$variable), mapping)
+industry_change_2015to2019$variable <- do.call(fct_recode, args)
+
+#make variable wrap to fit graphs 
+industry_change_2015to2019$variable <- swr(industry_change_2015to2019$variable)
+
+
+# map 1 through 6
+industry_change_2015to2019_1to6<- industry_change_2015to2019 %>% filter(variable %in% variable[1:6])
+map_change_2015to2019_1to6 <- almv_acs_diff_variable_percent_map(industry_change_2015to2019_1to6, 3, c(-11,9)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2015 and 2019", 
+       caption = "Data obtained from the ACS 2015 and 2019 1-year Estimates")
+
+# map 7 through 10
+industry_change_2015to2019_7to10<- industry_change_2015to2019 %>% filter(variable %in% variable[7:10])
+
+map_change_2015to2019_7to10 <- almv_acs_diff_variable_percent_map(industry_change_2015to2019_7to10, 4, c(-11,9)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2015 and 2019", 
+       caption = "Data obtained from the ACS 2015 and 2019 1-year Estimates")
+
+# map 11 through 13
+industry_change_2015to2019_11to13<- industry_change_2015to2019 %>% filter(variable %in% variable[11:13])
+
+map_change_2015to2019_11to13 <- almv_acs_diff_variable_percent_map(industry_change_2015to2019_11to13, 3, c(-11,9)) + labs(title = "% Points Change in Proportion of Workers in Industry", subtitle = "Appalachian Counties Between 2015 and 2019", 
+       caption = "Data obtained from the ACS 2015 and 2019 1-year Estimates")
+```
+
+
+
+```{r}
+bruh <- get_acs(geography = "public use microdata area", variables = industry_vars, year = 2019)
+```
+
