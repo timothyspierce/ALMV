@@ -10,6 +10,7 @@ library(sf)
 library(leaflet)
 library(htmltools)
 library(leafpop)
+library(rvest)
 
 # Read in index data ----------------------------------------------------------------
 app_weighted_skills_by_PUMA <- read_csv("App_weighted_skills_by_PUMA.csv")
@@ -24,6 +25,8 @@ counties<-read.csv("ALMV_counties_all.csv", header=T) %>%
 counties$state_code=as.character(counties$state_code)
 state_list<-unique(counties$state_code)
 state_list[1] <- "01"
+
+# Pull polygons from tigris
 options(tigris_use_cache = TRUE)
 puma_geoms_list <- lapply(state_list, function(x) {
   pumas(state = x, cb = T)
@@ -33,12 +36,13 @@ puma_geoms <- rbind_tigris(puma_geoms_list)
 # Make PUMAS unique by combining STATEFIP and PUMA
 puma_geoms <- puma_geoms %>% unite(STATEFP10, PUMACE10, col = "PUMA", sep = "")
 
-# Associate index values with PUMAs
+#Obtain list of Appalachian PUMAS
 app_pumas <- as_tibble(unique(app_weighted_skills_by_PUMA$PUMA)) %>% rename(PUMA = value)
 
-#Limit to Appalachia
+#Limit tigris data to Appalachia
 puma_app_geoms <- semi_join(as.data.frame(puma_geoms), app_pumas)
 
+# Associate index values with geoms 
 map_data <- left_join(app_weighted_skills_by_PUMA, puma_app_geoms) %>% 
   select(skillname, PUMA, `Normalized Index`, geometry, NAME10)
 
@@ -188,3 +192,65 @@ TechDesign_map <-  TechDesign_map %>%
 Coordination_map <- Coordination_map %>% 
   addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)
 View(Monitoring_map)
+
+# Add city points-----------------------------------------------------------
+# cities_link <- "https://en.wikivoyage.org/wiki/Appalachia"
+# page <- read_html(cities_link)
+# city <- page %>%  html_nodes("ol li") %>% html_text()
+# city <- as_tibble(city) %>% separate(value, sep = " ", into  = c("City", "State"))
+# city <- city %>% mutate(State = str_replace_all(State, pattern = "\\)|\\(| ", ""))
+# city <- city %>% mutate(City = str_c(City, "city", sep = " ")) %>%
+#   unite(City, State, col = "NAME", sep = ", ")
+# city_info <- get_acs(geography = "place", variables = "B01003_001",
+#         year = 2019, survey = "acs5")
+# city_info <- semi_join(as.data.frame(city_info), city) %>% 
+#   select(NAME, estimate) %>% rename(City = NAME, Population = estimate)
+# city_info <- city_info %>%
+#   mutate(City = str_replace(City, pattern = " city", ""))
+# write_csv(city, "Appalachian_cities.csv")
+# city_coords <- read_csv("geocoded_cities.csv")
+# city_coords <- city_coords %>% select(location, lon, lat) %>% 
+#   rename(City = location )
+# city_info <- inner_join(city_info, city_coords, by = "City")
+# write_csv(city_info, "2019-Appalachian_cities_and_population")
+city_info <- read_csv("2019-Appalachian_cities_and_population")
+labels = lapply(str_c("<strong>", city_info$City,"</strong>","<br/>", "Population: ", 
+                      formatC(city_info$Population, format = "f", big.mark = ",", digits = 0)), 
+                htmltools::HTML)
+
+Monitoring_map <- Monitoring_map %>% 
+  addCircleMarkers(data = city_info,lng = ~lon,
+                   lat = ~lat,
+                   label = labels, 
+                   radius = ~Population/50000, 
+                   color = "blue")
+ActiveList_map <-  ActiveList_map %>% 
+  addCircleMarkers(data = city_info,lng = ~lon,
+                   lat = ~lat,
+                   label = labels, 
+                   radius = ~Population/50000, 
+                   color = "blue")
+ReadingComp_map <-  ReadingComp_map %>% 
+  addCircleMarkers(data = city_info,lng = ~lon,
+                   lat = ~lat,
+                   label = labels, 
+                   radius = ~Population/50000, 
+                   color = "blue")
+TechDesign_map <-  TechDesign_map %>% 
+  addCircleMarkers(data = city_info,lng = ~lon,
+                   lat = ~lat,
+                   label = labels, 
+                   radius = ~Population/50000, 
+                   color = "blue")
+Coordination_map <- Coordination_map %>% 
+  addCircleMarkers(data = city_info,lng = ~lon,
+                   lat = ~lat,
+                   label = labels, 
+                   radius = ~Population/50000, 
+                   color = "blue")
+TechDesign_map <- TechDesign_map %>% 
+  addCircleMarkers(data = city_info,lng = ~lon,
+                   lat = ~lat,
+                   label = labels, 
+                   radius = ~Population/50000, 
+                   color = "blue")
