@@ -248,9 +248,3 @@ Coordination_map <- Coordination_map %>%
                    label = labels, 
                    radius = ~Population/50000, 
                    color = "blue")
-TechDesign_map <- TechDesign_map %>% 
-  addCircleMarkers(data = city_info,lng = ~lon,
-                   lat = ~lat,
-                   label = labels, 
-                   radius = ~Population/50000, 
-                   color = "blue")
