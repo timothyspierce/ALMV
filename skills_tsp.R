@@ -507,40 +507,40 @@ ActiveList_map <- ActiveList_map_data %>% leaflet() %>% addTiles() %>%
 # Create NAICS info to leaflets--------------------------------------------------------
 
 # List variables needed for Industry summary
-# total_workers_var <- "C24050_001"
-# industry_varspt1 <- paste0("C24050_00", 2:9)
-# industry_varspt2 <- paste0("C24050_0", 10:14)
-# industry_vars <- append(industry_varspt1, industry_varspt2)
+total_workers_var <- "C24050_001"
+industry_varspt1 <- paste0("C24050_00", 2:9)
+industry_varspt2 <- paste0("C24050_0", 10:14)
+industry_vars <- append(industry_varspt1, industry_varspt2)
 
 # Pull data from ACS
-# industry_breakdown <- get_acs(geography = "public use microdata area",
-#         state = state_list,
-#         variables = industry_vars,
-#         year = 2019, survey = "acs5",
-#         geometry = F, summary_var = total_workers_var)
-# industry_breakdown <- rename(industry_breakdown, PUMA = GEOID)
+industry_breakdown <- get_acs(geography = "public use microdata area",
+        state = state_list,
+        variables = industry_vars,
+        year = 2019, survey = "acs5",
+        geometry = F, summary_var = total_workers_var)
+industry_breakdown <- rename(industry_breakdown, PUMA = GEOID)
 
 # Semi join to isolate industry breakdown to appalachian PUMAs only
-# industry_breakdown_app_PUMAs <- semi_join(industry_breakdown, app_pumas)
+industry_breakdown_app_PUMAs <- semi_join(industry_breakdown, app_pumas)
 
 # Rename variables 
-# variables <- load_variables(2019, "acs5", cache = TRUE)
-# industry_names <- variables %>% filter(name %in% industry_vars)
-# industry_names <- str_remove(industry_names$label, "Estimate!!Total:!!")
-# levels(industry_breakdown_app_PUMAs$variable) <- industry_names
-# mapping <- setNames(industry_vars, industry_names)
-# args <- c(list(industry_breakdown_app_PUMAs$variable), mapping)
-# industry_breakdown_app_PUMAs$variable <- do.call(fct_recode, args)
+variables <- load_variables(2019, "acs5", cache = TRUE)
+industry_names <- variables %>% filter(name %in% industry_vars)
+industry_names <- str_remove(industry_names$label, "Estimate!!Total:!!")
+levels(industry_breakdown_app_PUMAs$variable) <- industry_names
+mapping <- setNames(industry_vars, industry_names)
+args <- c(list(industry_breakdown_app_PUMAs$variable), mapping)
+industry_breakdown_app_PUMAs$variable <- do.call(fct_recode, args)
 
 # Create relative frequency variable 
-# industry_breakdown_app_PUMAs <- industry_breakdown_app_PUMAs %>%
-#   mutate(relfreq = estimate / summary_est)
+industry_breakdown_app_PUMAs <- industry_breakdown_app_PUMAs %>%
+  mutate(relfreq = estimate / summary_est)
 
 # Write to CSV for later use 
-# write_csv(industry_breakdown_app_PUMAs, file = "2019-Appalachian_NAICS.csv")
+write_csv(industry_breakdown_app_PUMAs, file = "2019-App_NAICS.csv")
 
 # Create ggplot piecharts for each unique PUMA ------------------------------------
-industry_breakdown_app_PUMAs <- read_csv("NAICs_by_PUMA_2019.csv")
+industry_breakdown_app_PUMAs <- read_csv("2019-App_NAICS.csv")
 industry_breakdown_app_PUMAs <- industry_breakdown_app_PUMAs %>%
   mutate(relfreq = estimate / summary_est)
 NAICS_piechart <- function(GEOID) {

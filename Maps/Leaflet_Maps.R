@@ -159,7 +159,7 @@ ActiveList_map <- ActiveList_map_data %>% leaflet() %>% addTiles() %>%
             title = "Index Value")
 
 # Create piecharts for map------------------------------------------------------
-industry_breakdown_app_PUMAs <- read_csv("NAICs_by_PUMA_2019.csv")
+industry_breakdown_app_PUMAs <- read_csv("2019-App_NAICS.csv")
 industry_breakdown_app_PUMAs <- industry_breakdown_app_PUMAs %>%
   mutate(relfreq = estimate / summary_est)
 NAICS_piechart <- function(GEOID) {
