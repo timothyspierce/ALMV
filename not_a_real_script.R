@@ -151,11 +151,19 @@ almv_acs_map("B01003_001") + labs(title = "Log of Total Population by County ")
 
 almv_acs_map("S0101_C01_032") + labs(title = "Median Age by County")
 
-almv_acs_map("S1901_C01_012") + labs(title = "Log of Median Income by County") 
-almv_acs_map("S1901_C01_013") + labs(title = "Average Income by County") 
+almv_acs_map("S1901_C01_012") + labs(title = "Log of Median Income by County")
+
+
+
+
+
+almv_acs_map("S1901_C01_013") + labs(title = "Average Income by County") + 
 
 income_table_mean <- almv_acs_var("S1901_C01_013")
 View(income_table_mean)
 
 grid.arrange(all_no_internet, poor_no_internet, mid_no_internet, rich_no_internet, ncol = 2, top = "No Internet Subscription by Income")
+
+
+
 
