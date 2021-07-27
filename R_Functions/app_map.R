@@ -110,9 +110,11 @@ almv_minimal_map <- function(tibble) {
     geom_sf(data = state_borders, color = 'black', fill = 'grey')+ 
     # graphing the estimate in each county, associating 
     # county fill and border color with the estimate
+   
     geom_sf(data = tibble, aes(fill = estimate, color = estimate))+ 
     # applying continuous color scheme to fill and border
     scale_color_viridis_c() + scale_fill_viridis_c()+ 
+
     # removing grid lines
     coord_sf(datum = NA) +
     # applying minimal theme
