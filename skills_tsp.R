@@ -148,7 +148,11 @@ skills_wide <- skills_wide %>%
   group_by(soc, skillname) %>% 
   mutate(Importance = mean(Importance)) %>% 
   mutate(Level = mean(Level)) %>% 
+<<<<<<< HEAD
   distinct() %>% ungroup()
+=======
+  distinct()
+>>>>>>> 7639b7ceb87a5ceaf764b2999b1f4d30111d3a18
 
 View(skills_wide)
 normalize <- skills_wide %>% mutate(Importance = Importance/5) %>% mutate(Level = Level/6.12)
@@ -830,6 +834,9 @@ app_skills_repeated <- c(rep(skill_weights$skillname, skill_weights$frequency))
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> 7639b7ceb87a5ceaf764b2999b1f4d30111d3a18
+=======
 >>>>>>> 7639b7ceb87a5ceaf764b2999b1f4d30111d3a18
 =======
 >>>>>>> 7639b7ceb87a5ceaf764b2999b1f4d30111d3a18
