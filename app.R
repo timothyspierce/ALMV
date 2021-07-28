@@ -240,7 +240,7 @@ ui <- navbarPage(title = "ALMV",
                                                    )),
                                                    p(strong("Ryan with the help of Leo-Allen")),
                                                    ## Output: 1-----------------
-                                                   withSpinner(tableOutput("output1")),
+                                                     withSpinner(tableOutput("output1")),
                                                    p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
                                             ),
                                             tabPanel("Demand",
@@ -545,7 +545,7 @@ server <- function(input, output, session) {
                   title = "Index Value")
       # add popup
       TechDesign_map <- TechDesign_map %>% 
-        addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350) %>% 
+        # addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350) %>% 
         addCircleMarkers(data = city_info,lng = ~lon,
                          lat = ~lat,
                          label = labels, 
@@ -577,7 +577,7 @@ server <- function(input, output, session) {
                   title = "Index Value")
       # add popup
       ReadingComp_map <- ReadingComp_map %>% 
-        addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
+        # addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
         addCircleMarkers(data = city_info,lng = ~lon,
                          lat = ~lat,
                          label = labels, 
@@ -586,7 +586,7 @@ server <- function(input, output, session) {
       ReadingComp_map
       
       # Map for Organization 
-    }else if(var() == "totalpop_trct"){
+    }else if(var() == "Monitoring"){
       Monitoring_map_data <- map_data %>% filter(skillname == "Monitoring")
       
       Monitoring_map_data <- st_as_sf(Monitoring_map_data) 
@@ -608,12 +608,12 @@ server <- function(input, output, session) {
         addLegend(pal = Monitoring_map_pal, values = ~`Normalized Index`, 
                   title = "Index Value")
       #add popup
-      Monitoring_map <- Monitoring_map %>% 
-        addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
+      Monitoring_map <- Monitoring_map %>%
+        # addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
         addCircleMarkers(data = city_info,lng = ~lon,
                          lat = ~lat,
-                         label = labels, 
-                         radius = ~Population/50000, 
+                         label = labels,
+                         radius = ~Population/50000,
                          color = "blue")
       Monitoring_map
       
@@ -643,7 +643,7 @@ server <- function(input, output, session) {
                   title = "Index Value")
       #add popup
       Coordination_map <- Coordination_map %>% 
-        addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
+        # addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
         addCircleMarkers(data = city_info,lng = ~lon,
                          lat = ~lat,
                          label = labels, 
@@ -676,7 +676,7 @@ server <- function(input, output, session) {
       
       # add popup
       ActiveList_map <-  ActiveList_map %>% 
-        addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
+        # addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
         addCircleMarkers(data = city_info,lng = ~lon,
                          lat = ~lat,
                          label = labels, 
