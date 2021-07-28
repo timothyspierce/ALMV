@@ -293,11 +293,11 @@ ui <- navbarPage(title = "ALMV",
                                           p(""),
                                           ## Input: skills------------
                                          selectInput("skills", "Select the Skill:", width = "100%", choices = c(
-                                                      "Skill 1",
-                                                      "Skill 2",
-                                                       "Skill 3",
-                                                      "Skill 4",
-                                                         "Skill 5")),
+                                                      "TechnologyDesign",
+                                                      "ReadingComprehension",
+                                                       "Monitoring",
+                                                      "Coordination",
+                                                         "ActiveListening")),
                                                      p(strong("This is a title")),
                                                      ## Output: skillsoutput ------------------------
                                                      withSpinner(leafletOutput("skillsoutput")),
@@ -466,7 +466,7 @@ server <- function(input, output, session) {
   #   rename(City = location )
   # city_info <- inner_join(city_info, city_coords, by = "City")
   # write_csv(city_info, "2019-Appalachian_cities_and_population")
-  city_info <- read_csv(paste0(getwd(),"/data2019-Appalachian_cities_and_population"))
+  city_info <- read_csv(paste0(getwd(),"/data/2019-Appalachian_cities_and_population.csv"))
   labels = lapply(str_c("<strong>", city_info$City,"</strong>","<br/>", "Population: ", 
                         formatC(city_info$Population, format = "f", big.mark = ",", digits = 0)), 
                   htmltools::HTML)
