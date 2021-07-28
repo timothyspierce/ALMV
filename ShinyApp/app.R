@@ -146,59 +146,28 @@ ui <- navbarPage(title = "ALMV",
                           fluidRow(style = "margin: 6px;",
                                    column(4,
                                           h2(strong("Project Background")),
-                                          p(strong("The problem."), "Rural counties often face challenges in providing health care access to their residents given limited", a(href = "https://www.ruralhealthinfo.org/topics/hospitals", "health facilities", target = "_blank"),
-                                            "available, lack of broadband infrastructure that makes it difficult to provide", a(href = "https://www.ruralhealthinfo.org/topics/telehealth", "telemedicine access", target = "_blank"), "or communicate health information, and individual-level",
-                                            a(href = "https://www.ruralhealthinfo.org/topics/social-determinants-of-health", "inequalities", target = "_blank"), "that pose barriers to health care use and health
-                                            behaviors. Identifying areas of high need or potential solutions may also be difficult for rural areas without adequate resources to acquire, analyze, and interpret
-                                            relevant data."),
+                                          p(strong("The problem."), "Insert Text"),
                                           p(),
-                                          p(strong("The setting."), a(href = "https://www.co.patrick.va.us/", "Patrick County", target = "_blank"), "is a rural area in Virginia’s Central Piedmont, bordering North Carolina,
-                                            with a declining population of approximately 17,600 people. Like many other rural areas in the United States, Patrick County is having difficulty meeting its residents’ health and quality of life needs.
-                                            The county’s", a(href = "https://www.countyhealthrankings.org/app/virginia/2019/rankings/patrick/county/outcomes/overall/snapshot", "doctor to patient ratios", target = "_blank"),
-                                            "of 3,530 to 1 for primary care providers, 8,840 to 1 for dentists, and 2,520 to 1 for mental health providers are 3-
-                                            to 8-times higher than statewide, and the county’s only hospital closed in 2017. At the same time, the median income for Patrick County residents is $42,900,
-                                            46% of children living in the county are eligible for free or reduced-price school lunch, and 12% of residents are food insecure."),
+                                          p(strong("The setting."), "Insert Text"),
                                           p(),
-                                          p(strong("The project."), "This University of Virginia", a(href = "https://biocomplexity.virginia.edu/social-decision-analytics", "Biocomplexity Institute", target = "_blank"),
-                                            "Data Science for Public Good (DSPG) project aimed to build local capacity, leverage social and data science to address current and future resident well-being, and enhance
-                                             data-driven decision making about rural health in Patrick County, Virginia.")
+                                          p(strong("The project."), "Insert Text")
                                    ),
                                    column(4,
                                           h2(strong("Our Work")),
-                                          p("Our research team worked closely with Patrick County Extension Office, Virginia Department of Health, and Healthy Patrick County coalition stakeholders
-                                            to identify the county’s priority challenges in the area of health. The research team reviewed a prior", a(href = "https://www.vdh.virginia.gov/west-piedmont/2020/05/27/patrick-county-health-needs-improvement-plan-completed/",
-                                                                                                                                                       "community health assessment,", target = "blank"), a(href = "https://www.pubs.ext.vt.edu/VCE/VCE-596/VCE-596-75/VCE-1002-75.html", "situation analysis", target = "_blank"),
-                                            "relevant funding applications, and held a listening meeting with stakeholders to identify these challenges. Lack of
-                                            data on health care access, food access as related to diabetes and heart disease prevalence, older adult health, and digital connectivity that would facilitate
-                                            access to telemedicine emerged as key problems where providing actionable insights could address barriers to Patrick County residents’ health."),
+                                          p("Insert Text"),
                                           p(),
-                                          p("We implemented the", a(href = "https://doi.org/10.1162/99608f92.2d83f7f5", "data science framework", target = "_blank"), "and identified, acquired, profiled, and used
-                                            publicly available data to provide Patrick County with data-driven resources in each of the four priority areas. We:"),
-                                          tags$li("Provided census tract- and census block group-level maps of Patrick County residents'", strong("sociodemographic and socioeconomic characteristics,"), " highlighting underprivileged areas."),
-                                          tags$li("Created census tract-level maps on", strong("older adult health"), "to show the geographic distribution of older adults in the county by gender and
-                                                  type of disability, identifying areas where providing telehealth or travelling preventive care services may be particularly important."),
-                                          tags$li("Mapped residents'", strong("computing device and internet access"), "at census block group level, and constructed 10- and 15-minute isochrones (areas of equal travel time) from households to free
-                                                  wifi hotspots to highlight internet gaps that could suggest where new wi-fi hotspots could be optimally placed to provide internet access to more residents."),
-                                          tags$li("Calculated and mapped", strong("emergency medical service (EMS) station coverage"), "of households within 8-, 10-, and 12-minute travel times, identifying areas difficult to reach within
-                                                   standard EMS travel thresholds."),
-                                          tags$li("Constructed", strong("food access"), "maps by census tract, 10- and 15-minute isochrones from households to grocery stores and farmers markets, and maps of food security resources in the county,
-                                                highlighting food deserts and areas that could benefit from programs facilitating access to fresh produce."),
+                                          p("Insert text"),
+                                          tags$li("First bullet"),
+                                          
                                           p(),
                                           p("This dashboard compiles our findings and allows extension professionals, stakeholders, and other users to explore the information interactively.")
                                    ),
                                    column(4,
                                           h2(strong("Dashboard Aims")),
                                           p("Our dashboard is aimed at:"),
-                                          p(strong("Patrick County extension professionals and the communities they serve."), "Information available through the interface helps extension
-                                            agents identify areas where residents may not have access to internet, or areas with a high smartphone ownership share, suggesting what channels agents may
-                                            want to use to disseminate health-related information most effectively. Information on older adult populations and grocery store access can help extension agents
-                                            better understand where underserved populations live and how to advocate on their behalf."),
-                                          p(strong("Local health-related agencies and departments seeking data insights to inform their decision-making."), "For local stakeholders, identifying broadband
-                                            access gaps that limit access to telemedicine, grocery store access gaps, and areas with high proportions of older adults with independent living difficulty can suggest
-                                            optimal locations for placing free wifi hotspots, providing grocery delivery services, devising mobile health unit routes, or can inform other solutions that would benefit
-                                            a broad population base."),
-                                          p(strong("State government representatives in the Virginia Department of Health and the State Office of Rural Health."), "These and similar stakeholders may
-                                            need small or rural area-specific insights that Centers for Disease Control and other county-level datasets cannot provide.")
+                                          p(strong("bold texte."), "text."),
+                                          p(strong("bold text."), "text."),
+                                          p(strong("bold text."), "text.")
                                    )
                           ),
                           fluidRow(align = "center",
@@ -282,11 +251,11 @@ ui <- navbarPage(title = "ALMV",
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Skills(need new title)"), align = "center"),
                                    p("", style = "padding-top:10px;"),
-                                   column(4,
+                                   column(2,
                                           h4(strong("This is a title")),
                                           p("Blurb 1."),
                                           br()),
-                                   column(8,
+                                   column(10,
                                           h4(strong("Description of this visulization.")),
                                           p("Blurb 2"),
                                           br(),
