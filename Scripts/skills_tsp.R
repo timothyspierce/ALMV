@@ -54,12 +54,6 @@ write_csv(app_ipums, "2019-Appalachian_IPUMS.csv")
 # read in ipums data for Appalachia in 2019
 app_ipums <- read_csv("2019-Appalachian_IPUMS.csv")
 
-#Create tibble of soc's with their associated frequencies in Appalachia 
-# socfreq <- app_ipums %>%
-#   group_by(OCCSOC) %>%
-#   summarise(socfreq = sum(PERWT)) %>%
-#   rename(soc = OCCSOC) %>% ungroup()
-# View(socfreq)
 
 # Create tibble of soc's with their associated frequencies by PUMA
 socfreq_by_puma <- app_ipums %>% 
@@ -134,35 +128,17 @@ write_csv(skills_wide, file = "2019-ONet_Skills_Tidy.csv")
 # Find soc's not present in O*net data
 skills_wide$soc <- as.numeric(skills_wide$soc)
 
-socs_na <- anti_join(socfreq, skills_wide)
-
 # Find soc's not present in O*net data by PUMA 
 socs_na_by_PUMA <- anti_join(socfreq_by_puma, skills_wide) %>%
   mutate(soc = as.character(soc))
-
-
-
-## change those soc's to end in 1 that end in 0
-altered_na_socs <- socs_na %>%
-  mutate(soc = str_replace_all(soc, "00$", "99")) %>%
-  mutate(soc = str_replace_all(soc, "0$", "1")) %>%
-  select(soc, socfreq)
 
 # change those soc's to end in 1 that end in 0 by PUMA
 altered_na_socs_by_puma <- socs_na_by_PUMA %>%
   mutate(soc = str_replace_all(soc, "00$", "99")) %>%
   mutate(soc = str_replace_all(soc, "0$", "1"))
 
-## Identify all socs that exsist in O*Net data
-soc_not_na <- semi_join(socfreq, skills_wide)
-
 # Identify all socs that exsist in O*Net data by PUMA
 soc_not_na_by_PUMA <- semi_join(socfreq_by_puma, skills_wide)
-
-## Combine similar and altered socs into one
-altered_na_socs$soc <- as.numeric(altered_na_socs$soc)
-altered_socs_freq <- bind_rows(soc_not_na, altered_na_socs)
-
 
 # Combine similar and altered socs into one to have matching SOCS
 altered_na_socs_by_puma$soc <- as.numeric(altered_na_socs_by_puma$soc)

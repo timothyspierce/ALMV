@@ -14,6 +14,7 @@ library(sf)
 library(tigris)
 library(stringr)
 library(forcats)
+library(leaflet)
 ```
 
 ```{r}
@@ -32,7 +33,7 @@ industry_breakdown_all <- get_acs(geography="county",
           year=2019, geometry = T, summary_var = total_var) %>%
   filter(GEOID %in% fip_list) %>% 
   mutate(estimate = estimate/summary_est) %>% 
-  select(-summary_est, -summary_moe, -moe) %>% 
+  select(-summary_est, -summary_moe, -moe) 
   
 
 # Names associated with variables 

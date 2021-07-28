@@ -17,7 +17,7 @@ app_weighted_skills_by_PUMA <- read_csv("App_weighted_skills_by_PUMA.csv")
 
 # Obtain polygons to map onto leaflet for Appalachian PUMAs---------------------
 
-# Narrow down to Appalachian States
+# Narrow down Appalachian States
 counties<-read.csv("ALMV_counties_all.csv", header=T) %>%
   rename(state_code=State)%>%
   mutate(County=str_replace_all(County,"\'|\\.",""))%>%
@@ -26,7 +26,7 @@ counties$state_code=as.character(counties$state_code)
 state_list<-unique(counties$state_code)
 state_list[1] <- "01"
 
-# Pull polygons from tigris
+# Pull polygons from tigris for just appalachian states
 options(tigris_use_cache = TRUE)
 puma_geoms_list <- lapply(state_list, function(x) {
   pumas(state = x, cb = T)
@@ -39,7 +39,7 @@ puma_geoms <- puma_geoms %>% unite(STATEFP10, PUMACE10, col = "PUMA", sep = "")
 #Obtain list of Appalachian PUMAS
 app_pumas <- as_tibble(unique(app_weighted_skills_by_PUMA$PUMA)) %>% rename(PUMA = value)
 
-#Limit tigris data to Appalachia
+#Limit tigris data to Appalachia PUMAS
 puma_app_geoms <- semi_join(as.data.frame(puma_geoms), app_pumas)
 
 # Associate index values with geoms 
@@ -48,10 +48,10 @@ map_data <- left_join(app_weighted_skills_by_PUMA, puma_app_geoms) %>%
 
 # Map for technology-----------------------------------------------------
 
-# Filter to just Tech Design
+# Filter map_data to just Tech Design
 TechDesign_map_data <- map_data %>% filter(skillname == "TechnologyDesign")
 
-# Make simple feature
+# Make data a simple feature
 TechDesign_map_data <- st_as_sf(TechDesign_map_data) 
 
 # Create palette for map
@@ -61,6 +61,7 @@ TechDesign_map_pal <- colorNumeric(palette = "viridis", domain = TechDesign_map_
 TechDesign_map_labels <- lapply(X = str_c("<strong>", TechDesign_map_data$NAME10,"</strong>","<br/>" ,"<strong> Index Value: </strong> ", round(TechDesign_map_data$`Normalized Index`, digits = 3)), 
                                 FUN = htmltools::HTML)
 
+# Create map 
 TechDesign_map <- TechDesign_map_data %>% leaflet() %>% addTiles() %>% 
   addPolygons(
     color = ~TechDesign_map_pal(`Normalized Index`), 
@@ -163,16 +164,21 @@ ActiveList_map <- ActiveList_map_data %>% leaflet() %>% addTiles() %>%
             title = "Index Value")
 
 # Create piecharts for map------------------------------------------------------
+# Read in industry NAICS info 
 industry_breakdown_app_PUMAs <- read_csv("2019-App_NAICS.csv")
+
+# Add relative frequency information in 
 industry_breakdown_app_PUMAs <- industry_breakdown_app_PUMAs %>%
   mutate(relfreq = estimate / summary_est)
+
+# Create piecharts for each PUMA
 NAICS_piechart <- function(GEOID) {
   dataFiltered <- industry_breakdown_app_PUMAs %>% filter(PUMA == as.character(GEOID))
-  piechart <- dataFiltered %>% ggplot(aes(x = "", fill = variable, y = relfreq)) + 
+  piechart <- dataFiltered %>% ggplot(aes(x = "", fill = variable, y = relfreq)) +
     geom_bar(stat = "identity", width = 1, color = "white") +
     coord_polar("y", start = 0) +
-    labs(title = "Industry Makeup") + 
-    scale_fill_viridis_d(name = "Industry Name") + theme_void() 
+    labs(title = "Industry Makeup") +
+    scale_fill_viridis_d(name = "Industry Name") + theme_void()
   return(piechart)
 }
 
@@ -180,7 +186,7 @@ popup_plot <- lapply(1:length(unique(industry_breakdown_app_PUMAs$PUMA)), functi
   NAICS_piechart(as.character(app_pumas[i, ]))
 })
 
-# Add plots to leaflets ------------------------
+# Add Piecharts to leaflets ------------------------
 Monitoring_map <- Monitoring_map %>% 
   addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)
 ActiveList_map <-  ActiveList_map %>% 
@@ -203,21 +209,24 @@ View(Monitoring_map)
 #   unite(City, State, col = "NAME", sep = ", ")
 # city_info <- get_acs(geography = "place", variables = "B01003_001",
 #         year = 2019, survey = "acs5")
-# city_info <- semi_join(as.data.frame(city_info), city) %>% 
+# city_info <- semi_join(as.data.frame(city_info), city) %>%
 #   select(NAME, estimate) %>% rename(City = NAME, Population = estimate)
 # city_info <- city_info %>%
 #   mutate(City = str_replace(City, pattern = " city", ""))
 # write_csv(city, "Appalachian_cities.csv")
 # city_coords <- read_csv("geocoded_cities.csv")
-# city_coords <- city_coords %>% select(location, lon, lat) %>% 
+# 
+# city_coords <- city_coords %>% select(location, lon, lat) %>%
 #   rename(City = location )
 # city_info <- inner_join(city_info, city_coords, by = "City")
-# write_csv(city_info, "2019-Appalachian_cities_and_population")
+# write_csv(city_info, "2019-Appalachian_cities_and_population.csv")
+
+# Read in city info and add labels for each city with population estimates
 city_info <- read_csv("2019-Appalachian_cities_and_population")
 labels = lapply(str_c("<strong>", city_info$City,"</strong>","<br/>", "Population: ", 
                       formatC(city_info$Population, format = "f", big.mark = ",", digits = 0)), 
                 htmltools::HTML)
-
+# Add circle markers of cities into map
 Monitoring_map <- Monitoring_map %>% 
   addCircleMarkers(data = city_info,lng = ~lon,
                    lat = ~lat,
