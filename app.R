@@ -544,13 +544,14 @@ server <- function(input, output, session) {
         addLegend(pal = TechDesign_map_pal, values = ~`Normalized Index`, 
                   title = "Index Value")
       # add popup
-      TechDesign_map %>% 
+      TechDesign_map <- TechDesign_map %>% 
         addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350) %>% 
         addCircleMarkers(data = city_info,lng = ~lon,
                          lat = ~lat,
                          label = labels, 
                          radius = ~Population/50000, 
                          color = "blue")
+      TechDesign_map
       
       # Map for Critical Thinking
     }else if(var() == "ReadingComprehension"){
@@ -575,13 +576,14 @@ server <- function(input, output, session) {
         addLegend(pal = ReadingComp_map_pal, values = ~`Normalized Index`, 
                   title = "Index Value")
       # add popup
-      ReadingComp_map %>% 
+      ReadingComp_map <- ReadingComp_map %>% 
         addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
         addCircleMarkers(data = city_info,lng = ~lon,
                          lat = ~lat,
                          label = labels, 
                          radius = ~Population/50000, 
                          color = "blue")
+      ReadingComp_map
       
       # Map for Organization 
     }else if(var() == "totalpop_trct"){
@@ -606,13 +608,14 @@ server <- function(input, output, session) {
         addLegend(pal = Monitoring_map_pal, values = ~`Normalized Index`, 
                   title = "Index Value")
       #add popup
-      Monitoring_map %>% 
+      Monitoring_map <- Monitoring_map %>% 
         addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
         addCircleMarkers(data = city_info,lng = ~lon,
                          lat = ~lat,
                          label = labels, 
                          radius = ~Population/50000, 
                          color = "blue")
+      Monitoring_map
       
       #Map for labor
     }else if(var() == "Coordination"){
@@ -639,13 +642,14 @@ server <- function(input, output, session) {
         addLegend(pal = Coordination_map_pal, values = ~`Normalized Index`, 
                   title = "Index Value")
       #add popup
-      Coordination_map %>% 
+      Coordination_map <- Coordination_map %>% 
         addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
         addCircleMarkers(data = city_info,lng = ~lon,
                          lat = ~lat,
                          label = labels, 
                          radius = ~Population/50000, 
                          color = "blue")
+      Coordination_map
       
       # Communication map
     }else if(var() == "ActiveListening"){
@@ -679,7 +683,7 @@ server <- function(input, output, session) {
                          radius = ~Population/50000, 
                          color = "blue")
       
-      
+      ActiveList_map
     }
   })
   
