@@ -391,8 +391,8 @@ ui <- navbarPage(title = "ALMV",
                           fluidRow(style = "margin-left: 300px; margin-right: 300px;",
                                    column(6, align = "center",
                                           h4(strong("DSPG Team Members")),
-                                          img(src = "team-pierce.jpeg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
-                                          img(src = "team-jacobs.jpeg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
+                                          img(src = "fellow-pierce.jpg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
+                                          img(src = "team-jacobs.jpg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
                                           img(src = "team-burcham.jpeg", style = "display: inline; border: 1px solid #C0C0C0;", width = "150px"),
                                           p(a(href = 'www.linkedin.com/in/timothyspierce', 'Timothy Pierce', target = '_blank'), "(Virginia Tech, Agricultural and Applied Economics);",
                                             a(href = 'https://www.linkedin.com/in/ryan-jacobs-bb5727174/', 'Ryan Jacobs', target = '_blank'), "(Virginia Tech, Environmental Economics);",
@@ -410,53 +410,7 @@ ui <- navbarPage(title = "ALMV",
                                           p("", style = "padding-top:10px;")
                                    )
                           )),
-                 
-                 
-                 
-                 tabPanel("Contact", value = "contact",
-                          fluidRow(style = "margin-left: 300px; margin-right: 300px;",
-                                   h1(strong("Contact"), align = "center"),
-                                   br(),
-                                   h4(strong("VT Data Science for the Public Good")),
-                                   p("The", a(href = 'https://biocomplexity.virginia.edu/social-decision-analytics/dspg-program', 'Data Science for the Public Good (DSPG) Young Scholars program', target = "_blank"),
-                                     "is a summer immersive program held at the", a(href = 'https://biocomplexity.virginia.edu/social-decision-analytics', 'University of Virginia Biocomplexity Institute’s Social and Decision Analytics division (SDAD).'),
-                                     "In its seventh year, the program engages students from across the country to work together on projects that address state, federal, and local government challenges around
-                              critical social issues relevant in the world today. DSPG young scholars conduct research at the intersection of statistics, computation, and the social sciences
-                              to determine how information generated within every community can be leveraged to improve quality of life and inform public policy. For more information on program
-                              highlights, how to apply, and our annual symposium, please visit", a(href = 'https://biocomplexity.virginia.edu/social-decision-analytics/dspg-program', 'the official Biocomplexity DSPG website.', target = "_blank")),
-                                   p("", style = "padding-top:10px;")
-                          ),
-                          fluidRow(style = "margin-left: 300px; margin-right: 300px;",
-                                   column(6, align = "center",
-                                          h4(strong("DSPG Team Members")),
-                                          img(src = "team-morgan.png", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
-                                          img(src = "team-tasfia.png", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
-                                          img(src = "team-isabel.png", style = "display: inline; border: 1px solid #C0C0C0;", width = "150px"),
-                                          p(a(href = 'https://www.linkedin.com/in/morgan-stockham/', 'Morgan Stockham', target = '_blank'), "(Claremont Graduate University, Applied Microeconomics);",
-                                            a(href = 'https://www.linkedin.com/in/tasfia-chowdhury-89005a1b2/', 'Tasfia Chowdhury', target = '_blank'), "(Indiana University Bloomington, Political Science);",
-                                            a(href = 'https://www.linkedin.com/in/igomez-3099/', 'Isabel Gomez', target = '_blank'), "(Smith College, Statistical and Data Science)."),
-                                          p("", style = "padding-top:10px;")
-                                   ),
-                                   column(6, align = "center",
-                                          h4(strong("UVA SDAD Team Members")),
-                                          img(src = "team-teja.png", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
-                                          img(src = "team-brandon.png", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
-                                          img(src = "team-sallie.jpg", style = "display: inline; border: 1px solid #C0C0C0;", width = "150px"),
-                                          p(a(href = "https://www.linkedin.com/in/tejapristavec/", 'Teja Pristavec', target = '_blank'), "(Project Lead, Research Assistant Professor);",
-                                            a(href = "https://biocomplexity.virginia.edu/brandon-kramer", 'Brandon Kramer', target = '_blank'), "(Postdoctoral Research Associate);",
-                                            a(href = 'https://biocomplexity.virginia.edu/sallie-keller', 'Sallie Keller', target = '_blank'), "(Division Director and Distinguished Professor)."),
-                                          p("", style = "padding-top:10px;")
-                                   )
-                          ),
-                          fluidRow(style = "margin-left: 300px; margin-right: 300px;",
-                                   h4(strong("Project Stakeholders")),
-                                   p(a(href = 'https://www.linkedin.com/in/nancy-bell-aa293810/', 'Nancy Bell', target = '_blank'), "(Virginia Department of Health);",
-                                     a(href = 'https://www.linkedin.com/in/terri-alt-3138b4101/', 'Terri Alt', target = '_blank'), "(Virginia Cooperative Extension, Patrick County at Virginia Tech)."),
-                                   p("", style = "padding-top:10px;"),
-                                   h4(strong("Acknowledgments")),
-                                   p("We would like to thank Healthy Patrick County, an association of concerned Patrick County residents, and Brandon Kramer for their input to this project.")
-                          )
-                 ),
+
                  inverse = T)
 
 # server -----------------------------------------------------------
