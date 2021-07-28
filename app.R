@@ -14,6 +14,15 @@ library(readxl)
 library(readr)
 library(stringr)
 library(shinyjs)
+library(ipumsr)
+library(tm)
+library(pdftools)
+library(gridExtra)
+library(tigris)
+library(htmltools)
+library(leafpop)
+library(rvest)
+
 
 prettyblue <- "#232D4B"
 navBarBlue <- '#427EDC'
@@ -22,7 +31,45 @@ options(spinner.color = prettyblue, spinner.color.background = '#ffffff', spinne
 colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a","#e6a01d","#e57200","#fdfdfd")
 
 
-# data -----------------------------------------------------------
+# Data -----------------------------------------------------------
+
+# Data: Maps------------------------------------------------------
+    ## Read in index data ----------------------------------------------------------------
+    app_weighted_skills_by_PUMA <- read_csv(paste0(getwd(),"/data/App_weighted_skills_by_PUMA.csv"))
+    
+    ### Obtain polygons to map onto leaflet for Appalachian PUMAs---------------------
+    
+    # Narrow down to Appalachian States
+    counties<-read.csv(paste0(getwd(),"/data/ALMV_counties_all.csv"), header=T) %>%
+      rename(state_code=State)%>%
+      mutate(County=str_replace_all(County,"\'|\\.",""))%>%
+      mutate(County=str_trim(County, side="both"))
+    counties$state_code=as.character(counties$state_code)
+    state_list<-unique(counties$state_code)
+    state_list[1] <- "01"
+    
+    # Pull polygons from tigris
+    options(tigris_use_cache = TRUE)
+    puma_geoms_list <- lapply(state_list, function(x) {
+      pumas(state = x, cb = T)
+    })
+    puma_geoms <- rbind_tigris(puma_geoms_list)
+    
+    # Make PUMAS unique by combining STATEFIP and PUMA
+    puma_geoms <- puma_geoms %>% unite(STATEFP10, PUMACE10, col = "PUMA", sep = "")
+    
+    #Obtain list of Appalachian PUMAS
+    app_pumas <- as_tibble(unique(app_weighted_skills_by_PUMA$PUMA)) %>% rename(PUMA = value)
+    
+    #Limit tigris data to Appalachia
+    puma_app_geoms <- semi_join(as.data.frame(puma_geoms), app_pumas)
+    
+    # Associate index values with geoms 
+    map_data <- left_join(app_weighted_skills_by_PUMA, puma_app_geoms) %>% 
+      select(skillname, PUMA, `Normalized Index`, geometry, NAME10)
+
+
+
 
 # CODE TO DETECT ORIGIN OF LINK AND CHANGE LOGO ACCORDINGLY
 jscode <- "function getUrlVars() {
@@ -78,7 +125,7 @@ ui <- navbarPage(title = "ALMV",
                  tags$head(tags$style('.selectize-dropdown {z-index: 10000}')),
                  useShinyjs(),
                  
-                 # Overview-----------------------------------------------------------
+                 # Tab Overview-----------------------------------------------------------
                  
                  tabPanel("Overview", value = "overview",
                           fluidRow(style = "margin: 2px;",
@@ -157,7 +204,7 @@ ui <- navbarPage(title = "ALMV",
                           fluidRow(align = "center",
                                    p(tags$small(em('Last updated: August 2021'))))
                  ),
-                 # Labor Market -----------------------------------------------------------
+                 # Tab Labor Market -----------------------------------------------------------
                  tabPanel("Appalachian Labor Market", value = "labomarket",
                           
                           fluidRow(style = "margin: 6px;",
@@ -229,7 +276,7 @@ ui <- navbarPage(title = "ALMV",
                                    )
                           )
                  ),
-                 # Skills-----------------------------------------------------------
+                 # Tab Skills-----------------------------------------------------------
                  tabPanel("Skills", value = "skills",
                           
                           fluidRow(style = "margin: 6px;",
@@ -259,7 +306,7 @@ ui <- navbarPage(title = "ALMV",
                                    )
                           ),
                  
-                 # data -----------------------------------------------------------
+                 #Tab Data -----------------------------------------------------------
                  tabPanel("Data and Measures", value = "data",
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Data and Measures"), align = "center"),
@@ -327,7 +374,7 @@ ui <- navbarPage(title = "ALMV",
                           )
                  ),
                  
-                 # contact -----------------------------------------------------------
+                 # Tab contact -----------------------------------------------------------
                  tabPanel("Contact", value = "contact",
                           fluidRow(style = "margin-left: 300px; margin-right: 300px;",
                                    h1(strong("Contact"), align = "center"),
@@ -380,849 +427,851 @@ server <- function(input, output, session) {
   runjs(jscode)
   
   # skills map: in pgrogress -----------------------------------------------------
+
+  ## Create piecharts for map------------------------------------------------------
+  industry_breakdown_app_PUMAs <- read_csv(paste0(getwd(),"/data/2019-App_NAICS.csv"))
+  industry_breakdown_app_PUMAs <- industry_breakdown_app_PUMAs %>%
+    mutate(relfreq = estimate / summary_est)
+  NAICS_piechart <- function(GEOID) {
+    dataFiltered <- industry_breakdown_app_PUMAs %>% filter(PUMA == as.character(GEOID))
+    piechart <- dataFiltered %>% ggplot(aes(x = "", fill = variable, y = relfreq)) + 
+      geom_bar(stat = "identity", width = 1, color = "white") +
+      coord_polar("y", start = 0) +
+      labs(title = "Industry Makeup") + 
+      scale_fill_viridis_d(name = "Industry Name") + theme_void() 
+    return(piechart)
+  }
   
+  popup_plot <- lapply(1:length(unique(industry_breakdown_app_PUMAs$PUMA)), function(i) {
+    NAICS_piechart(as.character(app_pumas[i, ]))
+  })
+  
+  ## Add city points-----------------------------------------------------------
+  # cities_link <- "https://en.wikivoyage.org/wiki/Appalachia"
+  # page <- read_html(cities_link)
+  # city <- page %>%  html_nodes("ol li") %>% html_text()
+  # city <- as_tibble(city) %>% separate(value, sep = " ", into  = c("City", "State"))
+  # city <- city %>% mutate(State = str_replace_all(State, pattern = "\\)|\\(| ", ""))
+  # city <- city %>% mutate(City = str_c(City, "city", sep = " ")) %>%
+  #   unite(City, State, col = "NAME", sep = ", ")
+  # city_info <- get_acs(geography = "place", variables = "B01003_001",
+  #         year = 2019, survey = "acs5")
+  # city_info <- semi_join(as.data.frame(city_info), city) %>% 
+  #   select(NAME, estimate) %>% rename(City = NAME, Population = estimate)
+  # city_info <- city_info %>%
+  #   mutate(City = str_replace(City, pattern = " city", ""))
+  # write_csv(city, "Appalachian_cities.csv")
+  # city_coords <- read_csv("geocoded_cities.csv")
+  # city_coords <- city_coords %>% select(location, lon, lat) %>% 
+  #   rename(City = location )
+  # city_info <- inner_join(city_info, city_coords, by = "City")
+  # write_csv(city_info, "2019-Appalachian_cities_and_population")
+  city_info <- read_csv(paste0(getwd(),"/data2019-Appalachian_cities_and_population"))
+  labels = lapply(str_c("<strong>", city_info$City,"</strong>","<br/>", "Population: ", 
+                        formatC(city_info$Population, format = "f", big.mark = ",", digits = 0)), 
+                  htmltools::HTML)
+  
+  ## input: kills-----------
   var <- reactive({
     input$skills
   })
-  #age65
+  
+  ## output:skillsoutput---------------
   output$skillsoutput <- renderLeaflet({
-    if(var() == "skill1") {
+     # Map for technology design
+    if(var() == "TechnologyDesign") {
       
-      pal <- colorQuantile("Blues", domain = socdem_block$age65, probs = seq(0, 1, length = 6), right = TRUE)
+      # Filter to just Tech Design
+      TechDesign_map_data <- map_data %>% filter(skillname == "TechnologyDesign")
       
-      labels <- lapply(
-        paste("<strong>Area: </strong>",
-              socdem_block$NAME.y,
-              "<br />",
-              "<strong>% Population age 65 or over:</strong>",
-              round(socdem_block$age65, 2)),
-        htmltools::HTML
-      )
+      # Make simple feature
+      TechDesign_map_data <- st_as_sf(TechDesign_map_data) 
       
-      leaflet(data = socdem_block, options = leafletOptions(minZoom = 10))%>%
-        addProviderTiles(providers$CartoDB.Positron) %>%
-        addPolygons(fillColor = ~pal(socdem_block$age65),
-                    fillOpacity = 0.7,
-                    stroke = TRUE, weight = 0.5, color = "#202020",
-                    label = labels,
-                    labelOptions = labelOptions(direction = "bottom",
-                                                style = list(
-                                                  "font-size" = "12px",
-                                                  "border-color" = "rgba(0,0,0,0.5)",
-                                                  direction = "auto"
-                                                ))) %>%
-        addLegend("bottomleft",
-                  pal = pal,
-                  values =  ~(socdem_block$age65),
-                  title = "Percent by<br>Quintile Group",
-                  opacity = 0.7,
-                  labFormat = function(type, cuts, p) {
-                    n = length(cuts)
-                    paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
-                  })
-      #under18
-    }else if(var() == "skill2"){
-      pal <- colorQuantile("Blues", domain = socdem_block$under18, probs = seq(0, 1, length = 6), right = TRUE)
+      # Create palette for map
+      TechDesign_map_pal <- colorNumeric(palette = "viridis", domain = TechDesign_map_data$`Normalized Index`)
       
-      labels <- lapply(
-        paste("<strong>Area: </strong>",
-              socdem_block$NAME.y,
-              "<br />",
-              "<strong>% Population age 18 or under: </strong>",
-              round(socdem_block$under18, 2)),
-        htmltools::HTML
-      )
+      # Add labels 
+      TechDesign_map_labels <- lapply(X = str_c("<strong>", TechDesign_map_data$NAME10,"</strong>","<br/>" ,"<strong> Index Value: </strong> ", round(TechDesign_map_data$`Normalized Index`, digits = 3)), 
+                                      FUN = htmltools::HTML)
       
-      leaflet(data = socdem_block, options = leafletOptions(minZoom = 10))%>%
-        addProviderTiles(providers$CartoDB.Positron) %>%
-        addPolygons(fillColor = ~pal(socdem_block$under18),
-                    fillOpacity = 0.7,
-                    stroke = TRUE, weight = 0.5, color = "#202020",
-                    label = labels,
-                    labelOptions = labelOptions(direction = "bottom",
-                                                style = list(
-                                                  "font-size" = "12px",
-                                                  "border-color" = "rgba(0,0,0,0.5)",
-                                                  direction = "auto"
-                                                ))) %>%
-        addLegend("bottomleft",
-                  pal = pal,
-                  values =  ~(socdem_block$under18),
-                  title = "Percent by<br>Quintile Group",
-                  opacity = 0.7,
-                  labFormat = function(type, cuts, p) {
-                    n = length(cuts)
-                    paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
-                  })
-      #population-tract
+      TechDesign_map <- TechDesign_map_data %>% leaflet() %>% addTiles() %>% 
+        addPolygons(
+          color = ~TechDesign_map_pal(`Normalized Index`), 
+          label = TechDesign_map_labels, 
+          stroke = T,
+          smoothFactor = 0,
+          fillOpacity = 0.65, 
+          weight = 0.85, 
+          highlightOptions = highlightOptions(fillOpacity = 1), group = "PUMAs") %>% 
+        addLegend(pal = TechDesign_map_pal, values = ~`Normalized Index`, 
+                  title = "Index Value")
+      # add popup
+      TechDesign_map %>% 
+        addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350) %>% 
+        addCircleMarkers(data = city_info,lng = ~lon,
+                         lat = ~lat,
+                         label = labels, 
+                         radius = ~Population/50000, 
+                         color = "blue")
+      
+      # Map for Critical Thinking
+    }else if(var() == "ReadingComprehension"){
+      ReadingComp_map_data <- map_data %>% filter(skillname == "ReadingComprehension")
+      
+      ReadingComp_map_data <- st_as_sf(ReadingComp_map_data) 
+      
+      ReadingComp_map_pal <- colorNumeric(palette = "viridis", domain = ReadingComp_map_data$`Normalized Index`)
+      
+      ReadingComp_map_labels <- lapply(X = str_c("<strong>", ReadingComp_map_data$NAME10,"</strong>","<br/>" ,"<strong> Index Value: </strong> ", round(ReadingComp_map_data$`Normalized Index`, digits = 3)), 
+                                       FUN = htmltools::HTML)
+      
+      ReadingComp_map <- ReadingComp_map_data %>% leaflet() %>% addTiles() %>% 
+        addPolygons(
+          color = ~ReadingComp_map_pal(`Normalized Index`), 
+          label = ReadingComp_map_labels, 
+          stroke = T,
+          smoothFactor = 0,
+          fillOpacity = 0.65, 
+          weight = 0.85, 
+          highlightOptions = highlightOptions(fillOpacity = 1), group = "PUMAs") %>% 
+        addLegend(pal = ReadingComp_map_pal, values = ~`Normalized Index`, 
+                  title = "Index Value")
+      # add popup
+      ReadingComp_map %>% 
+        addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
+        addCircleMarkers(data = city_info,lng = ~lon,
+                         lat = ~lat,
+                         label = labels, 
+                         radius = ~Population/50000, 
+                         color = "blue")
+      
+      # Map for Organization 
     }else if(var() == "totalpop_trct"){
-      pal <- colorQuantile("Blues", domain = socdem_tract$totalpop_trct, probs = seq(0, 1, length = 5), right = TRUE)
+      Monitoring_map_data <- map_data %>% filter(skillname == "Monitoring")
       
-      labels <- lapply(
-        paste("<strong>Area: </strong>",
-              socdem_tract$NAME.y,
-              "<br />",
-              "<strong>Total population: </strong>",
-              formatC(socdem_tract$totalpop_trct, format = "f", big.mark =",", digits = 0)),
-        htmltools::HTML
-      )
+      Monitoring_map_data <- st_as_sf(Monitoring_map_data) 
       
-      leaflet(data = socdem_tract, options = leafletOptions(minZoom = 10))%>%
-        addProviderTiles(providers$CartoDB.Positron) %>%
-        addPolygons(fillColor = ~pal(socdem_tract$totalpop_trct),
-                    fillOpacity = 0.7,
-                    stroke = TRUE, weight = 0.5, color = "#202020",
-                    label = labels,
-                    labelOptions = labelOptions(direction = "bottom",
-                                                style = list(
-                                                  "font-size" = "12px",
-                                                  "border-color" = "rgba(0,0,0,0.5)",
-                                                  direction = "auto"
-                                                ))) %>%
-        addLegend("bottomleft",
-                  pal = pal,
-                  values =  ~(socdem_tract$totalpop_trct),
-                  title = "Total Population<br>Quartile Group",
-                  opacity = 0.7,
-                  labFormat = function(type, cuts, p) {
-                    n = length(cuts)
-                    paste0("[", round(cuts[-n], 0), " &ndash; ", round(cuts[-1], 0), ")")
-                  })
-      #population-block group
-    }else if(var() == "skill3"){
-      pal <- colorQuantile("Blues", domain = socdem_block$totalpop_bgrp, probs = seq(0, 1, length = 6), right = TRUE)
+      Monitoring_map_pal <- colorNumeric(palette = "viridis", domain = Monitoring_map_data$`Normalized Index`)
       
-      labels <- lapply(
-        paste("<strong>Area: </strong>",
-              socdem_block$NAME.y,
-              "<br />",
-              "<strong>Total population: </strong>",
-              formatC(socdem_block$totalpop_bgrp, format = "f", big.mark =",", digits = 0)),
-        htmltools::HTML
-      )
+      Monitoring_map_labels <- lapply(X = str_c("<strong>", Monitoring_map_data$NAME10,"</strong>","<br/>" ,"<strong> Index Value: </strong> ", round(Monitoring_map_data$`Normalized Index`, digits = 3)), 
+                                      FUN = htmltools::HTML)
       
-      leaflet(data = socdem_block, options = leafletOptions(minZoom = 10))%>%
-        addProviderTiles(providers$CartoDB.Positron) %>%
-        addPolygons(fillColor = ~pal(socdem_block$totalpop_bgrp),
-                    fillOpacity = 0.7,
-                    stroke = TRUE, weight = 0.5, color = "#202020",
-                    label = labels,
-                    labelOptions = labelOptions(direction = "bottom",
-                                                style = list(
-                                                  "font-size" = "12px",
-                                                  "border-color" = "rgba(0,0,0,0.5)",
-                                                  direction = "auto"
-                                                ))) %>%
-        addLegend("bottomleft",
-                  pal = pal,
-                  values =  ~(socdem_block$totalpop_bgrp),
-                  title = "Total Population<br>Quintile Group",
-                  opacity = 0.7,
-                  labFormat = function(type, cuts, p) {
-                    n = length(cuts)
-                    paste0("[", round(cuts[-n], 0), " &ndash; ", round(cuts[-1], 0), ")")
-                  })
-    }else if(var() == "skill4"){
-      pal <- colorQuantile("Blues", domain = socdem_block$black, probs = seq(0, 1, length = 6), right = TRUE)
+      Monitoring_map <- Monitoring_map_data %>% leaflet() %>% addTiles() %>% 
+        addPolygons(
+          color = ~Monitoring_map_pal(`Normalized Index`), 
+          label = Monitoring_map_labels, 
+          stroke = T,
+          smoothFactor = 0,
+          fillOpacity = 0.65, 
+          weight = 0.85, 
+          highlightOptions = highlightOptions(fillOpacity = 1), group = "PUMAs") %>% 
+        addLegend(pal = Monitoring_map_pal, values = ~`Normalized Index`, 
+                  title = "Index Value")
+      #add popup
+      Monitoring_map %>% 
+        addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
+        addCircleMarkers(data = city_info,lng = ~lon,
+                         lat = ~lat,
+                         label = labels, 
+                         radius = ~Population/50000, 
+                         color = "blue")
       
-      labels <- lapply(
-        paste("<strong>Area: </strong>",
-              socdem_block$NAME.y,
-              "<br />",
-              "<strong>% Population Black: </strong>",
-              round(socdem_block$black, 2)),
-        htmltools::HTML
-      )
+      #Map for labor
+    }else if(var() == "Coordination"){
+      Coordination_map_data <- map_data %>% filter(skillname == "Coordination")
       
-      leaflet(data = socdem_block, options = leafletOptions(minZoom = 10))%>%
-        addProviderTiles(providers$CartoDB.Positron) %>%
-        addPolygons(fillColor = ~pal(socdem_block$black),
-                    fillOpacity = 0.7,
-                    stroke = TRUE, weight = 0.5, color = "#202020",
-                    label = labels,
-                    labelOptions = labelOptions(direction = "bottom",
-                                                style = list(
-                                                  "font-size" = "12px",
-                                                  "border-color" = "rgba(0,0,0,0.5)",
-                                                  direction = "auto"
-                                                ))) %>%
-        addLegend("bottomleft",
-                  pal = pal,
-                  values =  ~(socdem_block$black),
-                  title = "Percent by<br>Quintile Group",
-                  opacity = 0.7,
-                  labFormat = function(type, cuts, p) {
-                    n = length(cuts)
-                    paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
-                  })
-    }else if(var() == "skill5"){
-      pal <- colorQuantile("Blues", domain = socdem_block$noba, probs = seq(0, 1, length = 6), right = TRUE)
+      Coordination_map_data <- st_as_sf(Coordination_map_data) 
       
-      labels <- lapply(
-        paste("<strong>Area: </strong>",
-              socdem_block$NAME.y,
-              "<br />",
-              "<strong>% Population without BA degree: </strong>",
-              round(socdem_block$noba, 2)),
-        htmltools::HTML
-      )
+      Coordination_map_pal <- colorNumeric(palette = "viridis", domain = Coordination_map_data$`Normalized Index`)
       
-      leaflet(data = socdem_block, options = leafletOptions(minZoom = 10))%>%
-        addProviderTiles(providers$CartoDB.Positron) %>%
-        addPolygons(fillColor = ~pal(socdem_block$noba),
-                    fillOpacity = 0.7,
-                    stroke = TRUE, weight = 0.5, color = "#202020",
-                    label = labels,
-                    labelOptions = labelOptions(direction = "bottom",
-                                                style = list(
-                                                  "font-size" = "12px",
-                                                  "border-color" = "rgba(0,0,0,0.5)",
-                                                  direction = "auto"
-                                                ))) %>%
-        addLegend("bottomleft",
-                  pal = pal,
-                  values =  ~(socdem_block$noba),
-                  title = "Percent by<br>Quintile Group",
-                  opacity = 0.7,
-                  labFormat = function(type, cuts, p) {
-                    n = length(cuts)
-                    paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
-                  })
+      Coordination_map_labels <- lapply(X = str_c("<strong>", Coordination_map_data$NAME10,"</strong>","<br/>" ,"<strong> Index Value: </strong> ", round(Coordination_map_data$`Normalized Index`, digits = 3)), 
+                                        FUN = htmltools::HTML)
+      
+      Coordination_map <- Coordination_map_data %>% leaflet() %>% addTiles() %>% 
+        addPolygons(
+          color = ~Coordination_map_pal(`Normalized Index`), 
+          label = Coordination_map_labels, 
+          popupOptions = popupOptions(max_width = 1000),
+          stroke = T,
+          smoothFactor = 0,
+          fillOpacity = 0.65, 
+          weight = 0.85, 
+          highlightOptions = highlightOptions(fillOpacity = 1), 
+          group = "PUMAs") %>% 
+        addLegend(pal = Coordination_map_pal, values = ~`Normalized Index`, 
+                  title = "Index Value")
+      #add popup
+      Coordination_map %>% 
+        addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
+        addCircleMarkers(data = city_info,lng = ~lon,
+                         lat = ~lat,
+                         label = labels, 
+                         radius = ~Population/50000, 
+                         color = "blue")
+      
+      # Communication map
+    }else if(var() == "ActiveListening"){
+      ActiveList_map_data <- map_data %>% filter(skillname == "ActiveListening")
+      
+      ActiveList_map_data <- st_as_sf(ActiveList_map_data) 
+      
+      ActiveList_map_pal<- colorNumeric(palette = "viridis", domain = ActiveList_map_data$`Normalized Index`)
+      
+      ActiveList_map_labels <- lapply(X = str_c("<strong>", ActiveList_map_data$NAME10,"</strong>","<br/>" ,"<strong> Index Value: </strong> ", round(ActiveList_map_data$`Normalized Index`, digits = 3)), 
+                                      FUN = htmltools::HTML)
+      
+      ActiveList_map <- ActiveList_map_data %>% leaflet() %>% addTiles() %>% 
+        addPolygons(
+          color = ~ActiveList_map_pal(`Normalized Index`), 
+          label = ActiveList_map_labels, 
+          stroke = T,
+          smoothFactor = 0,
+          fillOpacity = 0.65, 
+          weight = 0.85, 
+          highlightOptions = highlightOptions(fillOpacity = 1), group = "PUMAs") %>% 
+        addLegend(pal = ActiveList_map_pal, values = ~`Normalized Index`, 
+                  title = "Index Value")
+      
+      # add popup
+      ActiveList_map <-  ActiveList_map %>% 
+        addPopupGraphs(popup_plot, group = "PUMAs", width = 700, height = 350)%>% 
+        addCircleMarkers(data = city_info,lng = ~lon,
+                         lat = ~lat,
+                         label = labels, 
+                         radius = ~Population/50000, 
+                         color = "blue")
+      
+      
     }
   })
   
   
-  
-  
-  
-  
-  
-  # data and measures table: done ----------------------------------------
-  var_topic <- reactive({
-    input$topic
-  })
-  output$datatable <- renderDataTable({
-    if(var_topic() == "All Measures"){
-      table <- as.data.frame(measures_table)
-      datatable(table, rownames = FALSE, options = list(pageLength = 15)) %>% formatStyle(0, target = 'row', lineHeight = '80%')
-    }
-    else{
-      data <- switch(input$topic,
-                     "Connectivity Measures" = "connectivity",
-                     "Sociodemographic Measures" = "demographics",
-                     "Food Access Measures" = "food access",
-                     "Health Care Access Measures" = "health",
-                     "Older Adult Population Measures" = "older adults")
-      table <- subset(measures_table, Topic == data)
-      table <- as.data.frame(table)
-      datatable(table, rownames = FALSE, options = list(pageLength = 15)) %>% formatStyle(0, target = 'row', lineHeight = '80%')
-    }
-  })
-  
-  # device: done ---------------------------------------------------------
-  
-  output$deviceplot <- renderLeaflet({
-    data <- switch(input$devicedrop,
-                   "nocomputer" = connectivity$nocomputer,
-                   "laptop" = connectivity$laptop,
-                   "smartphone" = connectivity$smartphone,
-                   "tablet" = connectivity$tablet,
-                   "nointernet" = connectivity$nointernet,
-                   "satellite" = connectivity$satellite,
-                   "cellular" = connectivity$cellular,
-                   "broadband" = connectivity$broadband)
-    
-    device_spec <- switch(input$devicedrop,
-                          "nocomputer" = "no computer",
-                          "laptop" = "laptop",
-                          "smartphone" = "smartphone",
-                          "tablet" = "tablet",
-                          "nointernet" = "no internet access",
-                          "satellite" = "satellite internet",
-                          "cellular" = "cellular internet",
-                          "broadband" = "broadband internet")
-    
-    pal <- colorQuantile("Blues", domain = data, probs = seq(0, 1, length = 6), right = TRUE)
-    
-    labels <- lapply(
-      paste("<strong>Area: </strong>",
-            connectivity$NAME.y,
-            "<br />",
-            "<strong>% Households with",
-            device_spec,
-            "access: </strong>",
-            round(data, 2)),
-      htmltools::HTML
-    )
-    
-    leaflet(data = connectivity, options = leafletOptions(minZoom = 10))%>%
-      addProviderTiles(providers$CartoDB.Positron) %>%
-      addPolygons(fillColor = ~pal(data),
-                  fillOpacity = 0.7,
-                  stroke = TRUE, weight = 0.5, color = "#202020",
-                  label = labels,
-                  labelOptions = labelOptions(direction = "bottom",
-                                              style = list(
-                                                "font-size" = "12px",
-                                                "border-color" = "rgba(0,0,0,0.5)",
-                                                direction = "auto"
-                                              ))) %>%
-      addLegend("bottomleft",
-                pal = pal,
-                values =  ~(data),
-                title = "Percent by<br>Quintile Group",
-                opacity = 0.7,
-                labFormat = function(type, cuts, p) {
-                  n = length(cuts)
-                  paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
-                })
-  })
-  
-
-  # Iso selector
-  output$wifiplot <- renderLeaflet({
-    colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a","#e6a01d","#e57200","#fdfdfd")
-    
-    wifi_iso10 <- switch(input$wifidrop,
-                         "Meadows of Dan Elementary School" = wifi_iso_10_1,
-                         "Woolwine Elementary School" = wifi_iso_10_2,
-                         "Patrick Springs Primary School" = wifi_iso_10_3,
-                         "Blue Ridge Elementary School" = wifi_iso_10_4,
-                         "Patrick County High School" = wifi_iso_10_5,
-                         "Stuart Elementary School" = wifi_iso_10_6,
-                         "Patrick County Branch Library" = wifi_iso_10_7,
-                         "Hardin Reynolds Memorial School" = wifi_iso_10_8,
-                         "Stuart Baptist Church" = wifi_iso_10_9,
-                         "Patrick Henry Community College Stuart Campus" = wifi_iso_10_10)
-    
-    wifi_iso15 <- switch(input$wifidrop,
-                         "Meadows of Dan Elementary School" = wifi_iso_15_1,
-                         "Woolwine Elementary School" = wifi_iso_15_2,
-                         "Patrick Springs Primary School" = wifi_iso_15_3,
-                         "Blue Ridge Elementary School" = wifi_iso_15_4,
-                         "Patrick County High School" = wifi_iso_15_5,
-                         "Stuart Elementary School" = wifi_iso_15_6,
-                         "Patrick County Branch Library" = wifi_iso_15_7,
-                         "Hardin Reynolds Memorial School" = wifi_iso_15_8,
-                         "Stuart Baptist Church" = wifi_iso_15_9,
-                         "Patrick Henry Community College Stuart Campus" = wifi_iso_15_10)
-    
-    data <- switch(input$wifidrop,
-                   "Meadows of Dan Elementary School" = 1,
-                   "Woolwine Elementary School" = 2,
-                   "Patrick Springs Primary School" = 3,
-                   "Blue Ridge Elementary School" = 4,
-                   "Patrick County High School" = 5,
-                   "Stuart Elementary School" = 6,
-                   "Patrick County Branch Library" = 7,
-                   "Hardin Reynolds Memorial School" = 8,
-                   "Stuart Baptist Church" = 9,
-                   "Patrick Henry Community College Stuart Campus" = 10)
-    
-    labels <- lapply(
-      paste("<strong>Name: </strong>",
-            wifi_latlong[data, ]$name,
-            "<br />",
-            "<strong>Address:</strong>",
-            wifi_latlong[data, ]$fulladdress,
-            "<br />",
-            "<strong>Notes:</strong>",
-            wifi_latlong[data, ]$notes),
-      htmltools::HTML
-    )
-    
-    m1 <- leaflet(options = leafletOptions(minZoom = 10)) %>%
-      addProviderTiles(providers$CartoDB.Positron) %>%
-      addCircles(data = residential,
-                 fillColor = colors[5],
-                 fillOpacity = .8,
-                 stroke = FALSE,
-                 group = "Residential Properties") %>%
-      addPolygons(data = wifi_iso10,
-                  fillColor = colors[1],
-                  fillOpacity = .8,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrone") %>%
-      addPolygons(data = wifi_iso15,
-                  fillColor = colors[2],
-                  fillOpacity = .8,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrone") %>%
-      addMarkers(data = wifi_latlong, ~longitude[data], ~latitude[data],
-                 label = labels,
-                 labelOptions = labelOptions(direction = "bottom",
-                                             style = list(
-                                               "font-size" = "12px",
-                                               "border-color" = "rgba(0,0,0,0.5)",
-                                               direction = "auto")))  %>%
-      addLayersControl(
-        position = "topright",
-        overlayGroups = c("10 Minute Isochrone",
-                          "15 Minute Isochrone",
-                          "Residential Properties"),
-        options = layersControlOptions(collapsed = FALSE))
-    m1
-  })
-  
-  # Coverage table
-  output$wifitable <- renderTable({
-    data <- switch(input$wifidrop,
-                   "Meadows of Dan Elementary School" = 1,
-                   "Woolwine Elementary School" = 2,
-                   "Patrick Springs Primary School" = 3,
-                   "Blue Ridge Elementary School" = 4,
-                   "Patrick County High School" = 5,
-                   "Stuart Elementary School" = 6,
-                   "Patrick County Branch Library" = 7,
-                   "Hardin Reynolds Memorial School" = 8,
-                   "Stuart Baptist Church" = 9,
-                   "Patrick Henry Community College Stuart Campus" = 10)
-    
-    table <- read.csv(paste0("data/isochrones/tables/wifi_iso_table_",data,".csv"))
-    table$Coverage <- paste0(round(table$Coverage, 2), " %")
-    table
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  
-  # Wifi deserts
-  output$allwifi <- renderLeaflet({
-    
-    labels <- lapply(
-      paste("<strong>Name: </strong>",
-            wifi_latlong$name,
-            "<br />",
-            "<strong>Address:</strong>",
-            wifi_latlong$fulladdress,
-            "<br />",
-            "<strong>Notes:</strong>",
-            wifi_latlong$notes),
-      htmltools::HTML
-    )
-    
-    leaflet(options = leafletOptions(minZoom = 10)) %>%
-      addProviderTiles(providers$CartoDB.Positron) %>%
-      addCircles(data = residential,
-                 fillColor = colors[5],
-                 fillOpacity = .5,
-                 stroke = FALSE,
-                 group = "Residential Properties") %>%
-      addPolygons(data = wifi_iso_10_1,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_10_2,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_10_3,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_10_4,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_10_5,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_10_6,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_10_7,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_10_8,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_10_9,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_15_1,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_15_2,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_15_3,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_15_4,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_15_5,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_15_6,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_15_7,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_15_8,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_15_9,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrones") %>%
-      addPolygons(data = wifi_iso_15_10,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "15 Minute Isochrones") %>%
-      addMarkers(data = wifi_latlong,
-                 group = "Free Wi-Fi Locations",
-                 label = labels,
-                 labelOptions = labelOptions(direction = "bottom",
-                                             style = list(
-                                               "font-size" = "12px",
-                                               "border-color" = "rgba(0,0,0,0.5)",
-                                               direction = "auto")))  %>%
-      addLayersControl(
-        position = "topright",
-        overlayGroups = c("Free Wi-Fi Locations",
-                          "Residential Properties"),
-        baseGroups = c("10 Minute Isochrones",
-                       "15 Minute Isochrones"),
-        options = layersControlOptions(collapsed = FALSE))
-  })
-  
-  output$allwifitable <- renderTable({
-    table <- read.csv("data/isochrones/tables/wifi_iso_table.csv")
-    table$Coverage <- paste0(round(table$Coverage, 2), " %")
-    table
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  
-  # ems: done ------------------------------------------------------------
-  
-  output$emsplot <- renderLeaflet({
-    colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a","#e6a01d","#e57200","#fdfdfd")
-    
-    ems_iso8 <- switch(input$emsdrop,
-                       "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_8_1,
-                       "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_8_2,
-                       "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_8_3,
-                       "VESTA RESCUE SQUAD" = ems_iso_8_4,
-                       "ARARAT RESCUE SQUAD" = ems_iso_8_5,
-                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_8_6,
-                       "JEB STUART RESCUE SQUAD" = ems_iso_8_7,
-                       "SMITH RIVER RESCUE SQUAD" = ems_iso_8_8,
-                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_8_9)
-    
-    ems_iso10 <- switch(input$emsdrop,
-                        "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_10_1,
-                        "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_10_2,
-                        "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_10_3,
-                        "VESTA RESCUE SQUAD" = ems_iso_10_4,
-                        "ARARAT RESCUE SQUAD" = ems_iso_10_5,
-                        "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_10_6,
-                        "JEB STUART RESCUE SQUAD" = ems_iso_10_7,
-                        "SMITH RIVER RESCUE SQUAD" = ems_iso_10_8,
-                        "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_10_9)
-    
-    ems_iso12 <- switch(input$emsdrop,
-                        "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_12_1,
-                        "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_12_2,
-                        "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_12_3,
-                        "VESTA RESCUE SQUAD" = ems_iso_12_4,
-                        "ARARAT RESCUE SQUAD" = ems_iso_12_5,
-                        "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_12_6,
-                        "JEB STUART RESCUE SQUAD" = ems_iso_12_7,
-                        "SMITH RIVER RESCUE SQUAD" = ems_iso_12_8,
-                        "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_12_9)
-    
-    data <- switch(input$emsdrop,
-                   "STUART VOLUNTEER FIRE DEPARTMENT" = 1,
-                   "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = 2,
-                   "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = 3,
-                   "VESTA RESCUE SQUAD" = 4,
-                   "ARARAT RESCUE SQUAD" = 5,
-                   "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = 6,
-                   "JEB STUART RESCUE SQUAD" = 7,
-                   "SMITH RIVER RESCUE SQUAD" = 8,
-                   "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = 9)
-    
-    labels <- lapply(
-      paste("<strong>Name: </strong>",
-            str_to_title(ems[data, ]$NAME),
-            "<br />",
-            "<strong>Address:</strong>",
-            str_to_title(ems[data, ]$ADDRESS), ",", str_to_title(ems[data, ]$CITY), ", VA", ems[data, ]$ZIP,
-            "<br />",
-            "<strong>Type:</strong>",
-            str_to_title(ems[data, ]$NAICSDESCR)),
-      htmltools::HTML
-    )
-    
-    m1 <- leaflet(options = leafletOptions(minZoom = 10)) %>%
-      addProviderTiles(providers$CartoDB.Positron) %>%
-      addCircles(data = residential,
-                 fillColor = colors[5],
-                 fillOpacity = .8,
-                 stroke = FALSE,
-                 group = "Residential Properties") %>%
-      addPolygons(data = ems_iso8,
-                  fillColor = colors[1],
-                  fillOpacity = .8,
-                  stroke = FALSE,
-                  group = "8 Minute Isochrone") %>%
-      addPolygons(data = ems_iso10,
-                  fillColor = colors[2],
-                  fillOpacity = .8,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrone") %>%
-      addPolygons(data = ems_iso12,
-                  fillColor = colors[2],
-                  fillOpacity = .8,
-                  stroke = FALSE,
-                  group = "12 Minute Isochrone") %>%
-      addMarkers(data = ems, ~LONGITUDE[data], ~LATITUDE[data],
-                 group = "EMS Locations",
-                 label = labels,
-                 labelOptions = labelOptions(direction = "bottom",
-                                             style = list(
-                                               "font-size" = "12px",
-                                               "border-color" = "rgba(0,0,0,0.5)",
-                                               direction = "auto"))) %>%
-      addLayersControl(
-        position = "topright",
-        overlayGroups = c("8 Minute Isochrone",
-                          "10 Minute Isochrone",
-                          "12 Minute Isochrone",
-                          "Residential Properties"),
-        options = layersControlOptions(collapsed = FALSE))
-    m1
-  })
-  
-  output$emstable <- renderTable({
-    data <- switch(input$emsdrop,
-                   "STUART VOLUNTEER FIRE DEPARTMENT" = 1,
-                   "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = 2,
-                   "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = 3,
-                   "VESTA RESCUE SQUAD" = 4,
-                   "ARARAT RESCUE SQUAD" = 5,
-                   "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = 6,
-                   "JEB STUART RESCUE SQUAD" = 7,
-                   "SMITH RIVER RESCUE SQUAD" = 8,
-                   "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = 9)
-    
-    
-    table <- read.csv(paste0("data/isochrones/tables/ems_iso_table_",data,".csv"))
-    table$Coverage <- paste0(round(table$Coverage, 2), " %")
-    table
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  
-  # EMS deserts
-  output$allems <- renderLeaflet({
-    
-    labels <- lapply(
-      paste("<strong>Name: </strong>",
-            str_to_title(ems$NAME),
-            "<br />",
-            "<strong>Address:</strong>",
-            paste0(str_to_title(ems$ADDRESS), ", ", str_to_title(ems$CITY), ", VA ", ems$ZIP),
-            "<br />",
-            "<strong>Type:</strong>",
-            str_to_title(ems$NAICSDESCR)),
-      htmltools::HTML
-    )
-    
-    leaflet(options = leafletOptions(minZoom = 10)) %>%
-      addProviderTiles(providers$CartoDB.Positron) %>%
-      addCircles(data = residential,
-                 fillColor = colors[5],
-                 fillOpacity = .5,
-                 stroke = FALSE,
-                 group = "Residential Properties") %>%
-      addPolygons(data = ems_iso_8_1,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "8 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_8_2,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "8 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_8_3,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "8 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_8_4,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "8 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_8_5,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "8 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_8_6,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "8 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_8_7,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "8 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_8_8,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "8 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_8_9,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "8 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_10_1,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_10_2,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_10_3,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_10_4,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_10_5,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_10_6,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_10_7,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_10_8,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_10_9,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "10 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_12_1,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "12 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_12_2,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "12 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_12_3,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "12 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_12_4,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "12 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_12_5,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "12 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_12_6,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "12 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_12_7,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "12 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_12_8,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "12 Minute Isochrones") %>%
-      addPolygons(data = ems_iso_12_9,
-                  fillColor = colors[1],
-                  fillOpacity = .5,
-                  stroke = FALSE,
-                  group = "12 Minute Isochrones") %>%
-      addMarkers(data = ems,
-                 group = "EMS Locations",
-                 label = labels,
-                 labelOptions = labelOptions(direction = "bottom",
-                                             style = list(
-                                               "font-size" = "12px",
-                                               "border-color" = "rgba(0,0,0,0.5)",
-                                               direction = "auto"))) %>%
-      addLayersControl(
-        position = "topright",
-        baseGroups = c("8 Minute Isochrones",
-                       "10 Minute Isochrones",
-                       "12 Minute Isochrones"),
-        overlayGroups = c("EMS Locations",
-                          "Residential Properties"),
-        options = layersControlOptions(collapsed = FALSE))
-  })
-  
-  output$allemstable <- renderTable({
-    table <- read.csv("data/isochrones/tables/ems_iso_table.csv")
-    table$Coverage <- paste0(round(table$Coverage, 2), " %")
-    table
-  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
- 
+  # # data and measures table:  ----------------------------------------
+  # var_topic <- reactive({
+  #   input$topic
+  # })
+  # output$datatable <- renderDataTable({
+  #   if(var_topic() == "All Measures"){
+  #     table <- as.data.frame(measures_table)
+  #     datatable(table, rownames = FALSE, options = list(pageLength = 15)) %>% formatStyle(0, target = 'row', lineHeight = '80%')
+  #   }
+  #   else{
+  #     data <- switch(input$topic,
+  #                    "Connectivity Measures" = "connectivity",
+  #                    "Sociodemographic Measures" = "demographics",
+  #                    "Food Access Measures" = "food access",
+  #                    "Health Care Access Measures" = "health",
+  #                    "Older Adult Population Measures" = "older adults")
+  #     table <- subset(measures_table, Topic == data)
+  #     table <- as.data.frame(table)
+  #     datatable(table, rownames = FALSE, options = list(pageLength = 15)) %>% formatStyle(0, target = 'row', lineHeight = '80%')
+  #   }
+  # })
+  # 
+  # # device: done ---------------------------------------------------------
+  # 
+  # output$deviceplot <- renderLeaflet({
+  #   data <- switch(input$devicedrop,
+  #                  "nocomputer" = connectivity$nocomputer,
+  #                  "laptop" = connectivity$laptop,
+  #                  "smartphone" = connectivity$smartphone,
+  #                  "tablet" = connectivity$tablet,
+  #                  "nointernet" = connectivity$nointernet,
+  #                  "satellite" = connectivity$satellite,
+  #                  "cellular" = connectivity$cellular,
+  #                  "broadband" = connectivity$broadband)
+  #   
+  #   device_spec <- switch(input$devicedrop,
+  #                         "nocomputer" = "no computer",
+  #                         "laptop" = "laptop",
+  #                         "smartphone" = "smartphone",
+  #                         "tablet" = "tablet",
+  #                         "nointernet" = "no internet access",
+  #                         "satellite" = "satellite internet",
+  #                         "cellular" = "cellular internet",
+  #                         "broadband" = "broadband internet")
+  #   
+  #   pal <- colorQuantile("Blues", domain = data, probs = seq(0, 1, length = 6), right = TRUE)
+  #   
+  #   labels <- lapply(
+  #     paste("<strong>Area: </strong>",
+  #           connectivity$NAME.y,
+  #           "<br />",
+  #           "<strong>% Households with",
+  #           device_spec,
+  #           "access: </strong>",
+  #           round(data, 2)),
+  #     htmltools::HTML
+  #   )
+  #   
+  #   leaflet(data = connectivity, options = leafletOptions(minZoom = 10))%>%
+  #     addProviderTiles(providers$CartoDB.Positron) %>%
+  #     addPolygons(fillColor = ~pal(data),
+  #                 fillOpacity = 0.7,
+  #                 stroke = TRUE, weight = 0.5, color = "#202020",
+  #                 label = labels,
+  #                 labelOptions = labelOptions(direction = "bottom",
+  #                                             style = list(
+  #                                               "font-size" = "12px",
+  #                                               "border-color" = "rgba(0,0,0,0.5)",
+  #                                               direction = "auto"
+  #                                             ))) %>%
+  #     addLegend("bottomleft",
+  #               pal = pal,
+  #               values =  ~(data),
+  #               title = "Percent by<br>Quintile Group",
+  #               opacity = 0.7,
+  #               labFormat = function(type, cuts, p) {
+  #                 n = length(cuts)
+  #                 paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
+  #               })
+  # })
+  # 
+  # 
+  # # Iso selector
+  # output$wifiplot <- renderLeaflet({
+  #   colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a","#e6a01d","#e57200","#fdfdfd")
+  #   
+  #   wifi_iso10 <- switch(input$wifidrop,
+  #                        "Meadows of Dan Elementary School" = wifi_iso_10_1,
+  #                        "Woolwine Elementary School" = wifi_iso_10_2,
+  #                        "Patrick Springs Primary School" = wifi_iso_10_3,
+  #                        "Blue Ridge Elementary School" = wifi_iso_10_4,
+  #                        "Patrick County High School" = wifi_iso_10_5,
+  #                        "Stuart Elementary School" = wifi_iso_10_6,
+  #                        "Patrick County Branch Library" = wifi_iso_10_7,
+  #                        "Hardin Reynolds Memorial School" = wifi_iso_10_8,
+  #                        "Stuart Baptist Church" = wifi_iso_10_9,
+  #                        "Patrick Henry Community College Stuart Campus" = wifi_iso_10_10)
+  #   
+  #   wifi_iso15 <- switch(input$wifidrop,
+  #                        "Meadows of Dan Elementary School" = wifi_iso_15_1,
+  #                        "Woolwine Elementary School" = wifi_iso_15_2,
+  #                        "Patrick Springs Primary School" = wifi_iso_15_3,
+  #                        "Blue Ridge Elementary School" = wifi_iso_15_4,
+  #                        "Patrick County High School" = wifi_iso_15_5,
+  #                        "Stuart Elementary School" = wifi_iso_15_6,
+  #                        "Patrick County Branch Library" = wifi_iso_15_7,
+  #                        "Hardin Reynolds Memorial School" = wifi_iso_15_8,
+  #                        "Stuart Baptist Church" = wifi_iso_15_9,
+  #                        "Patrick Henry Community College Stuart Campus" = wifi_iso_15_10)
+  #   
+  #   data <- switch(input$wifidrop,
+  #                  "Meadows of Dan Elementary School" = 1,
+  #                  "Woolwine Elementary School" = 2,
+  #                  "Patrick Springs Primary School" = 3,
+  #                  "Blue Ridge Elementary School" = 4,
+  #                  "Patrick County High School" = 5,
+  #                  "Stuart Elementary School" = 6,
+  #                  "Patrick County Branch Library" = 7,
+  #                  "Hardin Reynolds Memorial School" = 8,
+  #                  "Stuart Baptist Church" = 9,
+  #                  "Patrick Henry Community College Stuart Campus" = 10)
+  #   
+  #   labels <- lapply(
+  #     paste("<strong>Name: </strong>",
+  #           wifi_latlong[data, ]$name,
+  #           "<br />",
+  #           "<strong>Address:</strong>",
+  #           wifi_latlong[data, ]$fulladdress,
+  #           "<br />",
+  #           "<strong>Notes:</strong>",
+  #           wifi_latlong[data, ]$notes),
+  #     htmltools::HTML
+  #   )
+  #   
+  #   m1 <- leaflet(options = leafletOptions(minZoom = 10)) %>%
+  #     addProviderTiles(providers$CartoDB.Positron) %>%
+  #     addCircles(data = residential,
+  #                fillColor = colors[5],
+  #                fillOpacity = .8,
+  #                stroke = FALSE,
+  #                group = "Residential Properties") %>%
+  #     addPolygons(data = wifi_iso10,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .8,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrone") %>%
+  #     addPolygons(data = wifi_iso15,
+  #                 fillColor = colors[2],
+  #                 fillOpacity = .8,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrone") %>%
+  #     addMarkers(data = wifi_latlong, ~longitude[data], ~latitude[data],
+  #                label = labels,
+  #                labelOptions = labelOptions(direction = "bottom",
+  #                                            style = list(
+  #                                              "font-size" = "12px",
+  #                                              "border-color" = "rgba(0,0,0,0.5)",
+  #                                              direction = "auto")))  %>%
+  #     addLayersControl(
+  #       position = "topright",
+  #       overlayGroups = c("10 Minute Isochrone",
+  #                         "15 Minute Isochrone",
+  #                         "Residential Properties"),
+  #       options = layersControlOptions(collapsed = FALSE))
+  #   m1
+  # })
+  # 
+  # # Coverage table
+  # output$wifitable <- renderTable({
+  #   data <- switch(input$wifidrop,
+  #                  "Meadows of Dan Elementary School" = 1,
+  #                  "Woolwine Elementary School" = 2,
+  #                  "Patrick Springs Primary School" = 3,
+  #                  "Blue Ridge Elementary School" = 4,
+  #                  "Patrick County High School" = 5,
+  #                  "Stuart Elementary School" = 6,
+  #                  "Patrick County Branch Library" = 7,
+  #                  "Hardin Reynolds Memorial School" = 8,
+  #                  "Stuart Baptist Church" = 9,
+  #                  "Patrick Henry Community College Stuart Campus" = 10)
+  #   
+  #   table <- read.csv(paste0("data/isochrones/tables/wifi_iso_table_",data,".csv"))
+  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
+  #   table
+  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
+  # 
+  # # Wifi deserts
+  # output$allwifi <- renderLeaflet({
+  #   
+  #   labels <- lapply(
+  #     paste("<strong>Name: </strong>",
+  #           wifi_latlong$name,
+  #           "<br />",
+  #           "<strong>Address:</strong>",
+  #           wifi_latlong$fulladdress,
+  #           "<br />",
+  #           "<strong>Notes:</strong>",
+  #           wifi_latlong$notes),
+  #     htmltools::HTML
+  #   )
+  #   
+  #   leaflet(options = leafletOptions(minZoom = 10)) %>%
+  #     addProviderTiles(providers$CartoDB.Positron) %>%
+  #     addCircles(data = residential,
+  #                fillColor = colors[5],
+  #                fillOpacity = .5,
+  #                stroke = FALSE,
+  #                group = "Residential Properties") %>%
+  #     addPolygons(data = wifi_iso_10_1,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_10_2,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_10_3,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_10_4,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_10_5,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_10_6,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_10_7,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_10_8,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_10_9,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_15_1,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_15_2,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_15_3,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_15_4,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_15_5,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_15_6,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_15_7,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_15_8,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_15_9,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrones") %>%
+  #     addPolygons(data = wifi_iso_15_10,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "15 Minute Isochrones") %>%
+  #     addMarkers(data = wifi_latlong,
+  #                group = "Free Wi-Fi Locations",
+  #                label = labels,
+  #                labelOptions = labelOptions(direction = "bottom",
+  #                                            style = list(
+  #                                              "font-size" = "12px",
+  #                                              "border-color" = "rgba(0,0,0,0.5)",
+  #                                              direction = "auto")))  %>%
+  #     addLayersControl(
+  #       position = "topright",
+  #       overlayGroups = c("Free Wi-Fi Locations",
+  #                         "Residential Properties"),
+  #       baseGroups = c("10 Minute Isochrones",
+  #                      "15 Minute Isochrones"),
+  #       options = layersControlOptions(collapsed = FALSE))
+  # })
+  # 
+  # output$allwifitable <- renderTable({
+  #   table <- read.csv("data/isochrones/tables/wifi_iso_table.csv")
+  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
+  #   table
+  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
+  # 
+  #         # ems: done ----
+  # 
+  # output$emsplot <- renderLeaflet({
+  #   colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a","#e6a01d","#e57200","#fdfdfd")
+  #   
+  #   ems_iso8 <- switch(input$emsdrop,
+  #                      "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_8_1,
+  #                      "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_8_2,
+  #                      "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_8_3,
+  #                      "VESTA RESCUE SQUAD" = ems_iso_8_4,
+  #                      "ARARAT RESCUE SQUAD" = ems_iso_8_5,
+  #                      "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_8_6,
+  #                      "JEB STUART RESCUE SQUAD" = ems_iso_8_7,
+  #                      "SMITH RIVER RESCUE SQUAD" = ems_iso_8_8,
+  #                      "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_8_9)
+  #   
+  #   ems_iso10 <- switch(input$emsdrop,
+  #                       "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_10_1,
+  #                       "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_10_2,
+  #                       "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_10_3,
+  #                       "VESTA RESCUE SQUAD" = ems_iso_10_4,
+  #                       "ARARAT RESCUE SQUAD" = ems_iso_10_5,
+  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_10_6,
+  #                       "JEB STUART RESCUE SQUAD" = ems_iso_10_7,
+  #                       "SMITH RIVER RESCUE SQUAD" = ems_iso_10_8,
+  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_10_9)
+  #   
+  #   ems_iso12 <- switch(input$emsdrop,
+  #                       "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_12_1,
+  #                       "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_12_2,
+  #                       "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_12_3,
+  #                       "VESTA RESCUE SQUAD" = ems_iso_12_4,
+  #                       "ARARAT RESCUE SQUAD" = ems_iso_12_5,
+  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_12_6,
+  #                       "JEB STUART RESCUE SQUAD" = ems_iso_12_7,
+  #                       "SMITH RIVER RESCUE SQUAD" = ems_iso_12_8,
+  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_12_9)
+  #   
+  #   data <- switch(input$emsdrop,
+  #                  "STUART VOLUNTEER FIRE DEPARTMENT" = 1,
+  #                  "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = 2,
+  #                  "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = 3,
+  #                  "VESTA RESCUE SQUAD" = 4,
+  #                  "ARARAT RESCUE SQUAD" = 5,
+  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = 6,
+  #                  "JEB STUART RESCUE SQUAD" = 7,
+  #                  "SMITH RIVER RESCUE SQUAD" = 8,
+  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = 9)
+  #   
+  #   labels <- lapply(
+  #     paste("<strong>Name: </strong>",
+  #           str_to_title(ems[data, ]$NAME),
+  #           "<br />",
+  #           "<strong>Address:</strong>",
+  #           str_to_title(ems[data, ]$ADDRESS), ",", str_to_title(ems[data, ]$CITY), ", VA", ems[data, ]$ZIP,
+  #           "<br />",
+  #           "<strong>Type:</strong>",
+  #           str_to_title(ems[data, ]$NAICSDESCR)),
+  #     htmltools::HTML
+  #   )
+  #   
+  #   m1 <- leaflet(options = leafletOptions(minZoom = 10)) %>%
+  #     addProviderTiles(providers$CartoDB.Positron) %>%
+  #     addCircles(data = residential,
+  #                fillColor = colors[5],
+  #                fillOpacity = .8,
+  #                stroke = FALSE,
+  #                group = "Residential Properties") %>%
+  #     addPolygons(data = ems_iso8,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .8,
+  #                 stroke = FALSE,
+  #                 group = "8 Minute Isochrone") %>%
+  #     addPolygons(data = ems_iso10,
+  #                 fillColor = colors[2],
+  #                 fillOpacity = .8,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrone") %>%
+  #     addPolygons(data = ems_iso12,
+  #                 fillColor = colors[2],
+  #                 fillOpacity = .8,
+  #                 stroke = FALSE,
+  #                 group = "12 Minute Isochrone") %>%
+  #     addMarkers(data = ems, ~LONGITUDE[data], ~LATITUDE[data],
+  #                group = "EMS Locations",
+  #                label = labels,
+  #                labelOptions = labelOptions(direction = "bottom",
+  #                                            style = list(
+  #                                              "font-size" = "12px",
+  #                                              "border-color" = "rgba(0,0,0,0.5)",
+  #                                              direction = "auto"))) %>%
+  #     addLayersControl(
+  #       position = "topright",
+  #       overlayGroups = c("8 Minute Isochrone",
+  #                         "10 Minute Isochrone",
+  #                         "12 Minute Isochrone",
+  #                         "Residential Properties"),
+  #       options = layersControlOptions(collapsed = FALSE))
+  #   m1
+  # })
+  # 
+  # output$emstable <- renderTable({
+  #   data <- switch(input$emsdrop,
+  #                  "STUART VOLUNTEER FIRE DEPARTMENT" = 1,
+  #                  "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = 2,
+  #                  "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = 3,
+  #                  "VESTA RESCUE SQUAD" = 4,
+  #                  "ARARAT RESCUE SQUAD" = 5,
+  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = 6,
+  #                  "JEB STUART RESCUE SQUAD" = 7,
+  #                  "SMITH RIVER RESCUE SQUAD" = 8,
+  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = 9)
+  #   
+  #   
+  #   table <- read.csv(paste0("data/isochrones/tables/ems_iso_table_",data,".csv"))
+  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
+  #   table
+  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
+  # 
+  # # EMS deserts
+  # output$allems <- renderLeaflet({
+  #   
+  #   labels <- lapply(
+  #     paste("<strong>Name: </strong>",
+  #           str_to_title(ems$NAME),
+  #           "<br />",
+  #           "<strong>Address:</strong>",
+  #           paste0(str_to_title(ems$ADDRESS), ", ", str_to_title(ems$CITY), ", VA ", ems$ZIP),
+  #           "<br />",
+  #           "<strong>Type:</strong>",
+  #           str_to_title(ems$NAICSDESCR)),
+  #     htmltools::HTML
+  #   )
+  #   
+  #   leaflet(options = leafletOptions(minZoom = 10)) %>%
+  #     addProviderTiles(providers$CartoDB.Positron) %>%
+  #     addCircles(data = residential,
+  #                fillColor = colors[5],
+  #                fillOpacity = .5,
+  #                stroke = FALSE,
+  #                group = "Residential Properties") %>%
+  #     addPolygons(data = ems_iso_8_1,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "8 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_8_2,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "8 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_8_3,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "8 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_8_4,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "8 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_8_5,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "8 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_8_6,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "8 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_8_7,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "8 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_8_8,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "8 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_8_9,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "8 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_10_1,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_10_2,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_10_3,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_10_4,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_10_5,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_10_6,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_10_7,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_10_8,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_10_9,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "10 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_12_1,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "12 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_12_2,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "12 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_12_3,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "12 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_12_4,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "12 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_12_5,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "12 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_12_6,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "12 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_12_7,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "12 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_12_8,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "12 Minute Isochrones") %>%
+  #     addPolygons(data = ems_iso_12_9,
+  #                 fillColor = colors[1],
+  #                 fillOpacity = .5,
+  #                 stroke = FALSE,
+  #                 group = "12 Minute Isochrones") %>%
+  #     addMarkers(data = ems,
+  #                group = "EMS Locations",
+  #                label = labels,
+  #                labelOptions = labelOptions(direction = "bottom",
+  #                                            style = list(
+  #                                              "font-size" = "12px",
+  #                                              "border-color" = "rgba(0,0,0,0.5)",
+  #                                              direction = "auto"))) %>%
+  #     addLayersControl(
+  #       position = "topright",
+  #       baseGroups = c("8 Minute Isochrones",
+  #                      "10 Minute Isochrones",
+  #                      "12 Minute Isochrones"),
+  #       overlayGroups = c("EMS Locations",
+  #                         "Residential Properties"),
+  #       options = layersControlOptions(collapsed = FALSE))
+  # })
+  # 
+  # output$allemstable <- renderTable({
+  #   table <- read.csv("data/isochrones/tables/ems_iso_table.csv")
+  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
+  #   table
+  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
+  # 
 }
 
 
