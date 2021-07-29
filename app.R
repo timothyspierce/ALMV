@@ -1,3 +1,5 @@
+rm(list=ls())
+
 library(shiny)
 library(leaflet)
 library(tidyverse)
@@ -126,80 +128,79 @@ ui <- navbarPage(title = "ALMV",
                  useShinyjs(),
                  
                  # Tab Overview-----------------------------------------------------------
-                 
+
                  tabPanel("Overview", value = "overview",
                           fluidRow(style = "margin: 2px;",
                                    align = "center",
                                    # br("", style = "padding-top:2px;"),
                                    # img(src = "uva-dspg-logo.jpg", class = "topimage", width = "20%", style = "display: block; margin-left: auto; margin-right: auto;"),
                                    br(""),
-                                   
+
                                    h1(strong("Appalachian Labor Markets: Preparing for Jobs of the Future"),
                                       br(""),
                                       h4("Data Science for the Public Good Program"),
                                       h4("Virginia Tech"),
-                                      
-                                      
+
+
                                       br()
                                    )
                           ),
                           fluidRow(style = "margin: 6px;",
                                    column(4,
-                                          h2(strong("Project Background")),
-                                          p(strong("The problem."), "Rural counties often face challenges in providing health care access to their residents given limited", a(href = "https://www.ruralhealthinfo.org/topics/hospitals", "health facilities", target = "_blank"),
-                                            "available, lack of broadband infrastructure that makes it difficult to provide", a(href = "https://www.ruralhealthinfo.org/topics/telehealth", "telemedicine access", target = "_blank"), "or communicate health information, and individual-level",
-                                            a(href = "https://www.ruralhealthinfo.org/topics/social-determinants-of-health", "inequalities", target = "_blank"), "that pose barriers to health care use and health
-                                            behaviors. Identifying areas of high need or potential solutions may also be difficult for rural areas without adequate resources to acquire, analyze, and interpret
-                                            relevant data."),
+                                          h2(strong("Overview Appalachia")),
+                                          p("Ranging from southern New York to Northern Mississippi, the region is commonly referred to as Appalachia due to its location within the namesake mountain range. Encompassing 420 counties, across 13 states, Appalachia is home to over 25 million residents spread over 205,000 square miles. The overall regions are split into five subregions:"),
                                           p(),
-                                          p(strong("The setting."), a(href = "https://www.co.patrick.va.us/", "Patrick County", target = "_blank"), "is a rural area in Virginia’s Central Piedmont, bordering North Carolina,
-                                            with a declining population of approximately 17,600 people. Like many other rural areas in the United States, Patrick County is having difficulty meeting its residents’ health and quality of life needs.
-                                            The county’s", a(href = "https://www.countyhealthrankings.org/app/virginia/2019/rankings/patrick/county/outcomes/overall/snapshot", "doctor to patient ratios", target = "_blank"),
-                                            "of 3,530 to 1 for primary care providers, 8,840 to 1 for dentists, and 2,520 to 1 for mental health providers are 3-
-                                            to 8-times higher than statewide, and the county’s only hospital closed in 2017. At the same time, the median income for Patrick County residents is $42,900,
-                                            46% of children living in the county are eligible for free or reduced-price school lunch, and 12% of residents are food insecure."),
+                                          tags$ul(
+                                            tags$li("Northern, including counties in New York, Pennsylvania, Maryland, Ohio, and West Virginia"),
+                                            tags$li("North Central, including counties in Ohio and West Virginia"),
+                                            tags$li("Central, including counties in West Virginia, Kentucky, Virginia, and Tennessee"),
+                                            tags$li("South Central, including counties in Virginia, North Carolina, and Tennessee"),
+                                            tags$li("Southern, including counties in South Carolina, Georgia, Alabama, and Mississippi")
+                                          ),
                                           p(),
-                                          p(strong("The project."), "This University of Virginia", a(href = "https://biocomplexity.virginia.edu/social-decision-analytics", "Biocomplexity Institute", target = "_blank"),
-                                            "Data Science for Public Good (DSPG) project aimed to build local capacity, leverage social and data science to address current and future resident well-being, and enhance
-                                             data-driven decision making about rural health in Patrick County, Virginia.")
+                                          p("Appalachia has long been known for its diverse culture, often sensationalized by popular media negatively. Commonly associated with lasting myths and misrepresentation regarding the behavior and isolation of the inhabitants, popular media throughout the decades have focused on the more lurid aspects of the region's culture. Ranging from tales of moonshining escapades and violent clan wars to the idea that the region is home to violent and uneducated people, Appalachia has been wrongfully portrayed in the media for years."),
+                                          p(),
+                                          p("Rich in natural resources such as coal, natural gas, iron, petroleum, and lumber, Appalachia has been primarily home to industries related to these resources. Large-scale mining and logging operations sustained the region's job market for years and brought along with it a new age of modernization in the territory. However, even with its wealth of natural resources, Appalachia has long struggled economically and has been associated with poverty.")
+                                   ),
+
+                                   column(4,
+                                          h2(strong("Motivation for the Project ")),
+                                          p("Despite close to 60 years of direct federal aid, Appalachia continues to be characterized by immense poverty. While immeasurable progress has occurred since the signing of the Appalachian Development Act in 1965 and the creation of the Appalachian Regional Commission that oversees economic development in the region, one of the issues that remain is that Appalachian labor markets are still vulnerable to shifts. These shifts could lead to and have already led to large amounts of unemployment and poverty."),
+                                          p(),
+                                          p("As the United States aims to move toward a greener more sustainable future, the job market will evolve accordingly, whether by choice or by government mandate. Heavily polluting or environmentally harmful jobs will have to either go green or risk elimination. This risk is what is most significantly affecting the Appalachian region. Rich in natural resources such as coal, natural gas, and lumber, the Appalachian labor market has taken advantage of these resources to create jobs for generations. As these jobs are phased out for a multitude of factors, the region is challenged with a troubling reality: residents must now find new jobs of the future that are often unrelated to anything they have ever done in the past. This is the focus of our project.")
                                    ),
                                    column(4,
-                                          h2(strong("Our Work")),
-                                          p("Our research team worked closely with Patrick County Extension Office, Virginia Department of Health, and Healthy Patrick County coalition stakeholders
-                                            to identify the county’s priority challenges in the area of health. The research team reviewed a prior", a(href = "https://www.vdh.virginia.gov/west-piedmont/2020/05/27/patrick-county-health-needs-improvement-plan-completed/",
-                                                                                                                                                       "community health assessment,", target = "blank"), a(href = "https://www.pubs.ext.vt.edu/VCE/VCE-596/VCE-596-75/VCE-1002-75.html", "situation analysis", target = "_blank"),
-                                            "relevant funding applications, and held a listening meeting with stakeholders to identify these challenges. Lack of
-                                            data on health care access, food access as related to diabetes and heart disease prevalence, older adult health, and digital connectivity that would facilitate
-                                            access to telemedicine emerged as key problems where providing actionable insights could address barriers to Patrick County residents’ health."),
+                                          h2(strong("Objective for the Project")),
+                                          p("Upon completion of this project, our research team aims to create a baseline understanding of the Appalachian labor market's past, present, and potential future, to create targeted recommendations for jobs of the future utilizing skills already present with the residents of the region. "),
+                                          p("We implemented the Data Science Process to identify our problem, acquire, process, and explore publicly available data, and perform in-depth analysis, to provide the Appalachian region with our data-driven findings."),
+                                          p("We used a labor supply and demand framework to understand the underlying drivers of skill content within each county. Focusing on five distinct supply factors:"),
+                                          tags$ul(
+                                            tags$li("Education and Educational Attainment"),
+                                            tags$li("Age Distribution"),
+                                            tags$li("Health and Disability"),
+                                            tags$li("Health Insurance Availability"),
+                                            tags$li("Internet/Broadband and Computer Access (education)")
+                                          ),
+                                          p("Through in-depth analysis of these factors, as it relates to Appalachia and similar regions, we can understand what the Appalachian workforce currently offers to a potentially emerging new labor market."),
+                                          p("Additionally, we explored demand factors that will impact what new jobs and industries are potentially viable in the Appalachian region. Focusing on three main factors:"),
+
+                                          tags$ul(
+                                            tags$li("Internet/Broadband and Computer Access (employment)"),
+                                            tags$li("Income Per Capita"),
+                                            tags$li("Underlying Industrial Sectors")
+                                          ),
+                                          p("These factors drive demand in the region for goods and services and give a better idea of what new jobs are possible to implement for the future growth of the Appalachian labor market."),
+                                          p("This dashboard compiles our findings and allows all interested parties to explore the information dynamically."),
                                           p(),
-                                          p("We implemented the", a(href = "https://doi.org/10.1162/99608f92.2d83f7f5", "data science framework", target = "_blank"), "and identified, acquired, profiled, and used
-                                            publicly available data to provide Patrick County with data-driven resources in each of the four priority areas. We:"),
-                                          tags$li("Provided census tract- and census block group-level maps of Patrick County residents'", strong("sociodemographic and socioeconomic characteristics,"), " highlighting underprivileged areas."),
-                                          tags$li("Created census tract-level maps on", strong("older adult health"), "to show the geographic distribution of older adults in the county by gender and
-                                                  type of disability, identifying areas where providing telehealth or travelling preventive care services may be particularly important."),
-                                          tags$li("Mapped residents'", strong("computing device and internet access"), "at census block group level, and constructed 10- and 15-minute isochrones (areas of equal travel time) from households to free
-                                                  wifi hotspots to highlight internet gaps that could suggest where new wi-fi hotspots could be optimally placed to provide internet access to more residents."),
-                                          tags$li("Calculated and mapped", strong("emergency medical service (EMS) station coverage"), "of households within 8-, 10-, and 12-minute travel times, identifying areas difficult to reach within
-                                                   standard EMS travel thresholds."),
-                                          tags$li("Constructed", strong("food access"), "maps by census tract, 10- and 15-minute isochrones from households to grocery stores and farmers markets, and maps of food security resources in the county,
-                                                highlighting food deserts and areas that could benefit from programs facilitating access to fresh produce."),
-                                          p(),
-                                          p("This dashboard compiles our findings and allows extension professionals, stakeholders, and other users to explore the information interactively.")
-                                   ),
-                                   column(4,
-                                          h2(strong("Dashboard Aims")),
-                                          p("Our dashboard is aimed at:"),
-                                          p(strong("Patrick County extension professionals and the communities they serve."), "Information available through the interface helps extension
-                                            agents identify areas where residents may not have access to internet, or areas with a high smartphone ownership share, suggesting what channels agents may
-                                            want to use to disseminate health-related information most effectively. Information on older adult populations and grocery store access can help extension agents
-                                            better understand where underserved populations live and how to advocate on their behalf."),
-                                          p(strong("Local health-related agencies and departments seeking data insights to inform their decision-making."), "For local stakeholders, identifying broadband
-                                            access gaps that limit access to telemedicine, grocery store access gaps, and areas with high proportions of older adults with independent living difficulty can suggest
-                                            optimal locations for placing free wifi hotspots, providing grocery delivery services, devising mobile health unit routes, or can inform other solutions that would benefit
-                                            a broad population base."),
-                                          p(strong("State government representatives in the Virginia Department of Health and the State Office of Rural Health."), "These and similar stakeholders may
-                                            need small or rural area-specific insights that Centers for Disease Control and other county-level datasets cannot provide.")
+                                          p()
                                    )
+                          # ),
+                          # fluidRow(align="left",
+                          #          p(strong("Reference")),
+                          #          P(a("Appalachian Regional Commission",href = "https://www.arc.gov/about-the-appalachian-region/", target = "_blank")),
+                          #          p(a("Economic Redevelopment in Appalachia: The Appalachian Regional Commission",href = "http://www.umich.edu/~econdev/arc/", target = "_blank")),
+                          #          p(a("Infoplease: Appalachian Mountains",href = "https://www.infoplease.com/encyclopedia/places/north-america/us-geography/appalachian-mountains", target = "_blank")  )
+
                           ),
                           fluidRow(align = "center",
                                    p(tags$small(em('Last updated: August 2021'))))
@@ -282,28 +283,39 @@ ui <- navbarPage(title = "ALMV",
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Skills(need new title)"), align = "center"),
                                    p("", style = "padding-top:10px;"),
-                                   column(4,
+                                  
                                           h4(strong("This is a title")),
-                                          p("Blurb 1."),
-                                          br()),
-                                   column(8,
-                                          h4(strong("Description of this visulization.")),
-                                          p("Blurb 2"),
+                                          p("Our project aims to create meaningful measures of employment and skills in the Appalachian labor market. We use individualized and anonymized 2019 5-Year American Community Survey to understand the occupations and industries of Appalachia. The most granular level for these data is the Public Use Microdata Area (PUMA) available in the Integrated Public Use Microdata Series (IPUMS). We use 6-digit SOC codes extracted from the ACS to obtain estimates of occupation prevalence in each area. "),
                                           br(),
-                                          p(""),
+                                          p("To understand and quantify the skills content of Appalachian labor markets, our project uses O*Net skills data. O*Net skills data ranks each of their 35 listed skills by importance and proficiency for 772 unique SOC occupation codes. Using 2019 skill rankings, we matched O*Net skills to the occupations found in Appalachia."),
+                                           br(),
+                                           p("Our team constructs an index to gain an understanding of the distribution of occupations in Appalachia. Our index identifies which skills are the most and the least prevalent in Appalachian communities. Within every occupation, each skill is assigned a value based on its importance to the job and the total number of individuals employed in that position. "),
+                                           br(),
+                                           p("Our index is to be interpreted as follows: If there is a skill that is very important to a very popular occupation and employees must have very high levels of proficiency in that skill, it will be assigned a higher value. If there is a skill that is not very important to an uncommon occupation and the required proficiency is very low, it will be assigned a lower value. These values represent relative importance to other skills within the PUMA. The index is limited in its ability to compare across areas. We can not say that one area is better at public speaking than another. We are able to compare the strengths and weaknesses of areas. "),
+                                           br(),
+                                           p("Our dashboard presents the prevalence of five skills we identified as important to the future economy. We use O*Net’s Bright Outlook Occupations—occupations which are “projected to grow faster than average (employment increase of 5% or more)” and “to have 100,000 or more job openings over the period 2019-2029 for the US nationwide”. Using these occupations, filtered and ranked skills to find and present those most relevant to our project goals."),
+                                           br(),
+                                           p("Moving forward, we anticipate that these indices can be consolidated and contribute to a multi-dimensional index that quantifies vulnerabilities ."),
+                                          
+                                  
                                           ## Input: skills------------
                                          selectInput("skills", "Select the Skill:", width = "100%", choices = c(
-                                                      "TechnologyDesign",
-                                                      "ReadingComprehension",
+                                                      "Technology Design"="TechnologyDesign",
+                                                      "Reading Comprehension"="ReadingComprehension",
                                                        "Monitoring",
                                                       "Coordination",
-                                                         "ActiveListening")),
+                                                         "Active Listening"="ActiveListening")),
                                                      p(strong("This is a title")),
-                                                     ## Output: skillsoutput ------------------------
-                                                     withSpinner(leafletOutput("skillsoutput")),
-                                                     p(tags$small("Data Sources: CommonwealthConnect, 2020; CoreLogic, 2019; TravelTime API."))
-                                            ) 
-                                   )
+                                         ## Output: skillsoutput ------------------------
+                                          withSpinner(leafletOutput("skillsoutput")),
+                                         p(tags$small("Data Sources: American Conmunity Survey??????????????????????????????????????")),
+                                         h4(strong("A Simplified Example of the Index")),
+                                         p("For example, suppose a labor market has two occupations—math teachers and coal miners— and each occupation has only two skill measures—public speaking and manual labor. Suppose the required proficiency of public speaking skills for math teachers is 0.95 on a 0-1 scale and the required proficiency of manual labor is 0.3 on a 0-1 scale. For coal miners, public speaking may only be 0.1 on a 0-1 scale and manual labor may be 0.8 on a 0-1 scale. Assume, for now, that the importance level is the same as the required proficiency. The data suggest that this is true with minimal variance. Without knowing how many coal miners and math teachers there are, we may assume that public speaking is the most prevalent skill in this labor market. However, suppose this labor market has 100 coal miners and only 5 math teachers. "),
+                                         br(),
+                                         p("We multiply each skill index for each occupation by the number of individuals employed in this occupation. For this hypothetical labor market, the weighted public speaking value for math teachers is 4.75 and the weighted public speaking value for coal miners is 10. The weighted manual labor value for math teachers is 1.5 and the weighted manual labor value for coal miners is 80. The public speaking skills index for this labor market is 14.75 and the manual labor skills index 81.5. To normalize these indices, we take the percentage of the whole and find that public speaking receives a value of .15 and manual labor receives a value of .85. In this economy, manual labor is much more prevalent than public speaking."),
+                                         p("Our index also removes the assumption that importance to the occupation is the same as required proficiency. A job may require a low proficiency in typing even though it’s essential the employees type a few things everyday. In the construction of our index, we multiply the importance level by the required proficiency to compensate for some of these variances although they are uncommon. ")
+                                            )
+                     
                           ),
                  
                  #Tab Data -----------------------------------------------------------
@@ -367,7 +379,20 @@ ui <- navbarPage(title = "ALMV",
                             ),
                             tabPanel("Measures",
                                      h3(strong(""), align = "center"),
-                                     p("Austin's index explanation. In the word file, updating.")
+                                     p("Austin's index explanation. Updating."),
+                                     
+                                     fluidRow(style = "margin: 6px;",
+                                              h1(strong("Technical Creation of the Index"), align = "center"),
+                                              p("", style = "padding-top:10px;"),
+                                              
+                                              h4(strong("This is a title")),
+                                              p("To gain an understanding of the distribution of occupations in Appalachia, a grouped summary was performed to obtain occupational counts by PUMA . The data was grouped by PUMA and SOC, creating groups of unique PUMA and SOC combinations.  An SOC Frequency summary column was created from the sums of the Person Weights in each group, producing the desired occupational counts by PUMA table."),
+                                              p("The SOC’s available from O*Net’s 2019 Skills rankings use the 2010 SOC classification, which were largely incompatible with the SOC’s from the IPUMS data. To remedy this, the O*Net 2010 to 2019 SOC crosswalk was used to transform all 2010 SOC’s to 2019 SOC’s. The Skills data was then tidied using pivot_wider as to have each unique soc and skill combination take up one row in the Skills table and Importance and Level rankings were normalized on a 0 to 1 scale. "),
+                                              p("The team thought it most practical to associate one value with each soc and skill combination, seeking to create an index that takes into account both the Importance and Level of a skill to its associated SOC. Treating Importance as a proxy for the probability of an individual in the SOC having the skill, a new index was created, taking the product of the normalized values of Importance and Level. To account for the prevalence of an occupation and better represent the importance and level of a skill as it pertains to Appalachian PUMAS, a density index was created. To create this, the socs, skills and associated indices were inner-joined with the occupational counts. By taking the product of the soc frequency in each PUMA and the index value of each skill and SOC combination, a new density index was created for each soc in every PUMA. This density index was then normalized on a scale from 0 to 1."),
+                                              p("The Bright Outlook Occupations were read into R, and SOC codes were altered slightly to best fit the SOC codes of our skill index. The skill index was then limited to only include the SOC’s of those listed in the Bright Outlook Occupations, creating a “skills of the future” index table. To best rank these skills of the future, the table was grouped by skill name, and the indices summed, creating a new  importance index  for the skills of the future. Breaking these skills down into our categories, the team was able to identify the most relevant skills to the future in each skill category."),
+                                              p("To visualize the distribution of relative importance of skills of the future across Appalachian  PUMAs, interactive choropleth maps were created, with the color of each PUMA representing its respective index value of the skill of the future. Popups were then added to the map, allowing the user to visualize the industry breakdown of each PUMA and possibly better understand the effects of the PUMAs industry makeup on its index value of each skill of the future. To do this, the team utilized the “Industry by Occupation for the Civilian Population” table at the PUMA level from 2019 5-year ACS estimates. Pie Charts for the estimate of proportion of PUMA population in each industry were added to each PUMA using the Leafpop library’s addPopupGraph function. ")
+                                              
+                                     )
                                      
                                      
                             )
