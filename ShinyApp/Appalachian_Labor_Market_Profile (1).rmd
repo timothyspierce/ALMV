@@ -1,0 +1,634 @@
+---
+title: "Appalachia Project Overview of Shiny Dashboard 1"
+author: "Susan E. Chen"
+Last Update: "7/28/2021"
+output: 
+  html_document: 
+    toc: yes
+    toc_depth: 4
+    toc_float:
+      collapsed: no
+    theme: readable
+colorlinks: true
+urlcolor: blue
+linkcolor: blue
+citecolor: blue
+anchorcolor: blue
+toccolor: blue
+fontsize: 12pt
+---
+
+```{r setup, message = FALSE }
+knitr::opts_chunk$set(echo = TRUE)
+# If you don't have the following packages installed yet, uncomment and run the lines below
+library(tigris)
+library(dplyr)
+library(leaflet)
+library(tidycensus)
+library(tidyverse)
+library(dplyr)
+library(stringr)
+library(tigris)
+library("shiny")
+library(plotly)
+library("ggpubr")
+library("viridis")
+#library("devtools")
+
+```
+# Overview of using Appalachian Labor Market Using ACS5 data
+
+Set the working directory and read in the workspace from pull_ACS.Rmd. Note when you reading the workspace you will be reading in 2 objects: a dataframe (all_ACS5) and a vector (state_list). The dataframe includes states for ALL mining communities. I select on coal_region=1 for Appalachia.
+
+```{r LoadData}
+#To load the working directory and workspace
+setwd("C:/Users/ecsusan/Dropbox/2021VT-DSPG-FILES/Appalachia/")
+readRenviron("~/.Renviron") #readin Census API key
+#Create a nice list of FIPS state and county. Use `fip_list` below to pull variables and to map.
+counties<-read.csv("All_Mining.csv", header=T)
+#Note Yellowstone National Park did not have ACS data so drop it.
+counties <- filter(counties,FIPS!= 30113)
+#only keep Appalachia
+counties <- filter(counties, ï..coal_region== 1)
+
+fip_list<-sprintf("%05d",counties$FIPS)
+fips  <- data.frame(fip_list)
+state_list<-unique(sprintf("%02d", counties$state_code))
+states <- data.frame(state_list)
+```
+
+
+# Overview of the Appalachian Labor Market
+
+## Variables
+The variables we are going to analyze are chosen because they help to conform to a labor supply and demand framework. This framework allows us better understand the underlying drivers of skill content within a county. 
+
+The variables that I pull from the ACS are all county level statistics: 
+- Per Capita Income: PerCapInc
+- Percent with a disability
+- Percent with Health Insurance
+- Percent Unemployment
+
+Below I use the following variables to create new variables for our analysis. They are: 
+- Number of owner occupied housing: Housing.OwnOcc
+- Total Number of homes: Housing.Total
+- Lots of variables for Percent at each Age: e.g. Pct.Under5
+- Lots of variables for Percent at each EdLevel: e.g. Pct.HS, etc
+
+- No. of Households in the county: County.HH 
+- % of Households with a computer device: HH.Pct.compdev
+- % of Households with internet: HH.Pct.internet      
+- % of Households with broadband: HH.Pct.BroadBand
+- % of Households with no internet: HH.Pct.Nointernet 
+- % employed by industry
+
+Supply Factors: Education and educational attainment can affect ....,Link between skills if older workers acquired skills at a younger age and the communities are aging...
+Factors such as the age distribution, affect the demand certain types of services within a community and the stock of workers who can perform certain tasks. Related to this is the overall health of the community which can affect both the stock and the types of jobs that workers can perform.
+Disability and Health Insurance availability
+
+Internet/Broadband and computers in the home is a supply factor (affects ability to take online classes) and a demand factor (affects industry or type of employment)
+
+Demand Factors: income per capita -- drives demand for goods and services. Underlying industrial sectors: types of skills demanded by these sectors -- are they transferable to skills in the new economy. Technology -- this one may also be under labor supply ??? 
+
+Not sure where to put own home or broadband but they are interesting too.
+
+```{r}
+almv_acs_var <- function(varcode){
+  get_acs(geography="county",
+          state=state_list,
+          variables =varcode,
+          year=2019, 
+          survey = "acs5",
+          cache_table = TRUE,
+          geometry = F) %>%
+    filter(GEOID %in% fip_list) %>%
+    select(NAME, estimate)
+}
+
+#pull only variable of interest at the county level
+disability <- almv_acs_var("S1810_C03_001") %>%  rename(Pct.Dis=estimate)
+HI_insured <-  almv_acs_var("S2701_C03_001") %>%  rename(Pct.HI=estimate)
+Unemployment <- almv_acs_var("S2301_C04_001") %>%  rename(Pct.Unemp=estimate)
+
+#Make housing percent for ownhome
+Housing  <- almv_acs_var("S2502_C04_001") %>%  rename(Housing.OwnOcc=estimate)
+Housing2  <- almv_acs_var("S2502_C01_001") %>%  rename(Housing.Total=estimate)
+housing<- Reduce(function(x, y) merge(x, y, all=TRUE), list(Housing,Housing2))
+housing$OwnHome <- round(100* housing$Housing.OwnOcc/housing$Housing.Total)
+#keep to bind
+dff000 = subset(housing, select = c(NAME,OwnHome))
+
+#Use these numbers to calculate your own estimate
+SCounty.Pop <- almv_acs_var("B15003_001")  %>%  rename(SCountyPop2=estimate)
+Ed0 <- almv_acs_var("B15003_025")  %>%  rename(Ed.PhD=estimate)
+Ed1 <- almv_acs_var("B15003_024")  %>%  rename(Ed.Prof=estimate)
+Ed2 <- almv_acs_var("B15003_023")  %>%  rename(Ed.Mast=estimate)
+Ed3 <- almv_acs_var("B15003_022")  %>%  rename(Ed.Bach=estimate)
+Ed4 <- almv_acs_var("B15003_021")  %>%  rename(Ed.Assoc=estimate)
+Ed5 <- almv_acs_var("B15003_020")  %>%  rename(Ed.SColl=estimate)
+Ed6 <- almv_acs_var("B15003_019")  %>%  rename(Ed.SCollLT1=estimate)
+Ed7 <- almv_acs_var("B15003_018")  %>%  rename(Ed.GED=estimate)
+Ed8 <- almv_acs_var("B15003_017")  %>%  rename(Ed.HSDip=estimate)
+Ed9 <- almv_acs_var("B15003_016")  %>%  rename(Ed.HSNoDip=estimate)
+#less than high school??? - create this category of less than hs by subtracting all other cats from 100 after you make percent.
+Education<- Reduce(function(x, y) merge(x, y, all=TRUE), list(Ed0,Ed1,Ed2,Ed3,Ed4,Ed5,Ed6,Ed7,Ed8,Ed9, SCounty.Pop))
+Education$Below11 <- Education$SCountyPop2 - (Education$Ed.HSNoDip +Education$Ed.GED+Education$Ed.HSDip+Education$Ed.SColl+Education$Ed.Assoc+Education$Ed.SCollLT1+Education$Ed.Bach+Education$Ed.Prof+Education$Ed.Mast+Education$Ed.PhD)
+Education$LT_HS <- round(100*(Education$Ed.HSNoDip+Education$Below11)/Education$SCountyPop2)
+Education$HS_Dip <- round((100/(Education$SCountyPop2))*(Education$Ed.GED+Education$Ed.HSDip))
+Education$SomeColl<-round(100*(Education$Ed.SColl+Education$Ed.Assoc+Education$Ed.SCollLT1)/Education$SCountyPop2)
+Education$Coll_Plus <- round((100/Education$SCountyPop2)*(Education$Ed.Bach+Education$Ed.Prof+Education$Ed.Mast+Education$Ed.PhD))
+
+
+#keep to bind
+dff00 = subset(Education, select = c(NAME,LT_HS, HS_Dip, SomeColl, Coll_Plus,SCountyPop2))
+
+CountyHH <- almv_acs_var("S2801_C01_001") %>%  rename(County.HH=estimate)
+HHCompdev <- almv_acs_var("S2801_C02_002") %>%  rename(HH.Pct.compdev=estimate)
+HHComputer <- almv_acs_var("S2801_C02_003") %>%  rename(HH.Pct.computer=estimate)
+HHInternet <- almv_acs_var("S2801_C02_012") %>%  rename(HH.Pct.internet=estimate)
+HH_BB <- almv_acs_var("S2801_C02_014") %>%  rename(HH.Pct.BroadBand=estimate)
+HH_NoInternet <- almv_acs_var("S2801_C02_019") %>%  rename(HH.Pct.Nointernet=estimate)
+
+CountyMedianAge <- almv_acs_var("S0101_C01_032") %>%  rename(County.MedAge=estimate) 
+CountyMedianInc <- almv_acs_var("S1901_C01_013") %>%  rename(County.MedInc=estimate) 
+
+#Use these numbers to calculate your own estimate
+Age1  <- almv_acs_var("S0101_C02_002") %>%  rename(Pct.Under5=estimate) 
+Age2  <- almv_acs_var("S0101_C02_003") %>%  rename(Pct.Bet5_9=estimate) 
+Age3  <- almv_acs_var("S0101_C02_004") %>%  rename(Pct.Bet10_14=estimate) 
+Age4  <- almv_acs_var("S0101_C02_005") %>%  rename(Pct.Bet15_19=estimate) 
+Age5  <- almv_acs_var("S0101_C02_006") %>%  rename(Pct.Bet20_24=estimate) 
+Age6  <- almv_acs_var("S0101_C02_007") %>%  rename(Pct.Bet25_29=estimate) 
+Age7  <- almv_acs_var("S0101_C02_008") %>%  rename(Pct.Bet30_34=estimate) 
+Age8  <- almv_acs_var("S0101_C02_009") %>%  rename(Pct.Bet35_39=estimate) 
+Age9  <- almv_acs_var("S0101_C02_010") %>%  rename(Pct.Bet40_44=estimate) 
+Age10  <- almv_acs_var("S0101_C02_011") %>%  rename(Pct.Bet45_49=estimate) 
+Age11  <- almv_acs_var("S0101_C02_012") %>%  rename(Pct.Bet50_54=estimate) 
+Age12  <- almv_acs_var("S0101_C02_013") %>%  rename(Pct.Bet55_59=estimate) 
+Age13  <- almv_acs_var("S0101_C02_014") %>%  rename(Pct.Bet60_64=estimate) 
+Age14  <- almv_acs_var("S0101_C02_015") %>%  rename(Pct.Bet65_69=estimate) 
+#Calculate Age.70plus by subtracting all other variables from 100 when you do percent
+age <- Reduce(function(x, y) merge(x, y, all=TRUE), list(Age1,Age2,Age3,Age4,Age5,Age6,Age7,Age8,Age9,Age10,Age11,Age12,Age13,Age14))
+
+age$age0_14<-age$Pct.Under5+age$Pct.Bet5_9+age$Pct.Bet10_14
+
+age$age15_64<-(age$Pct.Bet15_19+age$Pct.Bet20_24+age$Pct.Bet25_29+age$Pct.Bet30_34+age$Pct.Bet35_39+age$Pct.Bet40_44+age$Pct.Bet45_49+age$Pct.Bet50_54+age$Pct.Bet55_59+age$Pct.Bet60_64)
+
+age$age65plus<-100-age$age0_14-age$age15_64
+
+#keep to bind
+dff0 = subset(age, select = c(NAME,age0_14, age15_64, age65plus) )
+
+#LT20K_NoInternet<- almv_acs_var("S2801_C02_023") %>%  rename(LT20K.Pct.Nointernet=estimate)
+#LT2075K_NoInternet<- almv_acs_var("S2801_C02_027") %>%  rename(LT2075K.Pct.Nointernet=estimate)
+#GT75K_NoInternet<- almv_acs_var("S2801_C02_031") %>%  rename(GT75K.Pct.Nointernet=estimate)
+
+#Employment by industry. Use these numbers to calculate your own percent
+TotEmp <- almv_acs_var("S2404_C01_001") %>%  rename(TotEmp=estimate)
+IndEmp1 <- almv_acs_var("S2404_C01_003") %>%  rename(AgEmp=estimate)
+IndEmp2 <- almv_acs_var("S2404_C01_004") %>%  rename(MiningEmp=estimate)
+IndEmp3 <- almv_acs_var("S2404_C01_005") %>%  rename(ConstrEmp=estimate)
+IndEmp4 <- almv_acs_var("S2404_C01_006") %>%  rename( ManufEmp=estimate)
+IndEmp5 <- almv_acs_var("S2404_C01_007") %>%  rename( WholeEmp=estimate)
+IndEmp6 <- almv_acs_var("S2404_C01_008") %>%  rename( RetailEmp=estimate)
+IndEmp7 <- almv_acs_var("S2404_C01_009") %>%  rename( TranWhUtilEmp=estimate)
+IndEmp8 <- almv_acs_var("S2404_C01_012") %>%  rename( InfoEmp=estimate)
+IndEmp9 <- almv_acs_var("S2404_C01_013") %>%  rename( FnInRERntEmp=estimate)
+IndEmp10 <- almv_acs_var("S2404_C01_016") %>%  rename( ProfSciMngAdEmp=estimate)
+IndEmp11 <- almv_acs_var("S2404_C01_021") %>%  rename( EdEmp=estimate)
+IndEmp12 <- almv_acs_var("S2404_C01_022") %>%  rename( HCSAEmp=estimate)
+IndEmp13 <- almv_acs_var("S2404_C01_023") %>%  rename( ArtEntRecAccFdEmp=estimate)
+
+industry <- Reduce(function(x, y) merge(x, y, all=TRUE), list(TotEmp,IndEmp1,IndEmp2,IndEmp3,IndEmp4,IndEmp5,IndEmp6,IndEmp7,IndEmp8,IndEmp9,IndEmp10,IndEmp11,IndEmp12,IndEmp13))
+
+#create percents in each industry at the county
+industry$I1 <-round(100* industry$AgEmp/industry$TotEmp)
+industry$I2<-round(100*(industry$MiningEmp)/industry$TotEmp)
+industry$I3<-round(100*(industry$ConstrEmp)/industry$TotEmp)
+industry$I4<-round(100*(industry$ManufEmp)/industry$TotEmp)
+industry$I5<-round(100*(industry$WholeEmp)/industry$TotEmp)
+industry$I6<-round(100*(industry$RetailEmp)/industry$TotEmp)
+industry$I7<-round(100*(industry$TranWhUtilEmp)/industry$TotEmp)
+industry$I8<-round(100*(industry$InfoEmp)/industry$TotEmp)
+industry$I9<-round(100*(industry$FnInRERntEmp)/industry$TotEmp)
+industry$I10<-round(100*(industry$ProfSciMngAdEmp)/industry$TotEmp)
+industry$I11<-round(100*(industry$EdEmp)/industry$TotEmp)
+industry$I12<-round(100*(industry$HCSAEmp)/industry$TotEmp)
+industry$I13<-round(100*(industry$ArtEntRecAccFdEmp)/industry$TotEmp)
+
+#keep to bind
+dff1 = subset(industry, select = c(NAME,I1,I2,I3,I4,I5,I6,I7,I8,I9,I10,I11,I12,I13) )
+
+#travel time to work. #Use these numbers to calculate your own percent
+t0 <- almv_acs_var("B08303_001") %>%  rename(tcat0=estimate)
+t1 <- almv_acs_var("B08303_002") %>%  rename(tcat1=estimate)
+t2 <- almv_acs_var("B08303_003") %>%  rename(tcat2=estimate)
+t3 <- almv_acs_var("B08303_004") %>%  rename(tcat3=estimate)
+
+t4 <- almv_acs_var("B08303_005") %>%  rename(tcat4=estimate)
+t5 <- almv_acs_var("B08303_006") %>%  rename(tcat5=estimate)
+t6 <- almv_acs_var("B08303_007") %>%  rename(tcat6=estimate)
+
+t7 <- almv_acs_var("B08303_008") %>%  rename(tcat7=estimate)
+t8 <- almv_acs_var("B08303_009") %>%  rename(tcat8=estimate)
+t9 <- almv_acs_var("B08303_010") %>%  rename(tcat9=estimate)
+
+t10 <- almv_acs_var("B08303_011") %>%  rename(tcat10=estimate)
+t11 <- almv_acs_var("B08303_012") %>%  rename(tcat11=estimate)
+t12 <- almv_acs_var("B08303_013") %>%  rename(tcat12=estimate)
+
+travel <- Reduce(function(x, y) merge(x, y, all=TRUE), list(t0,t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12))
+travel$tt014<-round((travel$tcat1 + travel$tcat2 + travel$tcat3)/travel$tcat0)
+travel$tt1529<-round((travel$tcat4 + travel$tcat5 + travel$tcat6)/travel$tcat0)
+travel$tt3044<-round((travel$tcat7 + travel$tcat8 + travel$tcat9)/travel$tcat0)
+travel$tt4559<-round(travel$tcat10/travel$tcat0)
+travel$tt60plus<- round((travel$tcat11 + travel$tcat12)/travel$tcat0)
+dff2 = subset(travel, select = c(NAME,tt014,tt1529,tt3044,tt4559,tt60plus) )
+#Keep dff2 dataframe to bind below.
+
+
+almv_acs_table <- function(varcode){
+  get_acs(geography="county",
+          state=state_list, cache_table = TRUE, geometry = TRUE,
+          table = varcode, 
+          year=2019, survey = "acs5") %>%
+    filter(GEOID %in% fip_list)  %>%    select(GEOID, NAME, estimate, geometry)
+
+}
+
+#Call the function to pull data from ACS
+PerCapita <- almv_acs_table("B19301") %>%  rename(PerCapInc=estimate)
+#write.csv(PerCapita$GEOID,'PerCapita.csv')
+
+all_ACS5 <- Reduce(function(x, y) merge(x, y, all=TRUE), list(PerCapita,dff000, dff00, dff0, dff1, dff2, disability, HI_insured, Unemployment, HHCompdev, HHComputer, HHInternet, HH_BB, HH_NoInternet, CountyMedianAge, CountyMedianInc))
+```
+
+
+# Adding the Urban-Rural Classification from USDA
+To provide a profile of Appalachia, I recommend doing an urban-rural comparison. Keep only the Appalachian Region and merge in the rural classification from the USDA. Here is the link: https://www.ers.usda.gov/data-products/rural-urban-continuum-codes.aspx. Use `dplyr` and pipe to do this in one step: merge in the rural-urban code then keep only counties with a rucc code then I keep only Appalachian counties.
+
+```{r Add_RUCC}
+urb_ru <- read.csv("ruralurbancodes2013.csv", header=T)
+
+#add in a leading zero and make it into a character format 
+urb_ru$GEOID <- sprintf("%05d",urb_ru$ï..FIPS)
+
+#merge in dataset & keep only Appalachia
+appal <-Reduce(function(x, y) merge(x, y, all=TRUE), list(urb_ru,all_ACS5)) %>%  filter(!is.na(NAME))
+
+#summary(appal)
+appal$age0_14 <- round(appal$age0_14)
+appal$age15_64 <- round(appal$age15_64)
+appal$age65plus <- round(appal$age65plus)
+#create a new variable nonmetro for nonmetro counties
+appal$nonmetro <- ifelse(appal$RUCC_2013>=4,1,0)
+levels(appal$nonmetro)
+levels(appal$nonmetro) <- c("Nonmetro", "Metro")
+
+#Create a factor variable for rural
+appal$nonmetro.f <- factor(appal$nonmetro, labels = c("Metro", "Nonmetro"))
+#is.factor(appal$nonmetro.f)
+
+appal2 <- appal[order(appal$GEOID),]
+appal2$observation <- 1:nrow(appal2) 
+
+#group_means <- appal2 %>% group_by(nonmetro) %>%
+# summarise(mean = mean(age65plus)) 
+
+
+d <- appal2 %>%
+  group_by(nonmetro.f) %>%
+  summarise_at(vars(age0_14, age15_64, age65plus, LT_HS, HS_Dip, SomeColl,Coll_Plus, OwnHome, Pct.HI, Pct.Unemp, Pct.Dis, PerCapInc, tt014,tt1529,tt3044,tt4559,tt60plus), funs(mean(., na.rm=TRUE)))
+
+vars <- names(d)
+library(gdata)
+g <- rename.vars(d, from=vars, to=paste0("M_", vars))
+g$nonmetro.f<- g$M_nonmetro.f
+
+appal2 <- Reduce(function(x, y) merge(x, y, all=TRUE), list(appal2,g))  
+#str(appal3)
+
+```
+
+## Get the spatial data (tigris) for the leaflet map
+```{r}
+library(viridis)
+#Get the list of states you want counties for 
+nstate_list<-as.numeric(state_list)
+# grab the spatial data (tigris)
+county_poly <- counties(state=nstate_list,cb=TRUE)
+
+#Do the merge (tigris)
+poly_all_ACS5<- geo_join(county_poly, appal2, "GEOID", "GEOID")
+
+poly_all_ACS5 <- na.omit(poly_all_ACS5) 
+
+```
+
+
+
+# Plotting Labor Market Descriptive Variables by Rural and Urban
+Now I am going to provide some alternative ways to present some of the variables I created and pulled. I used this link to help me make my plots:  https://datacarpentry.org/dc_zurich/R-ecology/05-visualisation-ggplot2.html
+
+# create a graph of categorical variables by rural vs urban
+Rural is defined as having a RUCC greater than or equal to 4 from the USDA's definition of a RUCC.
+
+In Appalachia, approximately X% of the population is unemployed and the average per capita income is y. In this section we will provide a profile of Appalachia and describe the contrast between nonmetro and metro Appalachia. When we examine the unemployment data at the county level Figure 0 shows there is a large variablity in unemployment across nonmetro counties.  Signficant outliers like Wolfe County, Kentucky experience as much as 20% unemployment. Nonmetro counties have significantly lower mean per capita income than their metro counterparts and there are a large cluster of counties that lie below the mean of $23,509. @@ May be good to have a map here?? May not be able to see anything but good to give the reader a sense of what we are talking about.
+
+## Percent Unemployment
+
+1. Below you will note that I specify bins for the legend & a colorblind friendly palette.
+
+```{r}
+library("sf")
+theme_set(theme_bw())
+#specify the bin breaks
+mybins <- c(10000,15000,20000,25000,30000,40000)
+#specify the default color
+mypalette <- colorBin(palette="inferno", domain=all_ACS5$PerCapInc, na.color="transparent", bins=mybins)
+
+leaflet(data = poly_all_ACS5) %>%
+  addTiles() %>%
+  addPolygons(
+    fillColor = ~mypalette(poly_all_ACS5$`PerCapInc`),
+    stroke=TRUE,
+    weight = 1,
+    smoothFactor = 0.2,
+    opacity = 1.0,
+    fillOpacity = 0.7, 
+    label=paste("County: ", poly_all_ACS5$NAME.y, ", Value: ",poly_all_ACS5$PerCapInc),
+    highlightOptions = highlightOptions(color = "white",
+                                        weight = 2,
+                                        bringToFront = TRUE)) %>%
+  addLegend(pal=mypalette, position = "bottomright",
+            values = ~poly_all_ACS5$PerCapInc,
+            opacity = 0.5, title = "Per Capita Income") %>%
+  addPolylines(data = county_poly, color = "black", 
+               opacity = 0.2, weight = 1)
+
+```
+
+
+
+```{r SaveDataFrame}
+save(all_ACS5,file="all_ACS5.Rda")
+
+# Save multiple objects & use this one to map
+save(state_list, all_ACS5, appal2, g, poly_all_ACS5, file = "ACS_Objects.RData")
+# And to have a tidy desktop
+rm(list = ls())
+load("ACS_Objects.RData")
+```
+
+```{r plotUnemp}
+p1 <- ggplot(data = appal2, aes(x = observation, y = Pct.Unemp, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_Pct.Unemp, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Percent in County") + labs(color='County Classification') + ggtitle("% of Population: Unemployed") 
+
+ggplotly(p1) 
+p1 <- p1 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+      )
+p1
+
+p2 <- ggplot(data = appal2, aes(x = observation, y = PerCapInc, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_PerCapInc, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Income") + labs(color='County Classification') + ggtitle("Per Capita Income") 
+
+ggplotly(p2) 
+p2 <- p2 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+      )
+p2
+
+```
+
+
+## Age Profile
+
+```{r plotAGE}
+#install.packages("viridis")
+#library(viridis)
+
+p1 <- ggplot(data = appal2, aes(x = observation, y = age0_14, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_age0_14, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Percent in County") + labs(color='County Classification') + ggtitle("% of Population: Age 0-14") 
+
+ggplotly(p1) 
+p1 <- p1 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+      )
+
+p2 <- ggplot(data = appal2, aes(x = observation, y = age15_64, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_age15_64, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Percent in County") + labs(color='County Classification') + ggtitle("% of Population: Age 15-64") 
+
+ggplotly(p2) 
+p2 <- p2 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+      )
+
+p3 <- ggplot(data = appal2, aes(x = observation, y = age65plus, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_age65plus, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Percent in County") + labs(color='County Classification') + ggtitle("% of Population By Metro Classification") 
+
+ggplotly(p3) 
+p3 <- p3 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+          )
+
+subplot(p2, p3, nrows = 1,  shareY=FALSE, titleX = TRUE, titleY=TRUE)
+
+fig1 <- ggarrange(p2, p3,
+                    labels = c("A", "B"),
+                    ncol = 2, nrow = 1)
+
+fig1
+
+```
+Figure 1  : County Population 
+
+
+
+The graph above shows the scatter plot of the age distribution of the working age and elderly county population in Appalachia. As you can see Metro counties have on average (the straight orange line) more working age people than NonMetro counties. As you can see in schedule B, this is because Appalachian Nonmetro counties have a older percentage of retirement age individuals. What is notable is the large number of outliers within the older population. If you hover over the graph you will see that the outlier in nonMetro Appalachia is Highland County Virgina where 39 percent of its population is of retirement age. With this type of age distribution, it may be hard for rural counties to retool  .... 
+
+## Education Profile
+
+```{r plotEDUC}
+p1 <- ggplot(data = appal2, aes(x = observation, y = LT_HS, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_LT_HS, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Percent in County") + labs(color='County Classification') + ggtitle("% of Population: Less Than High School") 
+
+ggplotly(p1) 
+p1 <- p1 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+      )
+
+p2 <- ggplot(data = appal2, aes(x = observation, y = HS_Dip, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_HS_Dip, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Percent in County") + labs(color='County Classification') + ggtitle("% of Population: HS Dip") 
+
+ggplotly(p2) 
+p2 <- p2 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+      )
+p2
+
+p3 <- ggplot(data = appal2, aes(x = observation, y = Coll_Plus, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_Coll_Plus, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Percent in County") + labs(color='County Classification') + ggtitle("% of Population: College or More") 
+
+ggplotly(p3) 
+p3 <- p3 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+      )
+p3
+
+```
+
+Figure 2: Percent of Population with a College Degree or more 
+
+I would only present the above because the other two are reflect the same patterns.
+```{r BarPlotEduc}
+colors = c("green","yellow")
+regions <- c("Metro","Nonmetro")
+Months<-c("<HS","HS_Dip","Some Coll", "Coll_Plus")
+gg = subset(g, select = c(M_LT_HS,M_HS_Dip,M_SomeColl,M_Coll_Plus) )
+
+Values1<-unlist(gg[1,]) #class=numeric
+Values2<-unlist(gg[2,])
+#Values<-c(g$M_LT_HS,g$M_HS_Dip,g$M_SomeColl,g$M_Coll_Plus)
+Values1
+Values2
+Values <- matrix(c(Values1,Values2), nrow = 2, ncol = 4, byrow = TRUE)
+ValuesP <- data.frame(Values)
+barplot(Values, main = "Educational Distribution in Appalachia", names.arg = Months, xlab = "Category", ylab = "Percent", col=colors)
+
+# Add the legend to the chart
+legend("topright", regions, cex = 1.3, fill = colors)
+
+```
+The bar plot above shows that Nonmetro areas have counties with a lower proportion of population with a college degree or more. This is also seen in the scatter plot where we see that there are a number of non-metro counites such as McDowell West Virginia where only 5% of the population in this county has a coll degree or more. 
+
+## Home Ownership
+```{r PlotOwnHome}
+p3 <- ggplot(data = appal2, aes(x = observation, y = OwnHome, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_OwnHome, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Percent in County") + labs(color='County Classification') + ggtitle("% of Population: Owns a Home") 
+
+ggplotly(p3) 
+p3 <- p3 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+      )
+p3
+```
+Figure 4: 
+Rates of home ownership are high. Home ownership and labor mobility. Home ownership is thought to hamper job mobility (cite some See References on NBER paper https://www.nber.org/papers/w19079 )
+
+## Disability & Health Insurance
+
+```{r plotDisability}
+p3 <- ggplot(data = appal2, aes(x = observation, y = Pct.Dis, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_Pct.Dis, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Percent in County") + labs(color='County Classification') + ggtitle("% of Population: Disability") 
+
+ggplotly(p3) 
+p3 <- p3 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+      )
+p3
+
+
+p4 <- ggplot(data = appal2, aes(x = observation, y = Pct.HI, colour = nonmetro.f, names=NAME)) + geom_point()  +  geom_hline(data = g, aes(yintercept=M_Pct.HI, color=nonmetro.f)) + facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+axis.title.x = element_text(color="black", size=8, face="bold"),
+axis.title.y = element_text(color="black", size=10, face="bold")) +
+ xlab("County") + ylab("Percent in County") + labs(color='County Classification') + ggtitle("% of Population: Health Insurance Coverage") 
+
+ggplotly(p4) 
+p4 <- p4 %>%
+  add_trace(
+    text = appal2$NAME,
+    hoverinfo = 'text'
+      )
+p4
+```
+
+- Percent with a disability
+Nonmetro counties have much higher disability rates with some counties like Wolfe County, Kentucky with rates over 40 percent. 
+
+- Percent with Health Insurance: Mean rates are high again the extreme outliers are in non-metro counties like Holmes County, Ohio.
+
+## Industry and time to work: Susan pulled variables so Tim and Austin can do this.
+- % employed by industry here are the categories
+I1 <-AgEmp
+I2<-MiningEmp
+I3<-ConstrEmp
+I4<-ManufEmp
+I5<-WholeEmp
+I6<-RetailEmp
+I7<-TranWhUtilEmp
+I8<-InfoEmp
+I9<-FnInRERntEmp
+I10<-ProfSciMngAdEmp
+I11<-EdEmp
+I12<-HCSAEmp
+I13<-ArtEntRecAccFdEmp
+
+- Time to travel here are the categories -- add up to 30 min categories and put on a graph?
+tt014 % who travel less than 15 mins to work,
+tt1529 % who travel between 15 to 30 mins
+tt3044 % who travel 30 to 45
+tt4559 % who travel between 45 to 60 mins
+tt60plus % who travel more than 60 mins
+
+
+## Broadband and Computer Access: Susan pulled so Tim and Austin can do this
+No. of Households in the county: County.HH 
+- % of Households with a computer device: HH.Pct.compdev
+- % of Households with internet: HH.Pct.internet      
+- % of Households with broadband: HH.Pct.BroadBand
+- % of Households with no internet: HH.Pct.Nointernet 
+
+
+## Skills: Tim and Austin are working on this.
+
+
+## Changes I suggest in leaflet to the above code
+(1) Add a horizontal link for the mean so it is easy to compare the mean of urban and rural on the graph.
+(2) Click on dot to see a popup with the actual (county,state), do not show the FIPS code. This makes outliers easily identifiable.
+
+
+
+
+
+

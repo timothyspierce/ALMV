@@ -1,0 +1,13 @@
+name: Appalachia
+title: Appalachia
+username:
+account: ecsusan-vt-2020-shiny
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4433853
+bundleId: 4866215
+url: https://ecsusan-vt-2020-shiny.shinyapps.io/Appalachia/
+when: 1627510287.13465
+lastSyncTime: 1627510287.13467
+asMultiple: FALSE
+asStatic: FALSE
