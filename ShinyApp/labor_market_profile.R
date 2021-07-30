@@ -133,6 +133,8 @@ HealthInsurance
 
 #### Industry Data ----
 
+
+
 industry <- appal2[c(1,2,9,20:32)] %>% 
   pivot_longer(cols = c(I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12, I13),
                names_to = "Industry",
@@ -153,8 +155,17 @@ industry$Industry[industry$Industry == "I11"] <- "Education"
 industry$Industry[industry$Industry == "I12"] <- "Healthcare"
 industry$Industry[industry$Industry == "I13"] <- "Entertainment"
 
+View(industry)
+
 saveRDS(industry, "ShinyApp/data/industry.Rds")
 
-industry$industry, 
-ggplot(data = industry, aes(x = Industry, y = PercentOfTotal, group = nonmetro.f, fill = nonmetro.f)) +geom_col() 
-
+#Graph is here
+industry <- readRDS("ShinyApp/data/industry.Rds")
+industry_composition <- ggplot(data = industry, aes(x = Industry, 
+                                                    y = PercentOfTotal, 
+                                                    group = nonmetro.f, 
+                                                    fill = nonmetro.f)) +
+  geom_col() + theme_bw()+ theme(legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+  xlab("Industry") + ylab("Percent in Industry (%)") + labs(color='County Classification') + 
+  ggtitle("% of Industry") + scale_color_viridis_d()
+industry_composition
