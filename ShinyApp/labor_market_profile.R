@@ -78,3 +78,50 @@ Age65Plus <- ggplotly(Age65Plus)  %>%
     hoverinfo = 'text'
   )
 Age65Plus
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+industry <- appal2[c(1,2,9,20:32)] %>% 
+  pivot_longer(cols = c(I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12, I13),
+               names_to = "Industry",
+               values_to = "Percent") %>% 
+  mutate(PercentOfTotal= Percent/420) 
+
+industry$Industry[industry$Industry == "I1"] <- "Agriculture"
+industry$Industry[industry$Industry == "I2"] <- "Mining"
+industry$Industry[industry$Industry == "I3"] <- "Construction"
+industry$Industry[industry$Industry == "I4"] <- "Manufacturing"
+industry$Industry[industry$Industry == "I5"] <- "Wholesale Trade"
+industry$Industry[industry$Industry == "I6"] <- "Retail"
+industry$Industry[industry$Industry == "I7"] <- "Logistics and Utilities"
+industry$Industry[industry$Industry == "I8"] <- "Information"
+industry$Industry[industry$Industry == "I9"] <- "Finance and Real Estate"
+industry$Industry[industry$Industry == "I10"] <- "Professional"
+industry$Industry[industry$Industry == "I11"] <- "Education"
+industry$Industry[industry$Industry == "I12"] <- "Healthcare"
+industry$Industry[industry$Industry == "I13"] <- "Entertainment"
+
+saveRDS(industry, "ShinyApp/data/industry.Rds")
+
+industry$industry, 
+ggplot(data = industry, aes(x = Industry, y = PercentOfTotal, group = nonmetro.f, fill = nonmetro.f)) +geom_col() 
