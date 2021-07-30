@@ -417,9 +417,9 @@ ui <- navbarPage(title = "ALMV",
                                  
                                    column(6, align = "center",
                                           h4(strong("DSPG Team Members")),
-                                          img(src = "team-pierce.jpeg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
+                                          img(src = "fellow-pierce.jpg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
                                           img(src = "fellow-yang.jpeg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
-                                          img(src = "team-jacobs.jpeg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
+                                          img(src = "team-jacobs.jpg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
                                           img(src = "team-burcham.jpeg", style = "display: inline; border: 1px solid #C0C0C0;", width = "150px"),
 
                                           p(a(href = "www.linkedin.com/in/timothyspierce", 'Timothy Pierce', target = '_blank'),"(Virginia Tech, Department of Agricultural and Applied Economics);"),
