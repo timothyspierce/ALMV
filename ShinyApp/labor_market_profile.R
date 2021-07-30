@@ -166,7 +166,28 @@ industry_composition <- ggplot(data = industry, aes(x = Industry,
                                                     y = PercentOfTotal, 
                                                     group = nonmetro.f, 
                                                     fill = nonmetro.f)) +
-  geom_col() + theme_bw()+ theme(legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+  geom_col() + theme_bw()+ theme(plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
   xlab("Industry") + ylab("Percent in Industry (%)") + labs(color='County Classification') + 
-  ggtitle("% of Industry") + scale_color_viridis_d()
+  ggtitle("% of Industry") + scale_fill_viridis_d()
 industry_composition
+
+
+#### Time to commute to work ---- 
+
+
+tt014 % who travel less than 15 mins to work,
+tt1529 % who travel between 15 to 30 mins
+tt3044 % who travel 30 to 45
+tt4559 % who travel between 45 to 60 mins
+tt60plus % who travel more than 60 mins
+
+
+commute <- appal2[c(1,2,9,33:37)] %>% 
+  pivot_longer(cols = c(tt014, tt1529, tt3044, tt4559, tt60plus),
+               names_to = "Commute",
+               values_to = "Total") %>% View()
+
+#### Education Levels ----
+
+View(appal2)
+
