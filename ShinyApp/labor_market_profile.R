@@ -131,25 +131,6 @@ HealthInsurance
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #### Industry Data ----
 
 industry <- appal2[c(1,2,9,20:32)] %>% 
