@@ -14,7 +14,7 @@ facet_wrap( nonmetro.f~.)  +
 theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
 axis.title.x = element_text(color="black", size=8, face="bold"),
 axis.title.y = element_text(color="black", size=10, face="bold")) +
-  xlab("County") + ylab("Percent in County (%) (%) (%)") + labs(color='County Classification') + ggtitle("% of Population: Unemployed") + scale_color_viridis_d(), tooltip = "text")
+  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + ggtitle("% of Population: Unemployed") + scale_color_viridis_d(), tooltip = "text")
 unemployed
 
 
@@ -38,7 +38,7 @@ AgeUnder15 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age0_14, c
                          facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),  
                           axis.title.x = element_text(color="black", size=8, face="bold"), 
                          axis.title.y = element_text(color="black", size=10, face="bold")) +
-                         xlab("County") + ylab("Percent in County (%) (%)") + labs(color='County Classification') + ggtitle("% of Population: Age 0-14") +
+                         xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + ggtitle("% of Population: Age 0-14") +
                          scale_color_viridis_d(), tooltip = "text")
 AgeUnder15
 
@@ -46,7 +46,7 @@ AgeUnder15
 Age15_64<- p2 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age15_64, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age15_64))) + geom_point() +  
   geom_hline(data = g, aes(yintercept=M_age15_64, color= "black")) + facet_wrap( nonmetro.f~.)  + 
   theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                               axis.title.y = element_text(color="black", size=10, face="bold")) +
-  xlab("County") + ylab("Percent in County (%) (%)") + labs(color='County Classification') + ggtitle("% of Population: Age 15-64") +
+  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + ggtitle("% of Population: Age 15-64") +
     scale_color_viridis_d(), tooltip = "text")
 Age15_64
 
@@ -56,7 +56,7 @@ Age65Plus <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age65plus, 
   theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
                     axis.title.x = element_text(color="black", size=8, face="bold"),
                     axis.title.y = element_text(color="black", size=10, face="bold")) +
-  xlab("County") + ylab("Percent in County (%) (%)") + labs(color='County Classification') + ggtitle("% of Population By Metro Classification") + scale_color_viridis_d(), tooltip = "text")
+  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + ggtitle("% of Population By Metro Classification") + scale_color_viridis_d(), tooltip = "text")
 
 
 Age65Plus
@@ -93,9 +93,37 @@ EducationCollPlus <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Col
   geom_hline(data = g, aes(yintercept=M_Coll_Plus, color= "black")) + 
   facet_wrap( nonmetro.f~.)  + 
   theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                          axis.title.y = element_text(color="black", size=10, face="bold")) +
-  xlab("County") + ylab("Percent in County") + 
+  xlab("County") + ylab("Percent in County (%)") + 
   labs(color='County Classification') + 
   ggtitle("% of Population: College or More") + scale_colour_viridis_d(), tooltip = "text")
 
 EducationCollPlus
+
+# Home Ownership -----------------------------
+HomeOwnership <- ggplotly(ggplot(data = appal2, aes(x = observation, y = OwnHome, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", observation))) + 
+  geom_point()  +  geom_hline(data = g, aes(yintercept=M_OwnHome, color= "black")) + 
+  facet_wrap( nonmetro.f~.)  + theme_bw()+ 
+  theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                            axis.title.y = element_text(color="black", size=10, face="bold")) +
+  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+  ggtitle("% of Population: Owns a Home") + scale_color_viridis_d(), tooltip = "text")
+HomeOwnership
+
+# Disability & Health Insurance -------------------
+Disabled <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Pct.Dis, colour = nonmetro.f, names=NAME, text = str_c (NAME, ": ", Pct.Dis))) +
+  geom_point()  +  
+  geom_hline(data = g, aes(yintercept=M_Pct.Dis, color="black")) + facet_wrap( nonmetro.f~.)  + 
+  theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                   axis.title.y = element_text(color="black", size=10, face="bold")) +
+  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+  ggtitle("% of Population: Disability") + scale_colour_viridis_d(), tooltip = "text")
+
+Disabled
+
+HealthInsurance <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Pct.HI, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", Pct.HI))) + 
+  geom_point()  +  
+    geom_hline(data = g, aes(yintercept=M_Pct.HI, color= "black")) + facet_wrap( nonmetro.f~.)  + 
+  theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+  ggtitle("% of Population: Health Insurance Coverage") + scale_color_viridis_d(), tooltip = "text")
+
+HealthInsurance
 
