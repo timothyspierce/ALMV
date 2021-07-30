@@ -78,6 +78,7 @@ EducationLTHS <- ggplotly(ggplot(data = appal2, aes(x = observation, y = LT_HS, 
   ggtitle("% of Population: Less Than High School") + scale_color_viridis_d(), tooltip = "text")
 EducationLTHS
 
+# HS Diploma
 EducationHSDP <- ggplotly(ggplot(data = appal2, aes(x = observation, y = HS_Dip, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", HS_Dip))) + 
   geom_point()  + 
   geom_hline(data = g, aes(yintercept=M_HS_Dip, color="black")) + 
@@ -87,6 +88,7 @@ EducationHSDP <- ggplotly(ggplot(data = appal2, aes(x = observation, y = HS_Dip,
 EducationHSDP
 
 
+# College and above
 EducationCollPlus <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Coll_Plus, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", Coll_Plus))) + geom_point()  + 
   geom_hline(data = g, aes(yintercept=M_Coll_Plus, color= "black")) + 
   facet_wrap( nonmetro.f~.)  + 
