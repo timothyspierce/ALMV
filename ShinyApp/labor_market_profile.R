@@ -20,12 +20,13 @@ unemployed
 
 #### Chart for Per Capita Income ----
 
-PerCapitaIncome <- ggplotly(ggplot(data = appal2, aes(x = observation, y = PerCapInc, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", PerCapInc))) + geom_point()  +  
+PerCapitaIncome <- ggplotly(ggplot(data = appal2, aes(x = observation, y = PerCapInc, colour = nonmetro.f, names=NAME, text = str_c(NAME,": $", format(PerCapInc, big.mark = ",", scientific = F)))) + geom_point()  +  
   geom_hline(data = g, aes(yintercept=M_PerCapInc, color="black")) + facet_wrap( nonmetro.f~.)  +
   theme_bw()+ theme(axis.text.x = element_blank(), 
                     legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
  axis.title.x = element_text(color="black", size=8, face="bold"),
 axis.title.y = element_text(color="black", size=10, face="bold")) +
+  scale_y_continuous(labels = scales::dollar_format()) +
   xlab("County") + ylab("Income") + labs(color='County Classification') + ggtitle("Per Capita Income") + scale_color_viridis_d(), tooltip = "text")
 
 PerCapitaIncome
