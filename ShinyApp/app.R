@@ -24,6 +24,7 @@ library(tigris)
 library(htmltools)
 library(leafpop)
 library(rvest)
+library(plotly)
 
 
 prettyblue <- "#232D4B"
@@ -71,6 +72,12 @@ colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a
       select(skillname, PUMA, `Normalized Index`, geometry, NAME10)
 
 
+# Data: Labor Market Profile
+    load("data/ACS_Objects.RData")
+    appal2 <- readRDS("data/appal2.RDS")
+    g <- readRDS("data/g.RDS")
+    industry <- readRDS("data/industry.Rds")
+    
 
 
 # CODE TO DETECT ORIGIN OF LINK AND CHANGE LOGO ACCORDINGLY
@@ -206,11 +213,58 @@ ui <- navbarPage(title = "ALMV",
                                    p(tags$small(em('Last updated: August 2021'))))
                  ),
                  # Tab Labor Market -----------------------------------------------------------
-                 tabPanel("Appalachian Labor Market", value = "labomarket",
+                 tabPanel("Appalachian Labor Market", value = "labor",
                           
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Appalachian Labor Market Charateristics"), align = "center"),
                                    p("", style = "padding-top:10px;"),
+                                   column(8,
+                                          tabsetPanel(
+                                            tabPanel("Supply",
+                                                     p(""),
+                                                     ## Input: supply-----------------
+                                                     selectInput("supply", "", width = "100%",selected="Education", choices = c(
+                                                       "Education" = "supply1",
+                                                       "Age Distribution" = "supply2",
+                                                       "Disability Rates" = "supply3",
+                                                       "Health Insurance Coverage" = "supply4",
+                                                       "Access to Technology" = "supply5"
+                                                     )),
+                                                     p(strong("Ryan with the help of Leo-Allen")),
+                                                     ## Output: 1-----------------
+                                                     withSpinner(plotlyOutput("supplyoutput")),
+                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
+                                            ),
+                                            tabPanel("Demand",
+                                                     p(""),
+                                                     ## Input: demand-----------------
+                                                     selectInput("demand", "", width = "100%",selected="Income per Capita", choices = c(
+                                                       "Income per Capita" = "demand1",
+                                                       "Unemployment" = "demand2", 
+                                                       "Industrial sectors" = "demand3"
+                                                     )),
+                                                     p(strong("Ryan with the help of Leo-Allen")),
+                                                     ## Output: 2-----------------
+                                                     withSpinner(plotlyOutput("demandoutput")),
+                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
+                                            ),
+                                            
+                                            tabPanel("Others",
+                                                     p(""),
+                                                     ## Input: others-----------------
+                                                     selectInput("other", " ", selected = "Home Ownership",width = "100%", choices = c(
+                                                       "Home Ownership" = "other1",
+                                                       "Renters" = "other2",
+                                                       "Vehicle Ownership" = "other3"
+                                                     )),
+                                                     p(strong("Ryan with the help of Leo-Allen")),
+                                                     ## Output: 3-----------------
+                                                     withSpinner(plotlyOutput("otheroutput")),
+                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
+                                            )
+                                            
+                                          )
+                                   ),
                                    column(4,
                                           h4(strong("Definition of Appalachian Region")),
                                           p("Blurb 1"),
@@ -222,59 +276,8 @@ ui <- navbarPage(title = "ALMV",
                                           p("Blurb 1"),
                                           p("Blurb 2")
                                           
-                                   ),
-                                   column(8,
-                                          tabsetPanel(
-                                            tabPanel("Supply",
-                                                     p(""),
-                                                     ## Input: supply-----------------
-                                                     selectInput("supply", "", width = "100%",selected="Educaion", choices = c(
-                                                       "Education" = "STUART VOLUNTEER FIRE DEPARTMENT",
-                                                       "Educational attainment" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Age Distribution"="AGE",
-                                                       "Disability %" = "STUART VOLUNTEER FIRE DEPARTMENT",
-                                                       "Healthcare Coverage %" = "BLUE RIDGE VOLUNTEER RESCUE SQUAD",
-                                                       "Internet Access" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Broadband Access" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Travel Time" = "STUART VOLUNTEER FIRE DEPARTMENT"
-                                                       
-                                                   )),
-                                                   p(strong("Ryan with the help of Leo-Allen")),
-                                                   ## Output: 1-----------------
-                                                     withSpinner(tableOutput("output1")),
-                                                   p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
-                                            ),
-                                            tabPanel("Demand",
-                                                     p(""),
-                                                     ## Input: demand-----------------
-                                                     selectInput("demand", "", width = "100%",selected="Income per capita", choices = c(
-                                                       "Income per capita" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Unemployment" = "BLUE RIDGE VOLUNTEER RESCUE SQUAD", 
-                                                       "Industrial sectors" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Technology?????" = "BLUE RIDGE VOLUNTEER RESCUE SQUAD"
-                                                     )),
-                                                     p(strong("Ryan with the help of Leo-Allen")),
-                                                     ## Output: 2-----------------
-                                                     withSpinner(tableOutput("output2")),
-                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
-                                            ),
-                           
-                                            tabPanel("Others",
-                                                     p(""),
-                                                     ## Input: others-----------------
-                                                     selectInput("others", " ", selected = "Home Ownership",width = "100%", choices = c(
-                                                       "Home Ownership" = "STUART VOLUNTEER FIRE DEPARTMENT",
-                                                       "Renters" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Vehicle Ownership" = "BLUE RIDGE VOLUNTEER RESCUE SQUAD"
-                                                     )),
-                                                     p(strong("Ryan with the help of Leo-Allen")),
-                                                     ## Output: 3-----------------
-                                                     withSpinner(tableOutput("output3")),
-                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
-                                            )
-                                            
-                                          )
                                    )
+                                  
                           )
                  ),
                  # Tab Skills-----------------------------------------------------------
@@ -451,7 +454,7 @@ server <- function(input, output, session) {
   # Run JavaScript Code
   runjs(jscode)
   
-  # skills map: in pgrogress -----------------------------------------------------
+  # skills map: in progress -----------------------------------------------------
 
   ## Create piecharts for map------------------------------------------------------
   industry_breakdown_app_PUMAs <- read_csv(paste0(getwd(),"/data/2019-App_NAICS.csv"))
@@ -496,14 +499,192 @@ server <- function(input, output, session) {
                         formatC(city_info$Population, format = "f", big.mark = ",", digits = 0)), 
                   htmltools::HTML)
   
-  ## input: kills-----------
+  ## input: skills-----------
+  supplyvar <- reactive({
+    input$supply
+  })
+  
+  ## output:laboroutput---------------
+  output$supplyoutput <- renderPlotly({
+    
+    ##### Education ------
+    if(supplyvar() == "supply1") {
+      EducationLTHS <- ggplotly(ggplot(data = appal2, aes(x = observation, y = LT_HS, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", LT_HS))) + 
+                                  geom_point()  +  
+                                  geom_hline(data = g, aes(yintercept=M_LT_HS, color= "black")) + 
+                                  facet_wrap( nonmetro.f~.)  + 
+                                  theme_bw()+ 
+                                  theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                  ggtitle("% of Population: Less Than High School") + scale_color_viridis_d(), tooltip = "text")
+      EducationLTHS
+    
+    }
+
+#### Age ----
+    else if(supplyvar() == "supply2"){
+      AgeUnder15 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age0_14, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age0_14))) + 
+                               geom_point()  +  
+                               geom_hline(data = g, aes(yintercept=M_age0_14, color= "black")) + 
+                               facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),  
+                                                                              axis.title.x = element_text(color="black", size=8, face="bold"), 
+                                                                              axis.title.y = element_text(color="black", size=10, face="bold")) +
+                               xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                               ggtitle("% of Population: Age 0-14") +
+                               scale_color_viridis_d(), tooltip = "text")
+ 
+      
+      #15 to 64
+      Age15_64<- p2 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age15_64, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age15_64))) + geom_point() +  
+                                  geom_hline(data = g, aes(yintercept=M_age15_64, color= "black")) + facet_wrap( nonmetro.f~.)  + 
+                                  theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                               axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') +
+                                  ggtitle("% of Population: Age 15-64") +
+                                  scale_color_viridis_d(), tooltip = "text")
+
+      
+      #65 Plus 
+      Age65Plus <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age65plus, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age15_64))) + geom_point()  +  
+                              geom_hline(data = g, aes(yintercept=M_age65plus, color="black")) + facet_wrap( nonmetro.f~.)  + 
+                              theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+                                                axis.title.x = element_text(color="black", size=8, face="bold"),
+                                                axis.title.y = element_text(color="black", size=10, face="bold")) +
+                              xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') +
+                              ggtitle("% of Population: Age 65+") + scale_color_viridis_d(), tooltip = "text")
+
+      # Arrange 
+      subplot(AgeUnder15, Age15_64, Age65Plus, nrows = 3,  shareY=FALSE, titleX = TRUE, titleY=TRUE)
+    }
+    #### Disability -----
+    else if(supplyvar() == "supply3"){
+      Disabled <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Pct.Dis, colour = nonmetro.f, names=NAME, text = str_c (NAME, ": ", Pct.Dis))) +
+                             geom_point()  +  
+                             geom_hline(data = g, aes(yintercept=M_Pct.Dis, color="black")) + facet_wrap( nonmetro.f~.)  + 
+                             theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                   axis.title.y = element_text(color="black", size=10, face="bold")) +
+                             xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                             ggtitle("% of Population: Disability") + scale_colour_viridis_d(), tooltip = "text")
+      
+      Disabled
+    }
+    
+    else if(supplyvar() == "supply4"){
+      HealthInsurance <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Pct.HI, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", Pct.HI))) + 
+                                    geom_point()  +  
+                                    geom_hline(data = g, aes(yintercept=M_Pct.HI, color= "black")) + facet_wrap( nonmetro.f~.)  + 
+                                    theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                    xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                    ggtitle("% of Population: Health Insurance Coverage") + scale_color_viridis_d(), tooltip = "text")
+      
+      HealthInsurance
+    }
+    
+    else if(supplyvar() == "supply5"){
+      HealthInsurance <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Pct.HI, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", Pct.HI))) + 
+                                    geom_point()  +  
+                                    geom_hline(data = g, aes(yintercept=M_Pct.HI, color= "black")) + facet_wrap( nonmetro.f~.)  + 
+                                    theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                    xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                    ggtitle("% of Population: Health Insurance Coverage") + scale_color_viridis_d(), tooltip = "text")
+      
+      HealthInsurance
+    }
+  
+  })
+  
+  
+  ######## End of Supply Variables
+  
+  demandvar <- reactive({
+    input$demand
+  })
+  
+  ## output:laboroutput---------------
+  output$demandoutput <- renderPlotly({
+    
+    ##### Income ------
+    if(demandvar() == "demand1") {
+      PerCapitaIncome <- ggplotly(ggplot(data = appal2, aes(x = observation, y = PerCapInc, colour = nonmetro.f, names=NAME, text = str_c(NAME,": $", format(PerCapInc, big.mark = ",", scientific = F)))) + geom_point()  +  
+                                    geom_hline(data = g, aes(yintercept=M_PerCapInc, color="black")) + facet_wrap( nonmetro.f~.)  +
+                                    theme_bw()+ theme(axis.text.x = element_blank(), 
+                                                      legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+                                                      axis.title.x = element_text(color="black", size=8, face="bold"),
+                                                      axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                    scale_y_continuous(labels = scales::dollar_format()) +
+                                    xlab("County") + ylab("Income") + labs(color='County Classification') + 
+                                    ggtitle("Per Capita Income") + scale_color_viridis_d(), tooltip = "text")
+      
+      PerCapitaIncome
+    }
+    
+    #### Age ----
+    else if(demandvar() == "demand2"){
+      unemployed <- ggplotly(ggplot(data = appal2, aes(x = observation,
+                                                       y = Pct.Unemp, 
+                                                       colour = nonmetro.f, 
+                                                       names=NAME, text = str_c(NAME,": ", Pct.Unemp))) + 
+                               geom_point() +  geom_hline(data = g, aes(yintercept=M_Pct.Unemp, color="black")) + 
+                               facet_wrap( nonmetro.f~.)  + 
+                               theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+                                                 axis.title.x = element_text(color="black", size=8, face="bold"),
+                                                 axis.title.y = element_text(color="black", size=10, face="bold")) +
+                               xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + ggtitle("% of Population: Unemployed") + scale_color_viridis_d(), tooltip = "text")
+      unemployed
+    }
+    
+    else if(demandvar() == "demand3"){
+      industry_composition <- ggplot(data = industry, aes(x = Industry, 
+                                                          y = PercentOfTotal, 
+                                                          group = nonmetro.f, 
+                                                          fill = nonmetro.f)) +
+        geom_col() + theme_bw()+ theme(plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+        xlab("Industry") + ylab("Percent in Industry (%)") + labs(color='County Classification') + 
+        ggtitle("% of Industry") + scale_fill_viridis_d(name = element_blank()) + 
+        scale_y_continuous(expand = c(0,0), limits = c(0,20)) + 
+        coord_flip()
+      
+  
+      industry_composition
+    }
+    
+    
+  })
+  
+  
+  othervar <- reactive({
+    input$other
+  })
+  
+  output$otheroutput <- renderPlotly({
+    
+    if(othervar() == "other1") {
+      HomeOwnership <- ggplotly(ggplot(data = appal2, aes(x = observation, y = OwnHome, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", observation))) + 
+                                  geom_point()  +  geom_hline(data = g, aes(yintercept=M_OwnHome, color= "black")) + 
+                                  facet_wrap( nonmetro.f~.)  + theme_bw()+ 
+                                  theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                            axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                  ggtitle("% of Population: Owns a Home") + scale_color_viridis_d(), tooltip = "text")
+      HomeOwnership
+    }
+    
+    else if(othervar() == "other2"){
+   
+    }
+    
+    else if(othervar() == "other3"){
+    
+    }
+    
+    
+  })
+  
+  
+  ############# END LABOR MARKET FILES, BEGIN SKILLS FILES
   var <- reactive({
     input$skills
   })
-  
   ## output:skillsoutput---------------
   output$skillsoutput <- renderLeaflet({
-     # Map for technology design
+     # Map for technology design ----
     if(var() == "TechnologyDesign") {
       
       # Filter to just Tech Design
@@ -540,7 +721,7 @@ server <- function(input, output, session) {
                          color = "blue")
       TechDesign_map
       
-      # Map for Critical Thinking
+      # Map for Critical Thinking -------
     }else if(var() == "ReadingComprehension"){
       ReadingComp_map_data <- map_data %>% filter(skillname == "ReadingComprehension")
       
@@ -572,7 +753,7 @@ server <- function(input, output, session) {
                          color = "blue")
       ReadingComp_map
       
-      # Map for Organization 
+      #### Map for Organization  ------
     }else if(var() == "Monitoring"){
       Monitoring_map_data <- map_data %>% filter(skillname == "Monitoring")
       
@@ -673,634 +854,6 @@ server <- function(input, output, session) {
       ActiveList_map
     }
   })
-  
-  
-  # # data and measures table:  ----------------------------------------
-  # var_topic <- reactive({
-  #   input$topic
-  # })
-  # output$datatable <- renderDataTable({
-  #   if(var_topic() == "All Measures"){
-  #     table <- as.data.frame(measures_table)
-  #     datatable(table, rownames = FALSE, options = list(pageLength = 15)) %>% formatStyle(0, target = 'row', lineHeight = '80%')
-  #   }
-  #   else{
-  #     data <- switch(input$topic,
-  #                    "Connectivity Measures" = "connectivity",
-  #                    "Sociodemographic Measures" = "demographics",
-  #                    "Food Access Measures" = "food access",
-  #                    "Health Care Access Measures" = "health",
-  #                    "Older Adult Population Measures" = "older adults")
-  #     table <- subset(measures_table, Topic == data)
-  #     table <- as.data.frame(table)
-  #     datatable(table, rownames = FALSE, options = list(pageLength = 15)) %>% formatStyle(0, target = 'row', lineHeight = '80%')
-  #   }
-  # })
-  # 
-  # # device: done ---------------------------------------------------------
-  # 
-  # output$deviceplot <- renderLeaflet({
-  #   data <- switch(input$devicedrop,
-  #                  "nocomputer" = connectivity$nocomputer,
-  #                  "laptop" = connectivity$laptop,
-  #                  "smartphone" = connectivity$smartphone,
-  #                  "tablet" = connectivity$tablet,
-  #                  "nointernet" = connectivity$nointernet,
-  #                  "satellite" = connectivity$satellite,
-  #                  "cellular" = connectivity$cellular,
-  #                  "broadband" = connectivity$broadband)
-  #   
-  #   device_spec <- switch(input$devicedrop,
-  #                         "nocomputer" = "no computer",
-  #                         "laptop" = "laptop",
-  #                         "smartphone" = "smartphone",
-  #                         "tablet" = "tablet",
-  #                         "nointernet" = "no internet access",
-  #                         "satellite" = "satellite internet",
-  #                         "cellular" = "cellular internet",
-  #                         "broadband" = "broadband internet")
-  #   
-  #   pal <- colorQuantile("Blues", domain = data, probs = seq(0, 1, length = 6), right = TRUE)
-  #   
-  #   labels <- lapply(
-  #     paste("<strong>Area: </strong>",
-  #           connectivity$NAME.y,
-  #           "<br />",
-  #           "<strong>% Households with",
-  #           device_spec,
-  #           "access: </strong>",
-  #           round(data, 2)),
-  #     htmltools::HTML
-  #   )
-  #   
-  #   leaflet(data = connectivity, options = leafletOptions(minZoom = 10))%>%
-  #     addProviderTiles(providers$CartoDB.Positron) %>%
-  #     addPolygons(fillColor = ~pal(data),
-  #                 fillOpacity = 0.7,
-  #                 stroke = TRUE, weight = 0.5, color = "#202020",
-  #                 label = labels,
-  #                 labelOptions = labelOptions(direction = "bottom",
-  #                                             style = list(
-  #                                               "font-size" = "12px",
-  #                                               "border-color" = "rgba(0,0,0,0.5)",
-  #                                               direction = "auto"
-  #                                             ))) %>%
-  #     addLegend("bottomleft",
-  #               pal = pal,
-  #               values =  ~(data),
-  #               title = "Percent by<br>Quintile Group",
-  #               opacity = 0.7,
-  #               labFormat = function(type, cuts, p) {
-  #                 n = length(cuts)
-  #                 paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
-  #               })
-  # })
-  # 
-  # 
-  # # Iso selector
-  # output$wifiplot <- renderLeaflet({
-  #   colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a","#e6a01d","#e57200","#fdfdfd")
-  #   
-  #   wifi_iso10 <- switch(input$wifidrop,
-  #                        "Meadows of Dan Elementary School" = wifi_iso_10_1,
-  #                        "Woolwine Elementary School" = wifi_iso_10_2,
-  #                        "Patrick Springs Primary School" = wifi_iso_10_3,
-  #                        "Blue Ridge Elementary School" = wifi_iso_10_4,
-  #                        "Patrick County High School" = wifi_iso_10_5,
-  #                        "Stuart Elementary School" = wifi_iso_10_6,
-  #                        "Patrick County Branch Library" = wifi_iso_10_7,
-  #                        "Hardin Reynolds Memorial School" = wifi_iso_10_8,
-  #                        "Stuart Baptist Church" = wifi_iso_10_9,
-  #                        "Patrick Henry Community College Stuart Campus" = wifi_iso_10_10)
-  #   
-  #   wifi_iso15 <- switch(input$wifidrop,
-  #                        "Meadows of Dan Elementary School" = wifi_iso_15_1,
-  #                        "Woolwine Elementary School" = wifi_iso_15_2,
-  #                        "Patrick Springs Primary School" = wifi_iso_15_3,
-  #                        "Blue Ridge Elementary School" = wifi_iso_15_4,
-  #                        "Patrick County High School" = wifi_iso_15_5,
-  #                        "Stuart Elementary School" = wifi_iso_15_6,
-  #                        "Patrick County Branch Library" = wifi_iso_15_7,
-  #                        "Hardin Reynolds Memorial School" = wifi_iso_15_8,
-  #                        "Stuart Baptist Church" = wifi_iso_15_9,
-  #                        "Patrick Henry Community College Stuart Campus" = wifi_iso_15_10)
-  #   
-  #   data <- switch(input$wifidrop,
-  #                  "Meadows of Dan Elementary School" = 1,
-  #                  "Woolwine Elementary School" = 2,
-  #                  "Patrick Springs Primary School" = 3,
-  #                  "Blue Ridge Elementary School" = 4,
-  #                  "Patrick County High School" = 5,
-  #                  "Stuart Elementary School" = 6,
-  #                  "Patrick County Branch Library" = 7,
-  #                  "Hardin Reynolds Memorial School" = 8,
-  #                  "Stuart Baptist Church" = 9,
-  #                  "Patrick Henry Community College Stuart Campus" = 10)
-  #   
-  #   labels <- lapply(
-  #     paste("<strong>Name: </strong>",
-  #           wifi_latlong[data, ]$name,
-  #           "<br />",
-  #           "<strong>Address:</strong>",
-  #           wifi_latlong[data, ]$fulladdress,
-  #           "<br />",
-  #           "<strong>Notes:</strong>",
-  #           wifi_latlong[data, ]$notes),
-  #     htmltools::HTML
-  #   )
-  #   
-  #   m1 <- leaflet(options = leafletOptions(minZoom = 10)) %>%
-  #     addProviderTiles(providers$CartoDB.Positron) %>%
-  #     addCircles(data = residential,
-  #                fillColor = colors[5],
-  #                fillOpacity = .8,
-  #                stroke = FALSE,
-  #                group = "Residential Properties") %>%
-  #     addPolygons(data = wifi_iso10,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .8,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrone") %>%
-  #     addPolygons(data = wifi_iso15,
-  #                 fillColor = colors[2],
-  #                 fillOpacity = .8,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrone") %>%
-  #     addMarkers(data = wifi_latlong, ~longitude[data], ~latitude[data],
-  #                label = labels,
-  #                labelOptions = labelOptions(direction = "bottom",
-  #                                            style = list(
-  #                                              "font-size" = "12px",
-  #                                              "border-color" = "rgba(0,0,0,0.5)",
-  #                                              direction = "auto")))  %>%
-  #     addLayersControl(
-  #       position = "topright",
-  #       overlayGroups = c("10 Minute Isochrone",
-  #                         "15 Minute Isochrone",
-  #                         "Residential Properties"),
-  #       options = layersControlOptions(collapsed = FALSE))
-  #   m1
-  # })
-  # 
-  # # Coverage table
-  # output$wifitable <- renderTable({
-  #   data <- switch(input$wifidrop,
-  #                  "Meadows of Dan Elementary School" = 1,
-  #                  "Woolwine Elementary School" = 2,
-  #                  "Patrick Springs Primary School" = 3,
-  #                  "Blue Ridge Elementary School" = 4,
-  #                  "Patrick County High School" = 5,
-  #                  "Stuart Elementary School" = 6,
-  #                  "Patrick County Branch Library" = 7,
-  #                  "Hardin Reynolds Memorial School" = 8,
-  #                  "Stuart Baptist Church" = 9,
-  #                  "Patrick Henry Community College Stuart Campus" = 10)
-  #   
-  #   table <- read.csv(paste0("data/isochrones/tables/wifi_iso_table_",data,".csv"))
-  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
-  #   table
-  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  # 
-  # # Wifi deserts
-  # output$allwifi <- renderLeaflet({
-  #   
-  #   labels <- lapply(
-  #     paste("<strong>Name: </strong>",
-  #           wifi_latlong$name,
-  #           "<br />",
-  #           "<strong>Address:</strong>",
-  #           wifi_latlong$fulladdress,
-  #           "<br />",
-  #           "<strong>Notes:</strong>",
-  #           wifi_latlong$notes),
-  #     htmltools::HTML
-  #   )
-  #   
-  #   leaflet(options = leafletOptions(minZoom = 10)) %>%
-  #     addProviderTiles(providers$CartoDB.Positron) %>%
-  #     addCircles(data = residential,
-  #                fillColor = colors[5],
-  #                fillOpacity = .5,
-  #                stroke = FALSE,
-  #                group = "Residential Properties") %>%
-  #     addPolygons(data = wifi_iso_10_1,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_2,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_3,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_4,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_5,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_6,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_7,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_9,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_1,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_2,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_3,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_4,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_5,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_6,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_7,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_9,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_10,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addMarkers(data = wifi_latlong,
-  #                group = "Free Wi-Fi Locations",
-  #                label = labels,
-  #                labelOptions = labelOptions(direction = "bottom",
-  #                                            style = list(
-  #                                              "font-size" = "12px",
-  #                                              "border-color" = "rgba(0,0,0,0.5)",
-  #                                              direction = "auto")))  %>%
-  #     addLayersControl(
-  #       position = "topright",
-  #       overlayGroups = c("Free Wi-Fi Locations",
-  #                         "Residential Properties"),
-  #       baseGroups = c("10 Minute Isochrones",
-  #                      "15 Minute Isochrones"),
-  #       options = layersControlOptions(collapsed = FALSE))
-  # })
-  # 
-  # output$allwifitable <- renderTable({
-  #   table <- read.csv("data/isochrones/tables/wifi_iso_table.csv")
-  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
-  #   table
-  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  # 
-  #         # ems: done ----
-  # 
-  # output$emsplot <- renderLeaflet({
-  #   colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a","#e6a01d","#e57200","#fdfdfd")
-  #   
-  #   ems_iso8 <- switch(input$emsdrop,
-  #                      "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_8_1,
-  #                      "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_8_2,
-  #                      "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_8_3,
-  #                      "VESTA RESCUE SQUAD" = ems_iso_8_4,
-  #                      "ARARAT RESCUE SQUAD" = ems_iso_8_5,
-  #                      "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_8_6,
-  #                      "JEB STUART RESCUE SQUAD" = ems_iso_8_7,
-  #                      "SMITH RIVER RESCUE SQUAD" = ems_iso_8_8,
-  #                      "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_8_9)
-  #   
-  #   ems_iso10 <- switch(input$emsdrop,
-  #                       "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_10_1,
-  #                       "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_10_2,
-  #                       "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_10_3,
-  #                       "VESTA RESCUE SQUAD" = ems_iso_10_4,
-  #                       "ARARAT RESCUE SQUAD" = ems_iso_10_5,
-  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_10_6,
-  #                       "JEB STUART RESCUE SQUAD" = ems_iso_10_7,
-  #                       "SMITH RIVER RESCUE SQUAD" = ems_iso_10_8,
-  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_10_9)
-  #   
-  #   ems_iso12 <- switch(input$emsdrop,
-  #                       "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_12_1,
-  #                       "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_12_2,
-  #                       "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_12_3,
-  #                       "VESTA RESCUE SQUAD" = ems_iso_12_4,
-  #                       "ARARAT RESCUE SQUAD" = ems_iso_12_5,
-  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_12_6,
-  #                       "JEB STUART RESCUE SQUAD" = ems_iso_12_7,
-  #                       "SMITH RIVER RESCUE SQUAD" = ems_iso_12_8,
-  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_12_9)
-  #   
-  #   data <- switch(input$emsdrop,
-  #                  "STUART VOLUNTEER FIRE DEPARTMENT" = 1,
-  #                  "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = 2,
-  #                  "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = 3,
-  #                  "VESTA RESCUE SQUAD" = 4,
-  #                  "ARARAT RESCUE SQUAD" = 5,
-  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = 6,
-  #                  "JEB STUART RESCUE SQUAD" = 7,
-  #                  "SMITH RIVER RESCUE SQUAD" = 8,
-  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = 9)
-  #   
-  #   labels <- lapply(
-  #     paste("<strong>Name: </strong>",
-  #           str_to_title(ems[data, ]$NAME),
-  #           "<br />",
-  #           "<strong>Address:</strong>",
-  #           str_to_title(ems[data, ]$ADDRESS), ",", str_to_title(ems[data, ]$CITY), ", VA", ems[data, ]$ZIP,
-  #           "<br />",
-  #           "<strong>Type:</strong>",
-  #           str_to_title(ems[data, ]$NAICSDESCR)),
-  #     htmltools::HTML
-  #   )
-  #   
-  #   m1 <- leaflet(options = leafletOptions(minZoom = 10)) %>%
-  #     addProviderTiles(providers$CartoDB.Positron) %>%
-  #     addCircles(data = residential,
-  #                fillColor = colors[5],
-  #                fillOpacity = .8,
-  #                stroke = FALSE,
-  #                group = "Residential Properties") %>%
-  #     addPolygons(data = ems_iso8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .8,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrone") %>%
-  #     addPolygons(data = ems_iso10,
-  #                 fillColor = colors[2],
-  #                 fillOpacity = .8,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrone") %>%
-  #     addPolygons(data = ems_iso12,
-  #                 fillColor = colors[2],
-  #                 fillOpacity = .8,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrone") %>%
-  #     addMarkers(data = ems, ~LONGITUDE[data], ~LATITUDE[data],
-  #                group = "EMS Locations",
-  #                label = labels,
-  #                labelOptions = labelOptions(direction = "bottom",
-  #                                            style = list(
-  #                                              "font-size" = "12px",
-  #                                              "border-color" = "rgba(0,0,0,0.5)",
-  #                                              direction = "auto"))) %>%
-  #     addLayersControl(
-  #       position = "topright",
-  #       overlayGroups = c("8 Minute Isochrone",
-  #                         "10 Minute Isochrone",
-  #                         "12 Minute Isochrone",
-  #                         "Residential Properties"),
-  #       options = layersControlOptions(collapsed = FALSE))
-  #   m1
-  # })
-  # 
-  # output$emstable <- renderTable({
-  #   data <- switch(input$emsdrop,
-  #                  "STUART VOLUNTEER FIRE DEPARTMENT" = 1,
-  #                  "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = 2,
-  #                  "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = 3,
-  #                  "VESTA RESCUE SQUAD" = 4,
-  #                  "ARARAT RESCUE SQUAD" = 5,
-  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = 6,
-  #                  "JEB STUART RESCUE SQUAD" = 7,
-  #                  "SMITH RIVER RESCUE SQUAD" = 8,
-  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = 9)
-  #   
-  #   
-  #   table <- read.csv(paste0("data/isochrones/tables/ems_iso_table_",data,".csv"))
-  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
-  #   table
-  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  # 
-  # # EMS deserts
-  # output$allems <- renderLeaflet({
-  #   
-  #   labels <- lapply(
-  #     paste("<strong>Name: </strong>",
-  #           str_to_title(ems$NAME),
-  #           "<br />",
-  #           "<strong>Address:</strong>",
-  #           paste0(str_to_title(ems$ADDRESS), ", ", str_to_title(ems$CITY), ", VA ", ems$ZIP),
-  #           "<br />",
-  #           "<strong>Type:</strong>",
-  #           str_to_title(ems$NAICSDESCR)),
-  #     htmltools::HTML
-  #   )
-  #   
-  #   leaflet(options = leafletOptions(minZoom = 10)) %>%
-  #     addProviderTiles(providers$CartoDB.Positron) %>%
-  #     addCircles(data = residential,
-  #                fillColor = colors[5],
-  #                fillOpacity = .5,
-  #                stroke = FALSE,
-  #                group = "Residential Properties") %>%
-  #     addPolygons(data = ems_iso_8_1,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_2,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_3,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_4,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_5,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_6,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_7,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_9,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_1,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_2,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_3,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_4,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_5,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_6,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_7,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_9,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_1,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_2,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_3,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_4,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_5,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_6,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_7,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_9,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addMarkers(data = ems,
-  #                group = "EMS Locations",
-  #                label = labels,
-  #                labelOptions = labelOptions(direction = "bottom",
-  #                                            style = list(
-  #                                              "font-size" = "12px",
-  #                                              "border-color" = "rgba(0,0,0,0.5)",
-  #                                              direction = "auto"))) %>%
-  #     addLayersControl(
-  #       position = "topright",
-  #       baseGroups = c("8 Minute Isochrones",
-  #                      "10 Minute Isochrones",
-  #                      "12 Minute Isochrones"),
-  #       overlayGroups = c("EMS Locations",
-  #                         "Residential Properties"),
-  #       options = layersControlOptions(collapsed = FALSE))
-  # })
-  # 
-  # output$allemstable <- renderTable({
-  #   table <- read.csv("data/isochrones/tables/ems_iso_table.csv")
-  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
-  #   table
-  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  # 
 }
 
 

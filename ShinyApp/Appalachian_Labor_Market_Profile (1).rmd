@@ -45,11 +45,11 @@ Set the working directory and read in the workspace from pull_ACS.Rmd. Note when
 setwd("C:/Users/ecsusan/Dropbox/2021VT-DSPG-FILES/Appalachia/")
 readRenviron("~/.Renviron") #readin Census API key
 #Create a nice list of FIPS state and county. Use `fip_list` below to pull variables and to map.
-counties<-read.csv("All_Mining.csv", header=T)
+counties<-read.csv("data/All_Mining.csv", header=T)
 #Note Yellowstone National Park did not have ACS data so drop it.
 counties <- filter(counties,FIPS!= 30113)
 #only keep Appalachia
-counties <- filter(counties, ï..coal_region== 1)
+counties <- filter(counties, coal_region== 1)
 
 fip_list<-sprintf("%05d",counties$FIPS)
 fips  <- data.frame(fip_list)
@@ -268,10 +268,10 @@ all_ACS5 <- Reduce(function(x, y) merge(x, y, all=TRUE), list(PerCapita,dff000, 
 To provide a profile of Appalachia, I recommend doing an urban-rural comparison. Keep only the Appalachian Region and merge in the rural classification from the USDA. Here is the link: https://www.ers.usda.gov/data-products/rural-urban-continuum-codes.aspx. Use `dplyr` and pipe to do this in one step: merge in the rural-urban code then keep only counties with a rucc code then I keep only Appalachian counties.
 
 ```{r Add_RUCC}
-urb_ru <- read.csv("ruralurbancodes2013.csv", header=T)
+urb_ru <- read.csv("data/ruralurbancodes2013.csv", header=T)
 
 #add in a leading zero and make it into a character format 
-urb_ru$GEOID <- sprintf("%05d",urb_ru$ï..FIPS)
+urb_ru$GEOID <- sprintf("%05d",urb_ru$FIPS)
 
 #merge in dataset & keep only Appalachia
 appal <-Reduce(function(x, y) merge(x, y, all=TRUE), list(urb_ru,all_ACS5)) %>%  filter(!is.na(NAME))
@@ -323,6 +323,8 @@ poly_all_ACS5<- geo_join(county_poly, appal2, "GEOID", "GEOID")
 
 poly_all_ACS5 <- na.omit(poly_all_ACS5) 
 
+saveRDS(poly_all_ACS5, file = "data/poly_all_ACS5.Rds")
+
 ```
 
 
@@ -364,7 +366,7 @@ leaflet(data = poly_all_ACS5) %>%
             values = ~poly_all_ACS5$PerCapInc,
             opacity = 0.5, title = "Per Capita Income") %>%
   addPolylines(data = county_poly, color = "black", 
-               opacity = 0.2, weight = 1)
+               opacity = 0.2, weight = 1) 
 
 ```
 
@@ -603,6 +605,12 @@ I10<-ProfSciMngAdEmp
 I11<-EdEmp
 I12<-HCSAEmp
 I13<-ArtEntRecAccFdEmp
+
+```{r}
+
+```
+
+
 
 - Time to travel here are the categories -- add up to 30 min categories and put on a graph?
 tt014 % who travel less than 15 mins to work,

@@ -1,7 +1,7 @@
 load("ShinyApp/data/ACS_Objects.RData")
-readRDS("ShinyApp/data/all_ACS5.rds") 
 appal2 <- readRDS("ShinyApp/data/appal2.RDS")
 g <- readRDS("ShinyApp/data/g.RDS")
+industry <- readRDS("ShinyApp/data/industry.Rds")
 
 
 #### Create Chart for Unemployment  ----
