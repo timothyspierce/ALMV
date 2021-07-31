@@ -181,7 +181,9 @@ tt014 % who travel less than 15 mins to work,
 tt1529 % who travel between 15 to 30 mins
 tt3044 % who travel 30 to 45
 tt4559 % who travel between 45 to 60 mins
-tt60plus % who travel more than 60 mins
+tt60plus % who travel more than 60 mins 
+
+
 
 
 commute <- appal2[c(1,2,9,33:37)] %>% 
