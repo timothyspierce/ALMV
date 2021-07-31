@@ -218,7 +218,7 @@ ui <- navbarPage(title = "ALMV",
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Appalachian Labor Market Charateristics"), align = "center"),
                                    p("", style = "padding-top:10px;"),
-                                   column(8,
+                                   column(6,
                                           tabsetPanel(
                                             tabPanel("Supply",
                                                      p(""),
@@ -265,17 +265,25 @@ ui <- navbarPage(title = "ALMV",
                                             
                                           )
                                    ),
-                                   column(4,
-                                          h4(strong("Definition of Appalachian Region")),
+                                   column(6,
+                                          h4(strong("Supply Side Factors in the Appalachian Labor Market")),
+                                          p(strong("Education:"), "Blurb 1"),
+                                          p("Blurb 2"),
                                           p("Blurb 1"),
                                           p("Blurb 2"),
-                                          h4(strong("Appalachian Labor Market")),
-                                          p("Blurb 1"),
-                                          p("Blurb 2"),
-                                          h4(strong("Comparisions with other resgion?")),
-                                          p("Blurb 1"),
-                                          p("Blurb 2")
-                                          
+                                          h4(strong("Demand Side Factors in the Appalachian Labor Market")),
+                                          p(strong("Per Capita Income:"), "This interactive graph illustrates per capita income in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in per capita income in metropolitan areas are visible closer to population centers. Negative spikes in per capita income in nonmetropolitan areas that are farthest away from population centers. This indicates a potential connection between urbanicity and per capita income which can be seen as the average per capita income level between metropolitan and nonmetropolitan areas are quite significant. "),
+                                          p(),
+                                          p(strong("Unemployment:"), "This interactive graph presents the percent of the population that is unemployed in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in unemployment in metropolitan areas are seen in Alabama and West Virginia, while similar increases in nonmetropolitan areas are in Kentucky and West Virginia. While relatively small, on average the percent of the population that is unemployed tends to be higher in nonmetropolitan counties. "),
+                                          p(),
+                                          p(strong("Industrial Makeup:"), " to be written"),
+                                          h4(strong("Other Factors in the Appalachian Labor Market")),
+                                          p(strong("Home Ownership:"), "This interactive graph displays the percent of the population who own their home in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. It is worth noting that negative spikes in homeownership are seen throughout Appalachia particularly in counties that house universities. Overall, nonmetropolitan counties in Appalachia have more residents who own their homes than metropolitan counties.  "),
+                                          p(),
+                                          p(strong("Renters:"), "to be written "),
+                                          p(),
+                                          p(strong("Vehicle Ownership:"), " to be written")
+             
                                    )
                                   
                           )
@@ -517,8 +525,32 @@ server <- function(input, output, session) {
                                   theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
                                   xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
                                   ggtitle("% of Population: Less Than High School") + scale_color_viridis_d(), tooltip = "text")
-      EducationLTHS
+
     
+      EducationHSDP <- ggplotly(ggplot(data = appal2, aes(x = observation, y = HS_Dip, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", HS_Dip))) + 
+                                  geom_point()  + 
+                                  geom_hline(data = g, aes(yintercept=M_HS_Dip, color="black")) + 
+                                  facet_wrap( nonmetro.f~.)  + 
+                                  theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                 axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                  ggtitle("% of Population: HS Dip") + scale_color_viridis_d(), tooltip = "text")
+
+      
+      
+      # College and above
+      EducationCollPlus <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Coll_Plus, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", Coll_Plus))) + geom_point()  + 
+                                      geom_hline(data = g, aes(yintercept=M_Coll_Plus, color= "black")) + 
+                                      facet_wrap( nonmetro.f~.)  + 
+                                      theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                          axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                      xlab("County") + ylab("Percent in County (%)") + 
+                                      labs(color='County Classification') + 
+                                      ggtitle("% of Population: Less than High School, High School, College or More") + scale_colour_viridis_d(), tooltip = "text")
+      
+
+
+
+ subplot( EducationLTHS,   EducationHSDP, EducationCollPlus, nrows = 3,  shareY=FALSE, titleX = TRUE, titleY=TRUE)                         
+      
     }
 
 #### Age ----
@@ -550,10 +582,10 @@ server <- function(input, output, session) {
                                                 axis.title.x = element_text(color="black", size=8, face="bold"),
                                                 axis.title.y = element_text(color="black", size=10, face="bold")) +
                               xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') +
-                              ggtitle("% of Population: Age 65+") + scale_color_viridis_d(), tooltip = "text")
+                              ggtitle("% of Population: 0-14, 15-65, Age 65+") + scale_color_viridis_d(), tooltip = "text")
 
       # Arrange 
-      subplot(AgeUnder15, Age15_64, Age65Plus, nrows = 3,  shareY=FALSE, titleX = TRUE, titleY=TRUE)
+      subplot(AgeUnder15, Age15_64, Age65Plus, nrows = 3, shareY=FALSE, titleX = TRUE, titleY=TRUE)
     }
     #### Disability -----
     else if(supplyvar() == "supply3"){
