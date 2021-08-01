@@ -5,9 +5,9 @@ account: ecsusan-vt-2020-shiny
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4433853
-bundleId: 4877626
+bundleId: 4877954
 url: https://ecsusan-vt-2020-shiny.shinyapps.io/Appalachia/
-when: 1627844149.79392
-lastSyncTime: 1627844149.79394
+when: 1627856121.17167
+lastSyncTime: 1627856121.17168
 asMultiple: FALSE
 asStatic: FALSE
