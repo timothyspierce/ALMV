@@ -267,10 +267,9 @@ ui <- navbarPage(title = "ALMV",
                                    ),
                                    column(6,
                                           h4(strong("Supply Side Factors in the Appalachian Labor Market")),
-                                          p(strong("Education:"), "Blurb 1"),
-                                          p("Blurb 2"),
-                                          p("Blurb 1"),
-                                          p("Blurb 2"),
+                                    
+                                          p(strong("Education:"),"These graphs display the percent of the population based on their highest level of schooling in metropolitan vs. nonmetropolitan areas throughout Appalachia. All states in the region appear to have metropolitan counties that score high at each education level and some that score low. Overall, nonmetropolitan counties in Appalachia have significantly more residents who solely have a high school degree than metropolitan counties. Metropolitan counties in Appalachia have significantly more residents who have a college degree or higher than nonmetropolitan counties. The percent of people with a high school diploma and some college certificates is similar between metropolitan and nonmetropolitan areas. However, significantly more people hold less than a high school diploma in nonmetropolitan areas, while in contrast, more people have acquired a college degree or higher in metropolitan areas. It is worth noting that there is a spike in percent of the population in counties throughout Appalachia that house universities regardless of whether they are metropolitan or nonmetropolitan."),
+                                         
                                           h4(strong("Demand Side Factors in the Appalachian Labor Market")),
                                           p(strong("Per Capita Income:"), "This interactive graph illustrates per capita income in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in per capita income in metropolitan areas are visible closer to population centers. Negative spikes in per capita income in nonmetropolitan areas that are farthest away from population centers. This indicates a potential connection between urbanicity and per capita income which can be seen as the average per capita income level between metropolitan and nonmetropolitan areas are quite significant. "),
                                           p(),
@@ -537,10 +536,9 @@ server <- function(input, output, session) {
 
 
 
- subplot( EducationLTHS,   EducationHSDP, EducationCollPlus, nrows = 3,  shareY=FALSE, titleX = TRUE, titleY=TRUE)                         
+ subplot( EducationLTHS,   EducationHSDP, EducationCollPlus, nrows = 3,  shareY=FALSE, titleX = TRUE, titleY=TRUE)                     
       
     }
-
 #### Age ----
     else if(supplyvar() == "supply2"){
       AgeUnder15 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age0_14, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age0_14))) + 
