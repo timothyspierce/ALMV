@@ -269,14 +269,17 @@ ui <- navbarPage(title = "ALMV",
                                    column(6,
                                           h4(strong("Supply Side Factors in the Appalachian Labor Market")),
                                     
-                                          p(strong("Education:"),"These graphs display the percent of the population based on their highest level of schooling in metropolitan vs. nonmetropolitan areas throughout Appalachia. All states in the region appear to have metropolitan counties that score high at each education level and some that score low. Overall, nonmetropolitan counties in Appalachia have significantly more residents who solely have a high school degree than metropolitan counties. Metropolitan counties in Appalachia have significantly more residents who have a college degree or higher than nonmetropolitan counties. The percent of people with a high school diploma and some college certificates is similar between metropolitan and nonmetropolitan areas. However, significantly more people hold less than a high school diploma in nonmetropolitan areas, while in contrast, more people have acquired a college degree or higher in metropolitan areas. It is worth noting that there is a spike in percent of the population in counties throughout Appalachia that house universities regardless of whether they are metropolitan or nonmetropolitan."),
-                                         
+                                          p(strong("Education:"),"These graphs display the percent of the population based on their highest level of schooling in metropolitan vs. nonmetropolitan areas throughout Appalachia. All states in the region appear to have metropolitan counties that score high at each education level and some that score low. Metropolitan counties in Appalachia have significantly more residents who have a college degree or higher than nonmetropolitan counties. The percent of people with a high school diploma and some college certificates is similar between metropolitan and nonmetropolitan areas. However, significantly more people hold less than a high school diploma in nonmetropolitan areas, while in contrast, more people have acquired a college degree or higher in metropolitan areas. It is worth noting that there is a spike in percent of the population in counties throughout Appalachia that house universities regardless of whether they are metropolitan or nonmetropolitan."),
+                                          p(strong("Age Distribution:"),"Text"),
+                                          p(strong("Disability:"),"This interactive graph displays the percent of the population with some form of disability in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in metropolitan counties are seen in some counties in Wester Virginia, Tennessee, and Kentucky, while negative spikes are noted in some counties in Georgia, North Carolina, Pennsylvania, and Virginia. In nonmetropolitan areas spikes, both positive and negative, are noted throughout the region, most significantly seen in negative spikes in some counties in Alabama, Georgia, Ohio, and Pennsylvania, and positives spikes in some counties in Kentucky, Tennessee, Virginia, and West Virginia. Overall, nonmetropolitan counties in Appalachia have significantly more residents who live with disabilities than metropolitan counties. "),
+                                          p(strong("Health Insurance Coverage:"),"This interactive graph displays the percent of the population who have health insurance coverage in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. Notably, in metropolitan areas, most of the counties in Alabama, Georgia, North Carolina, Virginia, and Tennessee, have lower rates of coverage than counties in Kentucky, New York, Pennsylvania, and West Virginia. This trend continues in nonmetropolitan counties in Appalachia with counties in Kentucky, Pennsylvania, and West Virginia, generally having higher rates of coverage than counties in Alabama, Georgia, North Carolina, Virginia, and Tennessee. While relatively small, on average the percent of the population that has health insurance coverage tends to be higher in metropolitan counties. "),
+                                          p(strong("Internet Access:"),"Text"),
                                           h4(strong("Demand Side Factors in the Appalachian Labor Market")),
                                           p(strong("Per Capita Income:"), "This interactive graph illustrates per capita income in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in per capita income in metropolitan areas are visible closer to population centers. Negative spikes in per capita income in nonmetropolitan areas that are farthest away from population centers. This indicates a potential connection between urbanicity and per capita income which can be seen as the average per capita income level between metropolitan and nonmetropolitan areas are quite significant. "),
                                           p(),
                                           p(strong("Unemployment:"), "This interactive graph presents the percent of the population that is unemployed in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in unemployment in metropolitan areas are seen in Alabama and West Virginia, while similar increases in nonmetropolitan areas are in Kentucky and West Virginia. While relatively small, on average the percent of the population that is unemployed tends to be higher in nonmetropolitan counties. "),
                                           p(),
-                                          p(strong("Industrial Makeup:"), " to be written"),
+                                          p(strong("Industrial Makeup:"), "This graph displays the percent of the market share that each industry in Appalachia holds overall, as well as, of that total percent, the quantity that is in both metropolitan and nonmetropolitan areas. Nonmetropolitan areas contain a higher percentage of each industry. Agriculture, mining, and manufacturing are the most prevalent industries within nonmetropolitan counties. Metropolitan counties, while overall behind nonmetropolitan areas, are most comparable in professional and wholesale trade industries."),
                                           h4(strong("Other Factors in the Appalachian Labor Market")),
                                           p(strong("Home Ownership:"), "This interactive graph displays the percent of the population who own their home in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. It is worth noting that negative spikes in homeownership are seen throughout Appalachia particularly in counties that house universities. Overall, nonmetropolitan counties in Appalachia have more residents who own their homes than metropolitan counties.  "),
                                           p(),
@@ -525,12 +528,12 @@ server <- function(input, output, session) {
                                       theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                          axis.title.y = element_text(color="black", size=10, face="bold")) +
                                       xlab("County") + ylab("Percent in County (%)") + 
                                       labs(color='County Classification') + 
-                                      ggtitle("% of Population: Less than High School, High School, College or More") + scale_colour_viridis_d(), tooltip = "text")
+                                      ggtitle("% of Population: College or More") + scale_colour_viridis_d(), tooltip = "text")
       
 
 
 
- subplot( EducationLTHS,   EducationHSDP, EducationCollPlus, nrows = 3,  shareY=FALSE, titleX = TRUE, titleY=TRUE)                     
+    EducationCollPlus               
       
     }
 #### Age ----
@@ -562,10 +565,8 @@ server <- function(input, output, session) {
                                                 axis.title.x = element_text(color="black", size=8, face="bold"),
                                                 axis.title.y = element_text(color="black", size=10, face="bold")) +
                               xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') +
-                              ggtitle("% of Population: 0-14, 15-65, Age 65+") + scale_color_viridis_d(), tooltip = "text")
-
-      # Arrange 
-      subplot(AgeUnder15, Age15_64, Age65Plus, nrows = 3, shareY=FALSE, titleX = TRUE, titleY=TRUE)
+                              ggtitle("% of Population: Age 65+") + scale_color_viridis_d(), tooltip = "text")
+                 Age65Plus
     }
     #### Disability -----
     else if(supplyvar() == "supply3"){
