@@ -25,6 +25,7 @@ library(htmltools)
 library(leafpop)
 library(rvest)
 library(plotly)
+library(ggpubr)
 
 
 prettyblue <- "#232D4B"
@@ -328,23 +329,30 @@ ui <- navbarPage(title = "ALMV",
                             tabPanel("Data Sources",
                                      h3("", align = "center"),
                                      br(""),
-                                     column(4,
+                                     column(6,
                                             img(src = "data-acs.png", style = "display: inline; float: left;", width = "200px"),
                                             p(strong("American Community Survey."), "The American Community Survey (ACS) is an ongoing yearly survey conducted by the U.S Census
                                             Bureau. ACS samples households to compile 1-year and 5-year datasets providing information on population sociodemographic and
                                             socioeconomic characteristics including employment, disability, and health insurance coverage. We used 2019 ACS 5-year datasets."),
                                             br(""),
-                                            img(src = "data-onet.png", style = "display: inline; float: left;", width = "120px"),
-                                            p(strong("O*Net."), "The O*NET database contains hundreds of standardized and occupation-specific
-                                              descriptors on almost 1,000 occupations covering the entire U.S. economy. We used the O*Net's mapping of O*NET-SOC codes (occupations) to Skill ratings
-                                              from the 25.3 database. 
-                                              "),
-                                            br(""),
                                             img(src = "data-IPUMS.png", style = "display: inline; float: left;", width = "120px"),
                                             p(strong("IPUMS."), "IPUMS provides census and survey data from around the world integrated 
                                               across time and space. We created a data extract from IPUMS USA at the Public Use Microdata 
-                                              Area level using 2019 ACS 5-year sample information providing information on occupation and 
-                                              location.")
+                                              Area (PUMA) level using 2019 ACS 5-year sample information providing information on occupation and 
+                                              location. To ensure consistency among Appalachian PUMAs, the 2000 to 2010 PUMAs crosswalk
+                                              was used.")
+                                     ),
+                                     column(6,
+                                            img(src = "data-onet.png", style = "display: inline; float: left;", width = "120px"),
+                                            p(strong("O*Net."), "The O*NET database contains hundreds of standardized and occupation-specific
+                                              descriptors on almost 1,000 occupations covering the entire U.S. economy. We used the O*Net's mapping of O*NET Standard Occupational Classification (SOC) codes,
+                                              to Skill ratings from the 25.3 database. To ensure consistency among SOC codes from IMPUS and O*Net, the 2010 to 2019 SOC cross walk was used. 
+                                              "), 
+                                            br(""), 
+                                            img(src = "data-ers.png", style = "display: inline; float: left;", width = "120px"),
+                                            p(strong("Economic Revenue Service."), 'The Economic Research Service is a component of the United States Department of Agriculture and a principal agency of the Federal Statistical System of the United States.
+                                              Its mission is to "anticipate trends and emerging issues in agriculture, food, the environment, and rural America and to conduct high-quality, objective economic research to inform and enhance public and private decision making."
+                                              We used ERS Rural Urban Continuum (RUC) codes from 2013 to classify counties as metro or non-metro.')
                                      ),
                                      
                                     
