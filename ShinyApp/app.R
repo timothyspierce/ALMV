@@ -78,7 +78,6 @@ colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a
     appal2 <- readRDS("data/appal2.RDS")
     g <- readRDS("data/g.RDS")
     industry <- readRDS("data/industry.Rds")
-    
 
 
 # CODE TO DETECT ORIGIN OF LINK AND CHANGE LOGO ACCORDINGLY
@@ -229,9 +228,10 @@ ui <- navbarPage(title = "ALMV",
                                                        "Age Distribution" = "supply2",
                                                        "Disability Rates" = "supply3",
                                                        "Health Insurance Coverage" = "supply4",
-                                                       "Access to Technology" = "supply5"
+                                                       "Internet Access" = "supply5",
+                                                       "Home Ownership" = "supply6"
                                                      )),
-                                                     p(strong("Ryan with the help of Leo-Allen")),
+
                                                      ## Output: 1-----------------
                                                      withSpinner(plotlyOutput("supplyoutput")),
                                                      p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
@@ -244,23 +244,9 @@ ui <- navbarPage(title = "ALMV",
                                                        "Unemployment" = "demand2", 
                                                        "Industrial sectors" = "demand3"
                                                      )),
-                                                     p(strong("Ryan with the help of Leo-Allen")),
+                                                     
                                                      ## Output: 2-----------------
                                                      withSpinner(plotlyOutput("demandoutput")),
-                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
-                                            ),
-                                            
-                                            tabPanel("Others",
-                                                     p(""),
-                                                     ## Input: others-----------------
-                                                     selectInput("other", " ", selected = "Home Ownership",width = "100%", choices = c(
-                                                       "Home Ownership" = "other1",
-                                                       "Renters" = "other2",
-                                                       "Vehicle Ownership" = "other3"
-                                                     )),
-                                                     p(strong("Ryan with the help of Leo-Allen")),
-                                                     ## Output: 3-----------------
-                                                     withSpinner(plotlyOutput("otheroutput")),
                                                      p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
                                             )
                                             
@@ -270,23 +256,15 @@ ui <- navbarPage(title = "ALMV",
                                           h4(strong("Supply Side Factors in the Appalachian Labor Market")),
                                     
                                           p(strong("Education:"),"These graphs display the percent of the population based on their highest level of schooling in metropolitan vs. nonmetropolitan areas throughout Appalachia. All states in the region appear to have metropolitan counties that score high at each education level and some that score low. Metropolitan counties in Appalachia have significantly more residents who have a college degree or higher than nonmetropolitan counties. The percent of people with a high school diploma and some college certificates is similar between metropolitan and nonmetropolitan areas. However, significantly more people hold less than a high school diploma in nonmetropolitan areas, while in contrast, more people have acquired a college degree or higher in metropolitan areas. It is worth noting that there is a spike in percent of the population in counties throughout Appalachia that house universities regardless of whether they are metropolitan or nonmetropolitan."),
-                                          p(strong("Age Distribution:"),"Text"),
+                                          p(strong("Age Distribution:"),"These interactive graphs display the percent of the population over sixty-five years of age in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Overall, nonmetropolitan counties in Appalachia have more residents over sixty-five years of age, while metropolitan counties have more residents between the ages of fifteen and sixty-four."),
                                           p(strong("Disability:"),"This interactive graph displays the percent of the population with some form of disability in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in metropolitan counties are seen in some counties in Wester Virginia, Tennessee, and Kentucky, while negative spikes are noted in some counties in Georgia, North Carolina, Pennsylvania, and Virginia. In nonmetropolitan areas spikes, both positive and negative, are noted throughout the region, most significantly seen in negative spikes in some counties in Alabama, Georgia, Ohio, and Pennsylvania, and positives spikes in some counties in Kentucky, Tennessee, Virginia, and West Virginia. Overall, nonmetropolitan counties in Appalachia have significantly more residents who live with disabilities than metropolitan counties. "),
                                           p(strong("Health Insurance Coverage:"),"This interactive graph displays the percent of the population who have health insurance coverage in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. Notably, in metropolitan areas, most of the counties in Alabama, Georgia, North Carolina, Virginia, and Tennessee, have lower rates of coverage than counties in Kentucky, New York, Pennsylvania, and West Virginia. This trend continues in nonmetropolitan counties in Appalachia with counties in Kentucky, Pennsylvania, and West Virginia, generally having higher rates of coverage than counties in Alabama, Georgia, North Carolina, Virginia, and Tennessee. While relatively small, on average the percent of the population that has health insurance coverage tends to be higher in metropolitan counties. "),
                                           p(strong("Internet Access:"),"Text"),
+                                          p(strong("Home Ownership:"), "This interactive graph displays the percent of the population who own their home in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. It is worth noting that negative spikes in homeownership are seen throughout Appalachia particularly in counties that house universities. Overall, nonmetropolitan counties in Appalachia have more residents who own their homes than metropolitan counties."),
                                           h4(strong("Demand Side Factors in the Appalachian Labor Market")),
                                           p(strong("Per Capita Income:"), "This interactive graph illustrates per capita income in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in per capita income in metropolitan areas are visible closer to population centers. Negative spikes in per capita income in nonmetropolitan areas that are farthest away from population centers. This indicates a potential connection between urbanicity and per capita income which can be seen as the average per capita income level between metropolitan and nonmetropolitan areas are quite significant. "),
-                                          p(),
                                           p(strong("Unemployment:"), "This interactive graph presents the percent of the population that is unemployed in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in unemployment in metropolitan areas are seen in Alabama and West Virginia, while similar increases in nonmetropolitan areas are in Kentucky and West Virginia. While relatively small, on average the percent of the population that is unemployed tends to be higher in nonmetropolitan counties. "),
-                                          p(),
-                                          p(strong("Industrial Makeup:"), "This graph displays the percent of the market share that each industry in Appalachia holds overall, as well as, of that total percent, the quantity that is in both metropolitan and nonmetropolitan areas. Nonmetropolitan areas contain a higher percentage of each industry. Agriculture, mining, and manufacturing are the most prevalent industries within nonmetropolitan counties. Metropolitan counties, while overall behind nonmetropolitan areas, are most comparable in professional and wholesale trade industries."),
-                                          h4(strong("Other Factors in the Appalachian Labor Market")),
-                                          p(strong("Home Ownership:"), "This interactive graph displays the percent of the population who own their home in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. It is worth noting that negative spikes in homeownership are seen throughout Appalachia particularly in counties that house universities. Overall, nonmetropolitan counties in Appalachia have more residents who own their homes than metropolitan counties.  "),
-                                          p(),
-                                          p(strong("Renters:"), "to be written "),
-                                          p(),
-                                          p(strong("Vehicle Ownership:"), " to be written")
-             
+                                          p(strong("Industrial Makeup:"), "This graph displays the percent of the market share that each industry in Appalachia holds overall, as well as, of that total percent, the quantity that is in both metropolitan and nonmetropolitan areas. Nonmetropolitan areas contain a higher percentage of each industry. Agriculture, mining, and manufacturing are the most prevalent industries within nonmetropolitan counties. Metropolitan counties, while overall behind nonmetropolitan areas, are most comparable in professional and wholesale trade industries.")
                                    )
                                   
                           )
@@ -370,8 +348,7 @@ ui <- navbarPage(title = "ALMV",
                                    h1(strong("Skills Prevalence of the Region"), align = "center"),
                                    p("", style = "padding-top:10px;"),
                                           p("Our dashboard presents the skill prevalence index for five skills that we identified as important to the future economy.  A skill prevalence index was created for all 35 skills, but we present only a subset for brevity. The skills we chose to show are needed in what is known as 'Bright Outlook Occupations,' defined as occupations that are 'projected to grow faster than average (employment increase of 5% or more)' and 'to have 100,000 or more job openings over the period 2019-2029 for the US nationwide'. The five skills that we present in the dashboard below are: Technology Design,   Reading Comprehension, Monitoring, Coordination, Active Listening. "),
-                                          p("The map for Technology Design displays the prevalence of this skill within each Appalachian PUMA. The legend shows that the Skill Prevalence Index for the entire region ranges between 0.006 to 0.009. This range suggests that for each PUMA in Appalachia, Technology Design skills are not the dominant skills needed for the occupations in that community relative to other skills in that community.  In other words there are very few jobs that require this skill in each PUMA. The highest prevalence of Technology Design skills is noted in PUMAs that contain large metro areas. For example, if you over over the yellow region on the map, a pop-up will show the Huntsville North and Madison East PUMA’s. This community has the highest prevalence of Technology Design Skills and it includes the city of Huntsville, AL which is the blue circle on the map. Huntsville is a city with a large number of high technology jobs due to space and aeronautics industry @@@ describe popup of industry histogram – not showing up on currently deployed website.  Discuss this nicely. "),
-                                          p("For Reading Comprehension, Monitoring, and Coordination, the index values suggest that these skills are prevalent within each community. Reading Comprehension exhibits the clustering pattern described for Technology. Skills such as Coordination and Monitoring do not appear to follow any typical pattern.   "),
+                                          p("The map for Technology Design displays the prevalence of this skill within each Appalachian PUMA. The legend shows that the Skill Prevalence Index for the entire region ranges between 0.55 to 0.85. This range suggests that for each PUMA in Appalachia, Technology Design skills are not the dominant skills needed for the occupations in that community relative to other skills in that community.  In other words there are very few jobs that require this skill in each PUMA. The highest prevalence of Technology Design skills is noted in PUMAs that contain large metro areas. For example, if you over over the yellow region on the map, a pop-up will show the Huntsville North and Madison East PUMA’s. This community has the highest prevalence of Technology Design Skills and it includes the city of Huntsville, AL which is the blue circle on the map. Huntsville is a city with a large number of high technology jobs due to space and aeronautics industry. "),
                                           p("final thought statement tbd"),
                                   
                                           ## Input: skills------------
@@ -566,7 +543,7 @@ server <- function(input, output, session) {
                                                 axis.title.y = element_text(color="black", size=10, face="bold")) +
                               xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') +
                               ggtitle("% of Population: Age 65+") + scale_color_viridis_d(), tooltip = "text")
-                 Age65Plus
+                AgeUnder15
     }
     #### Disability -----
     else if(supplyvar() == "supply3"){
@@ -592,14 +569,23 @@ server <- function(input, output, session) {
     }
     
     else if(supplyvar() == "supply5"){
-      HealthInsurance <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Pct.HI, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", Pct.HI))) + 
-                                    geom_point()  +  
-                                    geom_hline(data = g, aes(yintercept=M_Pct.HI, color= "black")) + facet_wrap( nonmetro.f~.)  + 
+      
+      Broadband <- ggplotly(ggplot(data = appal2, aes(x = observation, y = HH.Pct.BroadBand, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ",HH.Pct.BroadBand))) + 
+                                    geom_point()  +    geom_hline(data = g, aes(yintercept=M_Pct.HI, color= "black")) + facet_wrap( nonmetro.f~.)  + 
                                     theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
                                     xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
-                                    ggtitle("% of Population: Health Insurance Coverage") + scale_color_viridis_d(), tooltip = "text")
-      
-      HealthInsurance
+                                    ggtitle("% of Population: Broadband Coverage") + scale_color_viridis_d(), tooltip = "text")
+     
+      Broadband
+    }
+    else if(supplyvar() == "supply6") {
+      HomeOwnership <- ggplotly(ggplot(data = appal2, aes(x = observation, y = OwnHome, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", observation))) + 
+                                  geom_point()  +  geom_hline(data = g, aes(yintercept=M_OwnHome, color= "black")) + 
+                                  facet_wrap( nonmetro.f~.)  + theme_bw()+ 
+                                  theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                            axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                  ggtitle("% of Population: Owns a Home") + scale_color_viridis_d(), tooltip = "text")
+      HomeOwnership
     }
   
   })
@@ -658,38 +644,13 @@ server <- function(input, output, session) {
   
       industry_composition
     }
+  
     
     
   })
   
   
-  othervar <- reactive({
-    input$other
-  })
-  
-  output$otheroutput <- renderPlotly({
-    
-    if(othervar() == "other1") {
-      HomeOwnership <- ggplotly(ggplot(data = appal2, aes(x = observation, y = OwnHome, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", observation))) + 
-                                  geom_point()  +  geom_hline(data = g, aes(yintercept=M_OwnHome, color= "black")) + 
-                                  facet_wrap( nonmetro.f~.)  + theme_bw()+ 
-                                  theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                            axis.title.y = element_text(color="black", size=10, face="bold")) +
-                                  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
-                                  ggtitle("% of Population: Owns a Home") + scale_color_viridis_d(), tooltip = "text")
-      HomeOwnership
-    }
-    
-    else if(othervar() == "other2"){
-   
-    }
-    
-    else if(othervar() == "other3"){
-    
-    }
-    
-    
-  })
-  
+
   #skills example  table ------------------------------------------------------------
   output$example_table <- renderPlot({
   
