@@ -221,11 +221,18 @@ skills_index_common_by_PUMA_weighted <- skills_index_common_by_PUMA %>%
   mutate(across(4:232, function(x) index * x))
 
 
+# app_weighted_skills_by_PUMA <- skills_index_common_by_PUMA_weighted %>% 
+#   mutate(across(4:232, ~replace_na(.x, 0))) %>% 
+#   group_by(skillname) %>% 
+#   summarize(across(4:231, sum)) %>% 
+#   mutate(across(2:229, function(x) x / max(x))) %>% 
+#   pivot_longer(cols = 2:229, names_to = "PUMA", values_to = "Normalized Index")
+
 app_weighted_skills_by_PUMA <- skills_index_common_by_PUMA_weighted %>% 
   mutate(across(4:232, ~replace_na(.x, 0))) %>% 
   group_by(skillname) %>% 
   summarize(across(4:231, sum)) %>% 
-  mutate(across(2:229, function(x) x / max(x))) %>% 
+  mutate(across(2:229, function(x) (x / sum(x)) * 100 )) %>% 
   pivot_longer(cols = 2:229, names_to = "PUMA", values_to = "Normalized Index")
 
 
