@@ -25,6 +25,7 @@ library(htmltools)
 library(leafpop)
 library(rvest)
 library(plotly)
+library(ggpubr)
 
 
 prettyblue <- "#232D4B"
