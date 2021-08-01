@@ -332,36 +332,22 @@ ui <- navbarPage(title = "ALMV",
                                             img(src = "data-acs.png", style = "display: inline; float: left;", width = "200px"),
                                             p(strong("American Community Survey."), "The American Community Survey (ACS) is an ongoing yearly survey conducted by the U.S Census
                                             Bureau. ACS samples households to compile 1-year and 5-year datasets providing information on population sociodemographic and
-                                            socioeconomic characteristics including employment, disability, and health insurance coverage. We used AC 2014/18 5-year
-                                            estimates to obtain census tract and census block group-level to explore Patrick County resident characteristics."),
+                                            socioeconomic characteristics including employment, disability, and health insurance coverage. We used 2019 ACS 5-year datasets."),
                                             br(""),
-                                            img(src = "data-connect.png", style = "display: inline; float: left;", width = "150px"),
-                                            p(strong("CommonwealthConnect."), "The Virginia Tech CommonwealthConnect Wi-Fi Hotspot Map is an interactive map of free, publicly
-                                           available wi-fi hotspots in Virginia. Its goal is to provide an easily accessible map of areas where individuals can connect to the
-                                           internet for free, decreasing the constraints placed on families that do not have internet access at home. We used the 2020 wi-fi
-                                           hotspot map data to retrieve hotspot locations in Patrick County and subsequently employed the information in calculating hotspot
-                                           coverage isochrones."),
+                                            img(src = "data-onet.png", style = "display: inline; float: left;", width = "120px"),
+                                            p(strong("O*Net."), "The O*NET database contains hundreds of standardized and occupation-specific
+                                              descriptors on almost 1,000 occupations covering the entire U.S. economy. We used the O*Net's mapping of O*NET-SOC codes (occupations) to Skill ratings
+                                              from the 25.3 database. 
+                                              "),
                                             br(""),
-                                            img(src = "data-corelogic.png", style = "display: inline; float: left;", width = "120px"),
-                                            p(strong("CoreLogic."), "CoreLogic is a supplier of proprietary US real estate and specialized business data at the property level.
-                                           This company provides data spanning over 50 years at the latitude and longitude level. Information available in the dataset includes
-                                           property characteristics, mortgage, foreclosures and performance. We used 2019 CoreLogic data to obtain the locations of all residential
-                                           properties in Patrick County.")
+                                            img(src = "data-IPUMS.png", style = "display: inline; float: left;", width = "120px"),
+                                            p(strong("IPUMS."), "IPUMS provides census and survey data from around the world integrated 
+                                              across time and space. We created a data extract from IPUMS USA at the Public Use Microdata 
+                                              Area level using 2019 ACS 5-year sample information providing information on occupation and 
+                                              location.")
                                      ),
-                                     column(4,
-                                            img(src = "data-traveltime.png", style = "display: inline; float: left;", width = "140px"),
-                                            p(strong("TravelTime."), "TravelTime Application Programming Interface (API) aggregates data from OpenStreetMap, transport timetables and
-                                           speed profiles to generate isochrones. An isochrone is a shape covering all locations that can be reached within the same timeframe
-                                           given a start location, departure time, and a mode of transportation. We used the TravelTime API to produce isochrones of 10- and
-                                           15-minute drive time interval from supermarkets, farmers' markets, and free wi-fi hotspots, and of 8-, 10-, and 12-minute drive
-                                           time intervals from all emergency medical service stations in Patrick County."),
-                                            br(""),
-                                            img(src = "data-ers.png", style = "display: inline; float: left;", width = "120px"),
-                                            p(strong("Food Access Research Atlas."), "The United State Department of Agriculture Food Access Research Atlas is a data resource
-                                          created by the Economic Research Service that provides information on food access indicators at census tract level. The data allows
-                                          individuals to understand food access in communities based on factors like age and socioeconomic status. We used the 2017 Food Access
-                                          Research Atlas to examine Patrick County residents’ food access at multiple distance thresholds and by resident characteristics.")
-                                     )
+                                     
+                                    
                             )
                           
                           )
