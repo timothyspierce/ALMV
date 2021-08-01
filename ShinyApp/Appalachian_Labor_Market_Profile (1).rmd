@@ -29,10 +29,10 @@ library(tidyverse)
 library(dplyr)
 library(stringr)
 library(tigris)
-library("shiny")
+library(shiny)
 library(plotly)
-library("ggpubr")
-library("viridis")
+library(ggpubr)
+library(viridis)
 #library("devtools")
 
 ```
@@ -42,14 +42,14 @@ Set the working directory and read in the workspace from pull_ACS.Rmd. Note when
 
 ```{r LoadData}
 #To load the working directory and workspace
-setwd("C:/Users/ecsusan/Dropbox/2021VT-DSPG-FILES/Appalachia/")
-readRenviron("~/.Renviron") #readin Census API key
+# setwd("C:/Users/ecsusan/Dropbox/2021VT-DSPG-FILES/Appalachia/")
+# readRenviron("~/.Renviron") #readin Census API key
 #Create a nice list of FIPS state and county. Use `fip_list` below to pull variables and to map.
-counties<-read.csv("All_Mining.csv", header=T)
+counties<-read_csv("data/All_Mining.csv")
 #Note Yellowstone National Park did not have ACS data so drop it.
 counties <- filter(counties,FIPS!= 30113)
 #only keep Appalachia
-counties <- filter(counties, ï..coal_region== 1)
+counties <- filter(counties, coal_region== 1)
 
 fip_list<-sprintf("%05d",counties$FIPS)
 fips  <- data.frame(fip_list)
@@ -268,34 +268,7 @@ all_ACS5 <- Reduce(function(x, y) merge(x, y, all=TRUE), list(PerCapita,dff000, 
 To provide a profile of Appalachia, I recommend doing an urban-rural comparison. Keep only the Appalachian Region and merge in the rural classification from the USDA. Here is the link: https://www.ers.usda.gov/data-products/rural-urban-continuum-codes.aspx. Use `dplyr` and pipe to do this in one step: merge in the rural-urban code then keep only counties with a rucc code then I keep only Appalachian counties.
 
 ```{r Add_RUCC}
-urb_ru <- read.csv("ruralurbancodes2013.csv", header=T)
-
-#add in a leading zero and make it into a character format 
-urb_ru$GEOID <- sprintf("%05d",urb_ru$ï..FIPS)
-
-#merge in dataset & keep only Appalachia
-appal <-Reduce(function(x, y) merge(x, y, all=TRUE), list(urb_ru,all_ACS5)) %>%  filter(!is.na(NAME))
-
-#summary(appal)
-appal$age0_14 <- round(appal$age0_14)
-appal$age15_64 <- round(appal$age15_64)
-appal$age65plus <- round(appal$age65plus)
-#create a new variable nonmetro for nonmetro counties
-appal$nonmetro <- ifelse(appal$RUCC_2013>=4,1,0)
-levels(appal$nonmetro)
-levels(appal$nonmetro) <- c("Nonmetro", "Metro")
-
-#Create a factor variable for rural
-appal$nonmetro.f <- factor(appal$nonmetro, labels = c("Metro", "Nonmetro"))
-#is.factor(appal$nonmetro.f)
-
-appal2 <- appal[order(appal$GEOID),]
-appal2$observation <- 1:nrow(appal2) 
-
-#group_means <- appal2 %>% group_by(nonmetro) %>%
-# summarise(mean = mean(age65plus)) 
-
-
+appal2 <- readRDS("appal2.RDS")
 d <- appal2 %>%
   group_by(nonmetro.f) %>%
   summarise_at(vars(age0_14, age15_64, age65plus, LT_HS, HS_Dip, SomeColl,Coll_Plus, OwnHome, Pct.HI, Pct.Unemp, Pct.Dis, PerCapInc, tt014,tt1529,tt3044,tt4559,tt60plus), funs(mean(., na.rm=TRUE)))
