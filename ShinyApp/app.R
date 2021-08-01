@@ -24,6 +24,7 @@ library(tigris)
 library(htmltools)
 library(leafpop)
 library(rvest)
+library(plotly)
 
 
 prettyblue <- "#232D4B"
@@ -71,6 +72,12 @@ colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a
       select(skillname, PUMA, `Normalized Index`, geometry, NAME10)
 
 
+# Data: Labor Market Profile
+    load("data/ACS_Objects.RData")
+    appal2 <- readRDS("data/appal2.RDS")
+    g <- readRDS("data/g.RDS")
+    industry <- readRDS("data/industry.Rds")
+    
 
 
 # CODE TO DETECT ORIGIN OF LINK AND CHANGE LOGO ACCORDINGLY
@@ -206,117 +213,81 @@ ui <- navbarPage(title = "ALMV",
                                    p(tags$small(em('Last updated: August 2021'))))
                  ),
                  # Tab Labor Market -----------------------------------------------------------
-                 tabPanel("Appalachian Labor Market", value = "labomarket",
+                 tabPanel("Appalachian Labor Market", value = "labor",
                           
                           fluidRow(style = "margin: 6px;",
                                    h1(strong("Appalachian Labor Market Charateristics"), align = "center"),
                                    p("", style = "padding-top:10px;"),
-                                   column(4,
-                                          h4(strong("Definition of Appalachian Region")),
-                                          p("Blurb 1"),
-                                          p("Blurb 2"),
-                                          h4(strong("Appalachian Labor Market")),
-                                          p("Blurb 1"),
-                                          p("Blurb 2"),
-                                          h4(strong("Comparisions with other resgion?")),
-                                          p("Blurb 1"),
-                                          p("Blurb 2")
-                                          
-                                   ),
-                                   column(8,
+                                   column(6,
                                           tabsetPanel(
                                             tabPanel("Supply",
                                                      p(""),
                                                      ## Input: supply-----------------
-                                                     selectInput("supply", "", width = "100%",selected="Educaion", choices = c(
-                                                       "Education" = "STUART VOLUNTEER FIRE DEPARTMENT",
-                                                       "Educational attainment" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Age Distribution"="AGE",
-                                                       "Disability %" = "STUART VOLUNTEER FIRE DEPARTMENT",
-                                                       "Healthcare Coverage %" = "BLUE RIDGE VOLUNTEER RESCUE SQUAD",
-                                                       "Internet Access" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Broadband Access" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Travel Time" = "STUART VOLUNTEER FIRE DEPARTMENT"
-                                                       
-                                                   )),
-                                                   p(strong("Ryan with the help of Leo-Allen")),
-                                                   ## Output: 1-----------------
-                                                     withSpinner(tableOutput("output1")),
-                                                   p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
+                                                     selectInput("supply", "", width = "100%",selected="Education", choices = c(
+                                                       "Education" = "supply1",
+                                                       "Age Distribution" = "supply2",
+                                                       "Disability Rates" = "supply3",
+                                                       "Health Insurance Coverage" = "supply4",
+                                                       "Access to Technology" = "supply5"
+                                                     )),
+                                                     p(strong("Ryan with the help of Leo-Allen")),
+                                                     ## Output: 1-----------------
+                                                     withSpinner(plotlyOutput("supplyoutput")),
+                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
                                             ),
                                             tabPanel("Demand",
                                                      p(""),
                                                      ## Input: demand-----------------
-                                                     selectInput("demand", "", width = "100%",selected="Income per capita", choices = c(
-                                                       "Income per capita" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Unemployment" = "BLUE RIDGE VOLUNTEER RESCUE SQUAD", 
-                                                       "Industrial sectors" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Technology?????" = "BLUE RIDGE VOLUNTEER RESCUE SQUAD"
+                                                     selectInput("demand", "", width = "100%",selected="Income per Capita", choices = c(
+                                                       "Income per Capita" = "demand1",
+                                                       "Unemployment" = "demand2", 
+                                                       "Industrial sectors" = "demand3"
                                                      )),
                                                      p(strong("Ryan with the help of Leo-Allen")),
                                                      ## Output: 2-----------------
-                                                     withSpinner(tableOutput("output2")),
+                                                     withSpinner(plotlyOutput("demandoutput")),
                                                      p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
                                             ),
-                           
+                                            
                                             tabPanel("Others",
                                                      p(""),
                                                      ## Input: others-----------------
-                                                     selectInput("others", " ", selected = "Home Ownership",width = "100%", choices = c(
-                                                       "Home Ownership" = "STUART VOLUNTEER FIRE DEPARTMENT",
-                                                       "Renters" = "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT",
-                                                       "Vehicle Ownership" = "BLUE RIDGE VOLUNTEER RESCUE SQUAD"
+                                                     selectInput("other", " ", selected = "Home Ownership",width = "100%", choices = c(
+                                                       "Home Ownership" = "other1",
+                                                       "Renters" = "other2",
+                                                       "Vehicle Ownership" = "other3"
                                                      )),
                                                      p(strong("Ryan with the help of Leo-Allen")),
                                                      ## Output: 3-----------------
-                                                     withSpinner(tableOutput("output3")),
+                                                     withSpinner(plotlyOutput("otheroutput")),
                                                      p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
                                             )
                                             
                                           )
+                                   ),
+                                   column(6,
+                                          h4(strong("Supply Side Factors in the Appalachian Labor Market")),
+                                          p(strong("Education:"), "Blurb 1"),
+                                          p("Blurb 2"),
+                                          p("Blurb 1"),
+                                          p("Blurb 2"),
+                                          h4(strong("Demand Side Factors in the Appalachian Labor Market")),
+                                          p(strong("Per Capita Income:"), "This interactive graph illustrates per capita income in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in per capita income in metropolitan areas are visible closer to population centers. Negative spikes in per capita income in nonmetropolitan areas that are farthest away from population centers. This indicates a potential connection between urbanicity and per capita income which can be seen as the average per capita income level between metropolitan and nonmetropolitan areas are quite significant. "),
+                                          p(),
+                                          p(strong("Unemployment:"), "This interactive graph presents the percent of the population that is unemployed in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in unemployment in metropolitan areas are seen in Alabama and West Virginia, while similar increases in nonmetropolitan areas are in Kentucky and West Virginia. While relatively small, on average the percent of the population that is unemployed tends to be higher in nonmetropolitan counties. "),
+                                          p(),
+                                          p(strong("Industrial Makeup:"), " to be written"),
+                                          h4(strong("Other Factors in the Appalachian Labor Market")),
+                                          p(strong("Home Ownership:"), "This interactive graph displays the percent of the population who own their home in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. It is worth noting that negative spikes in homeownership are seen throughout Appalachia particularly in counties that house universities. Overall, nonmetropolitan counties in Appalachia have more residents who own their homes than metropolitan counties.  "),
+                                          p(),
+                                          p(strong("Renters:"), "to be written "),
+                                          p(),
+                                          p(strong("Vehicle Ownership:"), " to be written")
+             
                                    )
+                                  
                           )
                  ),
-                 # Tab Skills-----------------------------------------------------------
-                 tabPanel("Skills", value = "skills",
-                          
-                          fluidRow(style = "margin: 6px;",
-                                   h1(strong("Skills(need new title)"), align = "center"),
-                                   p("", style = "padding-top:10px;"),
-                                  
-                                          h4(strong("This is a title")),
-                                          p("Our project aims to create meaningful measures of employment and skills in the Appalachian labor market. We use individualized and anonymized 2019 5-Year American Community Survey to understand the occupations and industries of Appalachia. The most granular level for these data is the Public Use Microdata Area (PUMA) available in the Integrated Public Use Microdata Series (IPUMS). We use 6-digit SOC codes extracted from the ACS to obtain estimates of occupation prevalence in each area. "),
-                                          br(),
-                                          p("To understand and quantify the skills content of Appalachian labor markets, our project uses O*Net skills data. O*Net skills data ranks each of their 35 listed skills by importance and proficiency for 772 unique SOC occupation codes. Using 2019 skill rankings, we matched O*Net skills to the occupations found in Appalachia."),
-                                           br(),
-                                           p("Our team constructs an index to gain an understanding of the distribution of occupations in Appalachia. Our index identifies which skills are the most and the least prevalent in Appalachian communities. Within every occupation, each skill is assigned a value based on its importance to the job and the total number of individuals employed in that position. "),
-                                           br(),
-                                           p("Our index is to be interpreted as follows: If there is a skill that is very important to a very popular occupation and employees must have very high levels of proficiency in that skill, it will be assigned a higher value. If there is a skill that is not very important to an uncommon occupation and the required proficiency is very low, it will be assigned a lower value. These values represent relative importance to other skills within the PUMA. The index is limited in its ability to compare across areas. We can not say that one area is better at public speaking than another. We are able to compare the strengths and weaknesses of areas. "),
-                                           br(),
-                                           p("Our dashboard presents the prevalence of five skills we identified as important to the future economy. We use O*Net’s Bright Outlook Occupations—occupations which are “projected to grow faster than average (employment increase of 5% or more)” and “to have 100,000 or more job openings over the period 2019-2029 for the US nationwide”. Using these occupations, filtered and ranked skills to find and present those most relevant to our project goals."),
-                                           br(),
-                                           p("Moving forward, we anticipate that these indices can be consolidated and contribute to a multi-dimensional index that quantifies vulnerabilities ."),
-                                          
-                                  
-                                          ## Input: skills------------
-                                         selectInput("skills", "Select the Skill:", width = "100%", choices = c(
-                                                      "Technology Design"="TechnologyDesign",
-                                                      "Reading Comprehension"="ReadingComprehension",
-                                                       "Monitoring",
-                                                      "Coordination",
-                                                         "Active Listening"="ActiveListening")),
-                                                     p(strong("This is a title")),
-                                         ## Output: skillsoutput ------------------------
-                                          withSpinner(leafletOutput("skillsoutput")),
-                                         p(tags$small("Data Sources: American Conmunity Survey??????????????????????????????????????")),
-                                         h4(strong("A Simplified Example of the Index")),
-                                         p("For example, suppose a labor market has two occupations—math teachers and coal miners— and each occupation has only two skill measures—public speaking and manual labor. Suppose the required proficiency of public speaking skills for math teachers is 0.95 on a 0-1 scale and the required proficiency of manual labor is 0.3 on a 0-1 scale. For coal miners, public speaking may only be 0.1 on a 0-1 scale and manual labor may be 0.8 on a 0-1 scale. Assume, for now, that the importance level is the same as the required proficiency. The data suggest that this is true with minimal variance. Without knowing how many coal miners and math teachers there are, we may assume that public speaking is the most prevalent skill in this labor market. However, suppose this labor market has 100 coal miners and only 5 math teachers. "),
-                                         br(),
-                                         p("We multiply each skill index for each occupation by the number of individuals employed in this occupation. For this hypothetical labor market, the weighted public speaking value for math teachers is 4.75 and the weighted public speaking value for coal miners is 10. The weighted manual labor value for math teachers is 1.5 and the weighted manual labor value for coal miners is 80. The public speaking skills index for this labor market is 14.75 and the manual labor skills index 81.5. To normalize these indices, we take the percentage of the whole and find that public speaking receives a value of .15 and manual labor receives a value of .85. In this economy, manual labor is much more prevalent than public speaking."),
-                                         p("Our index also removes the assumption that importance to the occupation is the same as required proficiency. A job may require a low proficiency in typing even though it’s essential the employees type a few things everyday. In the construction of our index, we multiply the importance level by the required proficiency to compensate for some of these variances although they are uncommon. ")
-                                            )
-                     
-                          ),
                  
                  #Tab Data -----------------------------------------------------------
                  tabPanel("Data and Measures", value = "data",
@@ -325,23 +296,39 @@ ui <- navbarPage(title = "ALMV",
                                    br()
                           ),
                           tabsetPanel(
+                            tabPanel("Measures",
+                                     h3(strong(""), align = "center"),
+                                     fluidRow(style = "margin: 6px;",
+                                              h1(strong("The Skills Index"), align = "center"),
+                                              p("", style = "padding-top:10px;"),
+                                              h4(strong("The Skills Index")),
+                                              p("Our project creates measures of the current employment and skill prevalence for communities in Appalachia. We build on work by Autor, Levy, and Murname (2003) and Berger and Frye (2016) and use individual-level data to understand the occupations and industries of Appalachia. The most recently available national data is the American Community Survey (ACS) 2019-5 year data. Our analysis is conducted at the PUMA level, the lowest level of geographic identifier available in the ACS."),
+                                              p("We use 6-digit SOC codes extracted from the ACS to obtain estimates of occupation prevalence in each area."),
+                                              p("The project uses O*Net data to describe and quantify the skill content of Appalachian labor. The O*Net data lists 35 skills by order of importance and proficiency for 772 unique SOC occupation codes. Using 2019 skill rankings, we matched O*Net skills to the occupations found in Appalachia."),
+                                              p("Our team constructs an index that is used to understand the distribution of occupations in Appalachia. Our index identifies the skills that are the most prevalent in Appalachian communities. For each occupation (SOC), the 35 skills are assigned a value based on their importance and the total number of individuals employed in that position in a PUMA."),
+                                              p("The skill index that we construct can be interpreted as a measure of the prevalence of a skill in a community. Suppose the skill is very important to a very popular occupation in the community. In that case, workers in this community must have very high levels of proficiency in that skill, and it has a higher skill index. If a skill is not as essential and in an uncommon occupation, it is assigned a lower skill index. The skill prevalence index, therefore, represents the relative importance of skills within a PUMA. The index is used to compare and rank the skill content of PUMAs in Appalachia. It should not be used to answer the question 'by how much does one PUMA differ from another' but instead how prevalent in a community is the skill in question."),
+                                              h4(strong("A Simplified Example of the Index")),
+                                              p("Consider a community that has workers in two occupations—math teachers and coal miners. Each occupation requires only two skills—public speaking and manual labor rated the proficiency of the required skill is rated on a scale from zero to one. As displayed in Table 1, assume math teachers require proficiency in public speaking of 0.95 and manual labor of 0.3. Coal miners require public speaking skills of 0.1, and manual labor of 0.8.  "),
+                                              
+                                             
+                                              p("Without knowing the distribution (count) of coal miners and math teachers in a community, we conclude that public speaking is the most prevalent skill in this labor market. However, suppose this labor market has 100 coal miners and only 5 math teachers, then this assumption would be incorrect. If we consider the distribution of labor within occupations, we multiply each skill index for each occupation by the number of individuals employed in this occupation. For the hypothetical labor market, math teachers' weighted public speaking value is 0.95 x 5 = 4.75, and coal miners' weighted public speaking value is 0.1 x 100 = 10. Similarly, the weighted manual labor value for math teachers is 1.5, and for coal miners is 80. This community's raw public speaking skills index is 10 + 4.75 = 14.75, and the raw manual labor skills index is 81.5. The normalized or Public Speaking Skill Index is then 14.75/96.25 = .15, and for manual labor is 0.85.  For this community, the Skill indices show that manual labor with a value of 0.85 is much more prevalent than public speaking at 0.15 for this community."),
+                                              p("This simple illustration does not account for skill importance in an occupation. The skill prevalence index we construct does account for skill importance as well. Importance and proficiency are highly correlated in our data, but there are occupations where this differs. For example, consider a job that requires a low proficiency in typing even though typing is important because the employees must type a few things every week. We multiply the importance level by the proficiency necessary to compensate for some of these unusual occupations.  "),
+                                             h4("Table 1: An Illustration of Construction of Skill Index", align = "center"),
+                                              plotOutput("example_table"),
+                                               h4(strong("Technical Description of Index Creation")),
+                                              p("To understand the distribution of occupations, we examined occupational counts by PUMA. The data were grouped by PUMA and SOC, creating groups of unique PUMA and SOC combinations and the total number of workers in each occupation for each PUMA in Appalachia. "),
+                                              p("The SOC’s available from O*Net’s 2019 Skills rankings use the 2010 SOC classification. We used the O*Net 2010 to 2019 SOC crosswalk to transform all 2010 SOC’s to 2019 SOC’s. The Skills data is used to create a unique normalized ranking for each soc and skill combination. "),
+                                              p("To account for both skill importance and proficiency within an SOC code, a new index was created by taking the normalized values of the product of Importance and Proficiency. As outlined in the illustration table above, we weighted these measures by population in an occupation and normalized it to create a skill index ranging from 0 to 1. This index now accounts for the prevalence of an occupation and better represents the importance and level of a skill within a community. "),
+                                              p("To understand how the current skill content of Appalachian communities is suited to occupations of the future, we used the O*Net’s Bright Outlook Occupations. We merged these data by soc code in the ACS data. We then created a skill index limited to only these occupations creating what we refer to as “job skills of the future.” We then create an index for each of the skills in the manner described earlier.  We followed Autor et al. (199?) and grouped these skills into X categories: NAME THEM….. For the sake of exposition and brevity, we present only the most relevant skill in each of these categories here as measured by their importance and proficiency.  "),
+                                              p("We present the indices of the relative importance of skills of the future across Appalachian PUMAs, using a series of interactive maps were created. The color of each PUMA represents its respective index value for the user-chosen skill of the future. Popups for the PUMA allow the user to visualize the industry breakdown of each PUMA to understand the effects of the PUMAs industry makeup on its bright skills index value. The industry data came from the 2019 5-year ACS “Industry by Occupation for the Civilian Population” table at the PUMA level from the 2019 5-year ACS estimates. Pie Charts for the proportion of the population in each industry are also available in the pop-ups when you hover on a community. ")
+                                              
+                                     )
+                                     
+                                     
+                            ),
                             tabPanel("Data Sources",
                                      h3("", align = "center"),
                                      br(""),
-                                     column(4,
-                                            img(src = "data-hifld.png", style = "display: inline; float: left;", width = "100px"),
-                                            p(strong("Homeland Infrastructure Foundation-Level Data."), "Homeland Infrastructure Foundation-Level Data (HIFLD) is a collection of public
-                                              source datasets at property level provided by the Department of Homeland Security. Since 2002, this HIFLD has provided quarterly
-                                              updated layers on topics from education to energy, including on health care facilities. We used HIFLD emergency medical services
-                                              station data at the latitude and longitude geographic level in our analyses."),
-                                            br(""),
-                                            img(src = "data-gmaps.png", style = "display: inline; float: left;", width = "130px"),
-                                            p(strong("Google Maps."), "Google Maps is a comprehensive web mapping service created by Google. Its goal is to provide an interactive map
-                                              of all the geographical contents of the world. This resource has a variety of uses, ranging from examining all service locations within
-                                              a city to finding the quickest route between locations. It provides data at latitude and longitude level. We used Google Maps to locate
-                                              all supermarkets, convenience stores, and farmers’ markets in Patrick County, and subsequently employed the information in calculating
-                                              grocery access and coverage isochrones.")
-                                     ),
                                      column(4,
                                             img(src = "data-acs.png", style = "display: inline; float: left;", width = "200px"),
                                             p(strong("American Community Survey."), "The American Community Survey (ACS) is an ongoing yearly survey conducted by the U.S Census
@@ -376,28 +363,40 @@ ui <- navbarPage(title = "ALMV",
                                           individuals to understand food access in communities based on factors like age and socioeconomic status. We used the 2017 Food Access
                                           Research Atlas to examine Patrick County residents’ food access at multiple distance thresholds and by resident characteristics.")
                                      )
-                            ),
-                            tabPanel("Measures",
-                                     h3(strong(""), align = "center"),
-                                     p("Austin's index explanation. Updating."),
-                                     
-                                     fluidRow(style = "margin: 6px;",
-                                              h1(strong("Technical Creation of the Index"), align = "center"),
-                                              p("", style = "padding-top:10px;"),
-                                              
-                                              h4(strong("This is a title")),
-                                              p("To gain an understanding of the distribution of occupations in Appalachia, a grouped summary was performed to obtain occupational counts by PUMA . The data was grouped by PUMA and SOC, creating groups of unique PUMA and SOC combinations.  An SOC Frequency summary column was created from the sums of the Person Weights in each group, producing the desired occupational counts by PUMA table."),
-                                              p("The SOC’s available from O*Net’s 2019 Skills rankings use the 2010 SOC classification, which were largely incompatible with the SOC’s from the IPUMS data. To remedy this, the O*Net 2010 to 2019 SOC crosswalk was used to transform all 2010 SOC’s to 2019 SOC’s. The Skills data was then tidied using pivot_wider as to have each unique soc and skill combination take up one row in the Skills table and Importance and Level rankings were normalized on a 0 to 1 scale. "),
-                                              p("The team thought it most practical to associate one value with each soc and skill combination, seeking to create an index that takes into account both the Importance and Level of a skill to its associated SOC. Treating Importance as a proxy for the probability of an individual in the SOC having the skill, a new index was created, taking the product of the normalized values of Importance and Level. To account for the prevalence of an occupation and better represent the importance and level of a skill as it pertains to Appalachian PUMAS, a density index was created. To create this, the socs, skills and associated indices were inner-joined with the occupational counts. By taking the product of the soc frequency in each PUMA and the index value of each skill and SOC combination, a new density index was created for each soc in every PUMA. This density index was then normalized on a scale from 0 to 1."),
-                                              p("The Bright Outlook Occupations were read into R, and SOC codes were altered slightly to best fit the SOC codes of our skill index. The skill index was then limited to only include the SOC’s of those listed in the Bright Outlook Occupations, creating a “skills of the future” index table. To best rank these skills of the future, the table was grouped by skill name, and the indices summed, creating a new  importance index  for the skills of the future. Breaking these skills down into our categories, the team was able to identify the most relevant skills to the future in each skill category."),
-                                              p("To visualize the distribution of relative importance of skills of the future across Appalachian  PUMAs, interactive choropleth maps were created, with the color of each PUMA representing its respective index value of the skill of the future. Popups were then added to the map, allowing the user to visualize the industry breakdown of each PUMA and possibly better understand the effects of the PUMAs industry makeup on its index value of each skill of the future. To do this, the team utilized the “Industry by Occupation for the Civilian Population” table at the PUMA level from 2019 5-year ACS estimates. Pie Charts for the estimate of proportion of PUMA population in each industry were added to each PUMA using the Leafpop library’s addPopupGraph function. ")
-                                              
-                                     )
-                                     
-                                     
                             )
+                          
                           )
                  ),
+                 # Tab Skills-----------------------------------------------------------
+                 tabPanel("Skill Prevalence", value = "skills",
+                          
+                          fluidRow(style = "margin: 6px;",
+                                   h1(strong("Skills Prevalence of the Region"), align = "center"),
+                                   p("", style = "padding-top:10px;"),
+                                          p("Our dashboard presents the skill prevalence index for five skills that we identified as important to the future economy.  A skill prevalence index was created for all 35 skills, but we present only a subset for brevity. The skills we chose to show are needed in what is known as 'Bright Outlook Occupations,' defined as occupations that are 'projected to grow faster than average (employment increase of 5% or more)' and 'to have 100,000 or more job openings over the period 2019-2029 for the US nationwide'. The five skills that we present in the dashboard below are: Technology Design,   Reading Comprehension, Monitoring, Coordination, Active Listening. "),
+                                          p("The map for Technology Design displays the prevalence of this skill within each Appalachian PUMA. The legend shows that the Skill Prevalence Index for the entire region ranges between 0.006 to 0.009. This range suggests that for each PUMA in Appalachia, Technology Design skills are not the dominant skills needed for the occupations in that community relative to other skills in that community.  In other words there are very few jobs that require this skill in each PUMA. The highest prevalence of Technology Design skills is noted in PUMAs that contain large metro areas. For example, if you over over the yellow region on the map, a pop-up will show the Huntsville North and Madison East PUMA’s. This community has the highest prevalence of Technology Design Skills and it includes the city of Huntsville, AL which is the blue circle on the map. Huntsville is a city with a large number of high technology jobs due to space and aeronautics industry @@@ describe popup of industry histogram – not showing up on currently deployed website.  Discuss this nicely. "),
+                                          p("For Reading Comprehension, Monitoring, and Coordination, the index values suggest that these skills are prevalent within each community. Reading Comprehension exhibits the clustering pattern described for Technology. Skills such as Coordination and Monitoring do not appear to follow any typical pattern.   "),
+                                          p("final thought statement tbd"),
+                                  
+                                          ## Input: skills------------
+                                         selectInput("skills", "Select the Skill:", width = "100%", choices = c(
+                                                      "Technology Design"="TechnologyDesign",
+                                                      "Reading Comprehension"="ReadingComprehension",
+                                                       "Monitoring",
+                                                      "Coordination",
+                                                         "Active Listening"="ActiveListening")),
+                                               
+                                         ## Output: skillsoutput ------------------------
+                                          withSpinner(leafletOutput("skillsoutput")),
+                                         p(tags$small("Data Sources: Constructed by Authors")),
+
+                          
+                                   
+                                            )
+                     
+                          ),
+                 
+  
 
                  # Tab contact -----------------------------------------------------------
                  tabPanel("Meet the Team", value = "contact",
@@ -451,7 +450,7 @@ server <- function(input, output, session) {
   # Run JavaScript Code
   runjs(jscode)
   
-  # skills map: in pgrogress -----------------------------------------------------
+  # skills map: in progress -----------------------------------------------------
 
   ## Create piecharts for map------------------------------------------------------
   industry_breakdown_app_PUMAs <- read_csv(paste0(getwd(),"/data/2019-App_NAICS.csv"))
@@ -496,14 +495,235 @@ server <- function(input, output, session) {
                         formatC(city_info$Population, format = "f", big.mark = ",", digits = 0)), 
                   htmltools::HTML)
   
-  ## input: kills-----------
+  ## input: skills-----------
+  supplyvar <- reactive({
+    input$supply
+  })
+  
+  ## output:laboroutput---------------
+  output$supplyoutput <- renderPlotly({
+    
+    ##### Education ------
+    if(supplyvar() == "supply1") {
+      EducationLTHS <- ggplotly(ggplot(data = appal2, aes(x = observation, y = LT_HS, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", LT_HS))) + 
+                                  geom_point()  +  
+                                  geom_hline(data = g, aes(yintercept=M_LT_HS, color= "black")) + 
+                                  facet_wrap( nonmetro.f~.)  + 
+                                  theme_bw()+ 
+                                  theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                  ggtitle("% of Population: Less Than High School") + scale_color_viridis_d(), tooltip = "text")
+
+    
+      EducationHSDP <- ggplotly(ggplot(data = appal2, aes(x = observation, y = HS_Dip, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", HS_Dip))) + 
+                                  geom_point()  + 
+                                  geom_hline(data = g, aes(yintercept=M_HS_Dip, color="black")) + 
+                                  facet_wrap( nonmetro.f~.)  + 
+                                  theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                 axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                  ggtitle("% of Population: HS Dip") + scale_color_viridis_d(), tooltip = "text")
+
+      
+      
+      # College and above
+      EducationCollPlus <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Coll_Plus, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", Coll_Plus))) + geom_point()  + 
+                                      geom_hline(data = g, aes(yintercept=M_Coll_Plus, color= "black")) + 
+                                      facet_wrap( nonmetro.f~.)  + 
+                                      theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                          axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                      xlab("County") + ylab("Percent in County (%)") + 
+                                      labs(color='County Classification') + 
+                                      ggtitle("% of Population: Less than High School, High School, College or More") + scale_colour_viridis_d(), tooltip = "text")
+      
+
+
+
+ subplot( EducationLTHS,   EducationHSDP, EducationCollPlus, nrows = 3,  shareY=FALSE, titleX = TRUE, titleY=TRUE)                         
+      
+    }
+
+#### Age ----
+    else if(supplyvar() == "supply2"){
+      AgeUnder15 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age0_14, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age0_14))) + 
+                               geom_point()  +  
+                               geom_hline(data = g, aes(yintercept=M_age0_14, color= "black")) + 
+                               facet_wrap( nonmetro.f~.)  + theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),  
+                                                                              axis.title.x = element_text(color="black", size=8, face="bold"), 
+                                                                              axis.title.y = element_text(color="black", size=10, face="bold")) +
+                               xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                               ggtitle("% of Population: Age 0-14") +
+                               scale_color_viridis_d(), tooltip = "text")
+ 
+      
+      #15 to 64
+      Age15_64<- p2 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age15_64, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age15_64))) + geom_point() +  
+                                  geom_hline(data = g, aes(yintercept=M_age15_64, color= "black")) + facet_wrap( nonmetro.f~.)  + 
+                                  theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                               axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') +
+                                  ggtitle("% of Population: Age 15-64") +
+                                  scale_color_viridis_d(), tooltip = "text")
+
+      
+      #65 Plus 
+      Age65Plus <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age65plus, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age15_64))) + geom_point()  +  
+                              geom_hline(data = g, aes(yintercept=M_age65plus, color="black")) + facet_wrap( nonmetro.f~.)  + 
+                              theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+                                                axis.title.x = element_text(color="black", size=8, face="bold"),
+                                                axis.title.y = element_text(color="black", size=10, face="bold")) +
+                              xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') +
+                              ggtitle("% of Population: 0-14, 15-65, Age 65+") + scale_color_viridis_d(), tooltip = "text")
+
+      # Arrange 
+      subplot(AgeUnder15, Age15_64, Age65Plus, nrows = 3, shareY=FALSE, titleX = TRUE, titleY=TRUE)
+    }
+    #### Disability -----
+    else if(supplyvar() == "supply3"){
+      Disabled <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Pct.Dis, colour = nonmetro.f, names=NAME, text = str_c (NAME, ": ", Pct.Dis))) +
+                             geom_point()  +  
+                             geom_hline(data = g, aes(yintercept=M_Pct.Dis, color="black")) + facet_wrap( nonmetro.f~.)  + 
+                             theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                   axis.title.y = element_text(color="black", size=10, face="bold")) +
+                             xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                             ggtitle("% of Population: Disability") + scale_colour_viridis_d(), tooltip = "text")
+      
+      Disabled
+    }
+    
+    else if(supplyvar() == "supply4"){
+      HealthInsurance <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Pct.HI, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", Pct.HI))) + 
+                                    geom_point()  +  
+                                    geom_hline(data = g, aes(yintercept=M_Pct.HI, color= "black")) + facet_wrap( nonmetro.f~.)  + 
+                                    theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                    xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                    ggtitle("% of Population: Health Insurance Coverage") + scale_color_viridis_d(), tooltip = "text")
+      
+      HealthInsurance
+    }
+    
+    else if(supplyvar() == "supply5"){
+      HealthInsurance <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Pct.HI, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", Pct.HI))) + 
+                                    geom_point()  +  
+                                    geom_hline(data = g, aes(yintercept=M_Pct.HI, color= "black")) + facet_wrap( nonmetro.f~.)  + 
+                                    theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                    xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                    ggtitle("% of Population: Health Insurance Coverage") + scale_color_viridis_d(), tooltip = "text")
+      
+      HealthInsurance
+    }
+  
+  })
+  
+  
+  ######## End of Supply Variables
+  
+  demandvar <- reactive({
+    input$demand
+  })
+  
+  ## output:laboroutput---------------
+  output$demandoutput <- renderPlotly({
+    
+    ##### Income ------
+    if(demandvar() == "demand1") {
+      PerCapitaIncome <- ggplotly(ggplot(data = appal2, aes(x = observation, y = PerCapInc, colour = nonmetro.f, names=NAME, text = str_c(NAME,": $", format(PerCapInc, big.mark = ",", scientific = F)))) + geom_point()  +  
+                                    geom_hline(data = g, aes(yintercept=M_PerCapInc, color="black")) + facet_wrap( nonmetro.f~.)  +
+                                    theme_bw()+ theme(axis.text.x = element_blank(), 
+                                                      legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+                                                      axis.title.x = element_text(color="black", size=8, face="bold"),
+                                                      axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                    scale_y_continuous(labels = scales::dollar_format()) +
+                                    xlab("County") + ylab("Income") + labs(color='County Classification') + 
+                                    ggtitle("Per Capita Income") + scale_color_viridis_d(), tooltip = "text")
+      
+      PerCapitaIncome
+    }
+    
+    #### Age ----
+    else if(demandvar() == "demand2"){
+      unemployed <- ggplotly(ggplot(data = appal2, aes(x = observation,
+                                                       y = Pct.Unemp, 
+                                                       colour = nonmetro.f, 
+                                                       names=NAME, text = str_c(NAME,": ", Pct.Unemp))) + 
+                               geom_point() +  geom_hline(data = g, aes(yintercept=M_Pct.Unemp, color="black")) + 
+                               facet_wrap( nonmetro.f~.)  + 
+                               theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
+                                                 axis.title.x = element_text(color="black", size=8, face="bold"),
+                                                 axis.title.y = element_text(color="black", size=10, face="bold")) +
+                               xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + ggtitle("% of Population: Unemployed") + scale_color_viridis_d(), tooltip = "text")
+      unemployed
+    }
+    
+    else if(demandvar() == "demand3"){
+      industry_composition <- ggplot(data = industry, aes(x = Industry, 
+                                                          y = PercentOfTotal, 
+                                                          group = nonmetro.f, 
+                                                          fill = nonmetro.f)) +
+        geom_col() + theme_bw()+ theme(plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+        xlab("Industry") + ylab("Percent in Industry (%)") + labs(color='County Classification') + 
+        ggtitle("% of Industry") + scale_fill_viridis_d(name = element_blank()) + 
+        scale_y_continuous(expand = c(0,0), limits = c(0,20)) + 
+        coord_flip()
+      
+  
+      industry_composition
+    }
+    
+    
+  })
+  
+  
+  othervar <- reactive({
+    input$other
+  })
+  
+  output$otheroutput <- renderPlotly({
+    
+    if(othervar() == "other1") {
+      HomeOwnership <- ggplotly(ggplot(data = appal2, aes(x = observation, y = OwnHome, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", observation))) + 
+                                  geom_point()  +  geom_hline(data = g, aes(yintercept=M_OwnHome, color= "black")) + 
+                                  facet_wrap( nonmetro.f~.)  + theme_bw()+ 
+                                  theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                            axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                  xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
+                                  ggtitle("% of Population: Owns a Home") + scale_color_viridis_d(), tooltip = "text")
+      HomeOwnership
+    }
+    
+    else if(othervar() == "other2"){
+   
+    }
+    
+    else if(othervar() == "other3"){
+    
+    }
+    
+    
+  })
+  
+  #skills example  table ------------------------------------------------------------
+  output$example_table <- renderPlot({
+  
+    example_table <- matrix(data = NA, nrow = 3, ncol  =7)
+
+   colnames(example_table) <- c("Number of Workers", "Public Speaking Proficiency", "Labor Distribution \n Weighted Public Speaking \n Skill Prevalance Value", "Normalized Weighted\n Public Speaking Skill \n Prevalence Index", "Manuel Labor Proficiency","Labor Distribution \n Weighted Manual Labor \n Skill Prevalence Value", "Normalized Weighted \n Manual Labor \n Skill Prevalence Index") 
+  row.names(example_table) <- c("Teacher", "Coal Miner", "Community Skill Index")
+  example_table[1,] <- c(5, 0.95, 4.75, "  ", 0.3, 1.5, "  ")
+  example_table[2,] <- c(100, 0.1, 10, "  ", 0.8, 80, "  ")
+  example_table[3,] <- c(105, " ", 14.75, 0.15, " ", 81.5, 0.85)
+  example_table <- tableGrob(example_table)   
+  example_table <- as_ggplot(example_table)
+    example_table
+  },
+  height = 150
+  )
+  
+
+  
+  
+  ############# END LABOR MARKET FILES, BEGIN SKILLS FILES
   var <- reactive({
     input$skills
   })
-  
   ## output:skillsoutput---------------
   output$skillsoutput <- renderLeaflet({
-     # Map for technology design
+     # Map for technology design ----
     if(var() == "TechnologyDesign") {
       
       # Filter to just Tech Design
@@ -540,7 +760,7 @@ server <- function(input, output, session) {
                          color = "blue")
       TechDesign_map
       
-      # Map for Critical Thinking
+      # Map for Critical Thinking -------
     }else if(var() == "ReadingComprehension"){
       ReadingComp_map_data <- map_data %>% filter(skillname == "ReadingComprehension")
       
@@ -572,7 +792,7 @@ server <- function(input, output, session) {
                          color = "blue")
       ReadingComp_map
       
-      # Map for Organization 
+      #### Map for Organization  ------
     }else if(var() == "Monitoring"){
       Monitoring_map_data <- map_data %>% filter(skillname == "Monitoring")
       
@@ -673,634 +893,6 @@ server <- function(input, output, session) {
       ActiveList_map
     }
   })
-  
-  
-  # # data and measures table:  ----------------------------------------
-  # var_topic <- reactive({
-  #   input$topic
-  # })
-  # output$datatable <- renderDataTable({
-  #   if(var_topic() == "All Measures"){
-  #     table <- as.data.frame(measures_table)
-  #     datatable(table, rownames = FALSE, options = list(pageLength = 15)) %>% formatStyle(0, target = 'row', lineHeight = '80%')
-  #   }
-  #   else{
-  #     data <- switch(input$topic,
-  #                    "Connectivity Measures" = "connectivity",
-  #                    "Sociodemographic Measures" = "demographics",
-  #                    "Food Access Measures" = "food access",
-  #                    "Health Care Access Measures" = "health",
-  #                    "Older Adult Population Measures" = "older adults")
-  #     table <- subset(measures_table, Topic == data)
-  #     table <- as.data.frame(table)
-  #     datatable(table, rownames = FALSE, options = list(pageLength = 15)) %>% formatStyle(0, target = 'row', lineHeight = '80%')
-  #   }
-  # })
-  # 
-  # # device: done ---------------------------------------------------------
-  # 
-  # output$deviceplot <- renderLeaflet({
-  #   data <- switch(input$devicedrop,
-  #                  "nocomputer" = connectivity$nocomputer,
-  #                  "laptop" = connectivity$laptop,
-  #                  "smartphone" = connectivity$smartphone,
-  #                  "tablet" = connectivity$tablet,
-  #                  "nointernet" = connectivity$nointernet,
-  #                  "satellite" = connectivity$satellite,
-  #                  "cellular" = connectivity$cellular,
-  #                  "broadband" = connectivity$broadband)
-  #   
-  #   device_spec <- switch(input$devicedrop,
-  #                         "nocomputer" = "no computer",
-  #                         "laptop" = "laptop",
-  #                         "smartphone" = "smartphone",
-  #                         "tablet" = "tablet",
-  #                         "nointernet" = "no internet access",
-  #                         "satellite" = "satellite internet",
-  #                         "cellular" = "cellular internet",
-  #                         "broadband" = "broadband internet")
-  #   
-  #   pal <- colorQuantile("Blues", domain = data, probs = seq(0, 1, length = 6), right = TRUE)
-  #   
-  #   labels <- lapply(
-  #     paste("<strong>Area: </strong>",
-  #           connectivity$NAME.y,
-  #           "<br />",
-  #           "<strong>% Households with",
-  #           device_spec,
-  #           "access: </strong>",
-  #           round(data, 2)),
-  #     htmltools::HTML
-  #   )
-  #   
-  #   leaflet(data = connectivity, options = leafletOptions(minZoom = 10))%>%
-  #     addProviderTiles(providers$CartoDB.Positron) %>%
-  #     addPolygons(fillColor = ~pal(data),
-  #                 fillOpacity = 0.7,
-  #                 stroke = TRUE, weight = 0.5, color = "#202020",
-  #                 label = labels,
-  #                 labelOptions = labelOptions(direction = "bottom",
-  #                                             style = list(
-  #                                               "font-size" = "12px",
-  #                                               "border-color" = "rgba(0,0,0,0.5)",
-  #                                               direction = "auto"
-  #                                             ))) %>%
-  #     addLegend("bottomleft",
-  #               pal = pal,
-  #               values =  ~(data),
-  #               title = "Percent by<br>Quintile Group",
-  #               opacity = 0.7,
-  #               labFormat = function(type, cuts, p) {
-  #                 n = length(cuts)
-  #                 paste0("[", round(cuts[-n], 2), " &ndash; ", round(cuts[-1], 2), ")")
-  #               })
-  # })
-  # 
-  # 
-  # # Iso selector
-  # output$wifiplot <- renderLeaflet({
-  #   colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a","#e6a01d","#e57200","#fdfdfd")
-  #   
-  #   wifi_iso10 <- switch(input$wifidrop,
-  #                        "Meadows of Dan Elementary School" = wifi_iso_10_1,
-  #                        "Woolwine Elementary School" = wifi_iso_10_2,
-  #                        "Patrick Springs Primary School" = wifi_iso_10_3,
-  #                        "Blue Ridge Elementary School" = wifi_iso_10_4,
-  #                        "Patrick County High School" = wifi_iso_10_5,
-  #                        "Stuart Elementary School" = wifi_iso_10_6,
-  #                        "Patrick County Branch Library" = wifi_iso_10_7,
-  #                        "Hardin Reynolds Memorial School" = wifi_iso_10_8,
-  #                        "Stuart Baptist Church" = wifi_iso_10_9,
-  #                        "Patrick Henry Community College Stuart Campus" = wifi_iso_10_10)
-  #   
-  #   wifi_iso15 <- switch(input$wifidrop,
-  #                        "Meadows of Dan Elementary School" = wifi_iso_15_1,
-  #                        "Woolwine Elementary School" = wifi_iso_15_2,
-  #                        "Patrick Springs Primary School" = wifi_iso_15_3,
-  #                        "Blue Ridge Elementary School" = wifi_iso_15_4,
-  #                        "Patrick County High School" = wifi_iso_15_5,
-  #                        "Stuart Elementary School" = wifi_iso_15_6,
-  #                        "Patrick County Branch Library" = wifi_iso_15_7,
-  #                        "Hardin Reynolds Memorial School" = wifi_iso_15_8,
-  #                        "Stuart Baptist Church" = wifi_iso_15_9,
-  #                        "Patrick Henry Community College Stuart Campus" = wifi_iso_15_10)
-  #   
-  #   data <- switch(input$wifidrop,
-  #                  "Meadows of Dan Elementary School" = 1,
-  #                  "Woolwine Elementary School" = 2,
-  #                  "Patrick Springs Primary School" = 3,
-  #                  "Blue Ridge Elementary School" = 4,
-  #                  "Patrick County High School" = 5,
-  #                  "Stuart Elementary School" = 6,
-  #                  "Patrick County Branch Library" = 7,
-  #                  "Hardin Reynolds Memorial School" = 8,
-  #                  "Stuart Baptist Church" = 9,
-  #                  "Patrick Henry Community College Stuart Campus" = 10)
-  #   
-  #   labels <- lapply(
-  #     paste("<strong>Name: </strong>",
-  #           wifi_latlong[data, ]$name,
-  #           "<br />",
-  #           "<strong>Address:</strong>",
-  #           wifi_latlong[data, ]$fulladdress,
-  #           "<br />",
-  #           "<strong>Notes:</strong>",
-  #           wifi_latlong[data, ]$notes),
-  #     htmltools::HTML
-  #   )
-  #   
-  #   m1 <- leaflet(options = leafletOptions(minZoom = 10)) %>%
-  #     addProviderTiles(providers$CartoDB.Positron) %>%
-  #     addCircles(data = residential,
-  #                fillColor = colors[5],
-  #                fillOpacity = .8,
-  #                stroke = FALSE,
-  #                group = "Residential Properties") %>%
-  #     addPolygons(data = wifi_iso10,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .8,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrone") %>%
-  #     addPolygons(data = wifi_iso15,
-  #                 fillColor = colors[2],
-  #                 fillOpacity = .8,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrone") %>%
-  #     addMarkers(data = wifi_latlong, ~longitude[data], ~latitude[data],
-  #                label = labels,
-  #                labelOptions = labelOptions(direction = "bottom",
-  #                                            style = list(
-  #                                              "font-size" = "12px",
-  #                                              "border-color" = "rgba(0,0,0,0.5)",
-  #                                              direction = "auto")))  %>%
-  #     addLayersControl(
-  #       position = "topright",
-  #       overlayGroups = c("10 Minute Isochrone",
-  #                         "15 Minute Isochrone",
-  #                         "Residential Properties"),
-  #       options = layersControlOptions(collapsed = FALSE))
-  #   m1
-  # })
-  # 
-  # # Coverage table
-  # output$wifitable <- renderTable({
-  #   data <- switch(input$wifidrop,
-  #                  "Meadows of Dan Elementary School" = 1,
-  #                  "Woolwine Elementary School" = 2,
-  #                  "Patrick Springs Primary School" = 3,
-  #                  "Blue Ridge Elementary School" = 4,
-  #                  "Patrick County High School" = 5,
-  #                  "Stuart Elementary School" = 6,
-  #                  "Patrick County Branch Library" = 7,
-  #                  "Hardin Reynolds Memorial School" = 8,
-  #                  "Stuart Baptist Church" = 9,
-  #                  "Patrick Henry Community College Stuart Campus" = 10)
-  #   
-  #   table <- read.csv(paste0("data/isochrones/tables/wifi_iso_table_",data,".csv"))
-  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
-  #   table
-  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  # 
-  # # Wifi deserts
-  # output$allwifi <- renderLeaflet({
-  #   
-  #   labels <- lapply(
-  #     paste("<strong>Name: </strong>",
-  #           wifi_latlong$name,
-  #           "<br />",
-  #           "<strong>Address:</strong>",
-  #           wifi_latlong$fulladdress,
-  #           "<br />",
-  #           "<strong>Notes:</strong>",
-  #           wifi_latlong$notes),
-  #     htmltools::HTML
-  #   )
-  #   
-  #   leaflet(options = leafletOptions(minZoom = 10)) %>%
-  #     addProviderTiles(providers$CartoDB.Positron) %>%
-  #     addCircles(data = residential,
-  #                fillColor = colors[5],
-  #                fillOpacity = .5,
-  #                stroke = FALSE,
-  #                group = "Residential Properties") %>%
-  #     addPolygons(data = wifi_iso_10_1,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_2,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_3,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_4,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_5,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_6,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_7,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_10_9,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_1,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_2,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_3,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_4,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_5,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_6,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_7,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_9,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addPolygons(data = wifi_iso_15_10,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "15 Minute Isochrones") %>%
-  #     addMarkers(data = wifi_latlong,
-  #                group = "Free Wi-Fi Locations",
-  #                label = labels,
-  #                labelOptions = labelOptions(direction = "bottom",
-  #                                            style = list(
-  #                                              "font-size" = "12px",
-  #                                              "border-color" = "rgba(0,0,0,0.5)",
-  #                                              direction = "auto")))  %>%
-  #     addLayersControl(
-  #       position = "topright",
-  #       overlayGroups = c("Free Wi-Fi Locations",
-  #                         "Residential Properties"),
-  #       baseGroups = c("10 Minute Isochrones",
-  #                      "15 Minute Isochrones"),
-  #       options = layersControlOptions(collapsed = FALSE))
-  # })
-  # 
-  # output$allwifitable <- renderTable({
-  #   table <- read.csv("data/isochrones/tables/wifi_iso_table.csv")
-  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
-  #   table
-  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  # 
-  #         # ems: done ----
-  # 
-  # output$emsplot <- renderLeaflet({
-  #   colors <- c("#232d4b","#2c4f6b","#0e879c","#60999a","#d1e0bf","#d9e12b","#e6ce3a","#e6a01d","#e57200","#fdfdfd")
-  #   
-  #   ems_iso8 <- switch(input$emsdrop,
-  #                      "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_8_1,
-  #                      "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_8_2,
-  #                      "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_8_3,
-  #                      "VESTA RESCUE SQUAD" = ems_iso_8_4,
-  #                      "ARARAT RESCUE SQUAD" = ems_iso_8_5,
-  #                      "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_8_6,
-  #                      "JEB STUART RESCUE SQUAD" = ems_iso_8_7,
-  #                      "SMITH RIVER RESCUE SQUAD" = ems_iso_8_8,
-  #                      "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_8_9)
-  #   
-  #   ems_iso10 <- switch(input$emsdrop,
-  #                       "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_10_1,
-  #                       "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_10_2,
-  #                       "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_10_3,
-  #                       "VESTA RESCUE SQUAD" = ems_iso_10_4,
-  #                       "ARARAT RESCUE SQUAD" = ems_iso_10_5,
-  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_10_6,
-  #                       "JEB STUART RESCUE SQUAD" = ems_iso_10_7,
-  #                       "SMITH RIVER RESCUE SQUAD" = ems_iso_10_8,
-  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_10_9)
-  #   
-  #   ems_iso12 <- switch(input$emsdrop,
-  #                       "STUART VOLUNTEER FIRE DEPARTMENT" = ems_iso_12_1,
-  #                       "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = ems_iso_12_2,
-  #                       "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = ems_iso_12_3,
-  #                       "VESTA RESCUE SQUAD" = ems_iso_12_4,
-  #                       "ARARAT RESCUE SQUAD" = ems_iso_12_5,
-  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = ems_iso_12_6,
-  #                       "JEB STUART RESCUE SQUAD" = ems_iso_12_7,
-  #                       "SMITH RIVER RESCUE SQUAD" = ems_iso_12_8,
-  #                       "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = ems_iso_12_9)
-  #   
-  #   data <- switch(input$emsdrop,
-  #                  "STUART VOLUNTEER FIRE DEPARTMENT" = 1,
-  #                  "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = 2,
-  #                  "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = 3,
-  #                  "VESTA RESCUE SQUAD" = 4,
-  #                  "ARARAT RESCUE SQUAD" = 5,
-  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = 6,
-  #                  "JEB STUART RESCUE SQUAD" = 7,
-  #                  "SMITH RIVER RESCUE SQUAD" = 8,
-  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = 9)
-  #   
-  #   labels <- lapply(
-  #     paste("<strong>Name: </strong>",
-  #           str_to_title(ems[data, ]$NAME),
-  #           "<br />",
-  #           "<strong>Address:</strong>",
-  #           str_to_title(ems[data, ]$ADDRESS), ",", str_to_title(ems[data, ]$CITY), ", VA", ems[data, ]$ZIP,
-  #           "<br />",
-  #           "<strong>Type:</strong>",
-  #           str_to_title(ems[data, ]$NAICSDESCR)),
-  #     htmltools::HTML
-  #   )
-  #   
-  #   m1 <- leaflet(options = leafletOptions(minZoom = 10)) %>%
-  #     addProviderTiles(providers$CartoDB.Positron) %>%
-  #     addCircles(data = residential,
-  #                fillColor = colors[5],
-  #                fillOpacity = .8,
-  #                stroke = FALSE,
-  #                group = "Residential Properties") %>%
-  #     addPolygons(data = ems_iso8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .8,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrone") %>%
-  #     addPolygons(data = ems_iso10,
-  #                 fillColor = colors[2],
-  #                 fillOpacity = .8,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrone") %>%
-  #     addPolygons(data = ems_iso12,
-  #                 fillColor = colors[2],
-  #                 fillOpacity = .8,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrone") %>%
-  #     addMarkers(data = ems, ~LONGITUDE[data], ~LATITUDE[data],
-  #                group = "EMS Locations",
-  #                label = labels,
-  #                labelOptions = labelOptions(direction = "bottom",
-  #                                            style = list(
-  #                                              "font-size" = "12px",
-  #                                              "border-color" = "rgba(0,0,0,0.5)",
-  #                                              direction = "auto"))) %>%
-  #     addLayersControl(
-  #       position = "topright",
-  #       overlayGroups = c("8 Minute Isochrone",
-  #                         "10 Minute Isochrone",
-  #                         "12 Minute Isochrone",
-  #                         "Residential Properties"),
-  #       options = layersControlOptions(collapsed = FALSE))
-  #   m1
-  # })
-  # 
-  # output$emstable <- renderTable({
-  #   data <- switch(input$emsdrop,
-  #                  "STUART VOLUNTEER FIRE DEPARTMENT" = 1,
-  #                  "MOOREFIELD STORE VOLUNTEER FIRE DEPARTMENT" = 2,
-  #                  "BLUE RIDGE VOLUNTEER RESCUE SQUAD" = 3,
-  #                  "VESTA RESCUE SQUAD" = 4,
-  #                  "ARARAT RESCUE SQUAD" = 5,
-  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 1 - HEADQUARTERS" = 6,
-  #                  "JEB STUART RESCUE SQUAD" = 7,
-  #                  "SMITH RIVER RESCUE SQUAD" = 8,
-  #                  "COLLINSTOWN - CLAUDVILLE - DRYPOND - FIVE FORKS VOLUNTEER FIRE AND RESCUE DEPARTMENT STATION 2" = 9)
-  #   
-  #   
-  #   table <- read.csv(paste0("data/isochrones/tables/ems_iso_table_",data,".csv"))
-  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
-  #   table
-  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  # 
-  # # EMS deserts
-  # output$allems <- renderLeaflet({
-  #   
-  #   labels <- lapply(
-  #     paste("<strong>Name: </strong>",
-  #           str_to_title(ems$NAME),
-  #           "<br />",
-  #           "<strong>Address:</strong>",
-  #           paste0(str_to_title(ems$ADDRESS), ", ", str_to_title(ems$CITY), ", VA ", ems$ZIP),
-  #           "<br />",
-  #           "<strong>Type:</strong>",
-  #           str_to_title(ems$NAICSDESCR)),
-  #     htmltools::HTML
-  #   )
-  #   
-  #   leaflet(options = leafletOptions(minZoom = 10)) %>%
-  #     addProviderTiles(providers$CartoDB.Positron) %>%
-  #     addCircles(data = residential,
-  #                fillColor = colors[5],
-  #                fillOpacity = .5,
-  #                stroke = FALSE,
-  #                group = "Residential Properties") %>%
-  #     addPolygons(data = ems_iso_8_1,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_2,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_3,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_4,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_5,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_6,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_7,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_8_9,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "8 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_1,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_2,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_3,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_4,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_5,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_6,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_7,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_10_9,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "10 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_1,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_2,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_3,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_4,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_5,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_6,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_7,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_8,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addPolygons(data = ems_iso_12_9,
-  #                 fillColor = colors[1],
-  #                 fillOpacity = .5,
-  #                 stroke = FALSE,
-  #                 group = "12 Minute Isochrones") %>%
-  #     addMarkers(data = ems,
-  #                group = "EMS Locations",
-  #                label = labels,
-  #                labelOptions = labelOptions(direction = "bottom",
-  #                                            style = list(
-  #                                              "font-size" = "12px",
-  #                                              "border-color" = "rgba(0,0,0,0.5)",
-  #                                              direction = "auto"))) %>%
-  #     addLayersControl(
-  #       position = "topright",
-  #       baseGroups = c("8 Minute Isochrones",
-  #                      "10 Minute Isochrones",
-  #                      "12 Minute Isochrones"),
-  #       overlayGroups = c("EMS Locations",
-  #                         "Residential Properties"),
-  #       options = layersControlOptions(collapsed = FALSE))
-  # })
-  # 
-  # output$allemstable <- renderTable({
-  #   table <- read.csv("data/isochrones/tables/ems_iso_table.csv")
-  #   table$Coverage <- paste0(round(table$Coverage, 2), " %")
-  #   table
-  # }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%", align = "r", colnames = T, digits = 2)
-  # 
 }
 
 
