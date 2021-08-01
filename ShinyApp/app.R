@@ -288,46 +288,6 @@ ui <- navbarPage(title = "ALMV",
                                   
                           )
                  ),
-                 # Tab Skills-----------------------------------------------------------
-                 tabPanel("Skills", value = "skills",
-                          
-                          fluidRow(style = "margin: 6px;",
-                                   h1(strong("Skills(need new title)"), align = "center"),
-                                   p("", style = "padding-top:10px;"),
-                                  
-                                          h4(strong("This is a title")),
-                                          p("Our project aims to create meaningful measures of employment and skills in the Appalachian labor market. We use individualized and anonymized 2019 5-Year American Community Survey to understand the occupations and industries of Appalachia. The most granular level for these data is the Public Use Microdata Area (PUMA) available in the Integrated Public Use Microdata Series (IPUMS). We use 6-digit SOC codes extracted from the ACS to obtain estimates of occupation prevalence in each area. "),
-                                          br(),
-                                          p("To understand and quantify the skills content of Appalachian labor markets, our project uses O*Net skills data. O*Net skills data ranks each of their 35 listed skills by importance and proficiency for 772 unique SOC occupation codes. Using 2019 skill rankings, we matched O*Net skills to the occupations found in Appalachia."),
-                                           br(),
-                                           p("Our team constructs an index to gain an understanding of the distribution of occupations in Appalachia. Our index identifies which skills are the most and the least prevalent in Appalachian communities. Within every occupation, each skill is assigned a value based on its importance to the job and the total number of individuals employed in that position. "),
-                                           br(),
-                                           p("Our index is to be interpreted as follows: If there is a skill that is very important to a very popular occupation and employees must have very high levels of proficiency in that skill, it will be assigned a higher value. If there is a skill that is not very important to an uncommon occupation and the required proficiency is very low, it will be assigned a lower value. These values represent relative importance to other skills within the PUMA. The index is limited in its ability to compare across areas. We can not say that one area is better at public speaking than another. We are able to compare the strengths and weaknesses of areas. "),
-                                           br(),
-                                           p("Our dashboard presents the prevalence of five skills we identified as important to the future economy. We use O*Net’s Bright Outlook Occupations—occupations which are “projected to grow faster than average (employment increase of 5% or more)” and “to have 100,000 or more job openings over the period 2019-2029 for the US nationwide”. Using these occupations, filtered and ranked skills to find and present those most relevant to our project goals."),
-                                           br(),
-                                           p("Moving forward, we anticipate that these indices can be consolidated and contribute to a multi-dimensional index that quantifies vulnerabilities ."),
-                                          
-                                  
-                                          ## Input: skills------------
-                                         selectInput("skills", "Select the Skill:", width = "100%", choices = c(
-                                                      "Technology Design"="TechnologyDesign",
-                                                      "Reading Comprehension"="ReadingComprehension",
-                                                       "Monitoring",
-                                                      "Coordination",
-                                                         "Active Listening"="ActiveListening")),
-                                                     p(strong("This is a title")),
-                                         ## Output: skillsoutput ------------------------
-                                          withSpinner(leafletOutput("skillsoutput")),
-                                         p(tags$small("Data Sources: American Conmunity Survey??????????????????????????????????????")),
-                                         h4(strong("A Simplified Example of the Index")),
-                                         p("For example, suppose a labor market has two occupations—math teachers and coal miners— and each occupation has only two skill measures—public speaking and manual labor. Suppose the required proficiency of public speaking skills for math teachers is 0.95 on a 0-1 scale and the required proficiency of manual labor is 0.3 on a 0-1 scale. For coal miners, public speaking may only be 0.1 on a 0-1 scale and manual labor may be 0.8 on a 0-1 scale. Assume, for now, that the importance level is the same as the required proficiency. The data suggest that this is true with minimal variance. Without knowing how many coal miners and math teachers there are, we may assume that public speaking is the most prevalent skill in this labor market. However, suppose this labor market has 100 coal miners and only 5 math teachers. "),
-                                         br(),
-                                         p("We multiply each skill index for each occupation by the number of individuals employed in this occupation. For this hypothetical labor market, the weighted public speaking value for math teachers is 4.75 and the weighted public speaking value for coal miners is 10. The weighted manual labor value for math teachers is 1.5 and the weighted manual labor value for coal miners is 80. The public speaking skills index for this labor market is 14.75 and the manual labor skills index 81.5. To normalize these indices, we take the percentage of the whole and find that public speaking receives a value of .15 and manual labor receives a value of .85. In this economy, manual labor is much more prevalent than public speaking."),
-                                         p("Our index also removes the assumption that importance to the occupation is the same as required proficiency. A job may require a low proficiency in typing even though it’s essential the employees type a few things everyday. In the construction of our index, we multiply the importance level by the required proficiency to compensate for some of these variances although they are uncommon. ")
-                                            )
-                     
-                          ),
                  
                  #Tab Data -----------------------------------------------------------
                  tabPanel("Data and Measures", value = "data",
@@ -336,23 +296,39 @@ ui <- navbarPage(title = "ALMV",
                                    br()
                           ),
                           tabsetPanel(
+                            tabPanel("Measures",
+                                     h3(strong(""), align = "center"),
+                                     fluidRow(style = "margin: 6px;",
+                                              h1(strong("The Skills Index"), align = "center"),
+                                              p("", style = "padding-top:10px;"),
+                                              h4(strong("The Skills Index")),
+                                              p("Our project creates measures of the current employment and skill prevalence for communities in Appalachia. We build on work by Autor, Levy, and Murname (2003) and Berger and Frye (2016) and use individual-level data to understand the occupations and industries of Appalachia. The most recently available national data is the American Community Survey (ACS) 2019-5 year data. Our analysis is conducted at the PUMA level, the lowest level of geographic identifier available in the ACS."),
+                                              p("We use 6-digit SOC codes extracted from the ACS to obtain estimates of occupation prevalence in each area."),
+                                              p("The project uses O*Net data to describe and quantify the skill content of Appalachian labor. The O*Net data lists 35 skills by order of importance and proficiency for 772 unique SOC occupation codes. Using 2019 skill rankings, we matched O*Net skills to the occupations found in Appalachia."),
+                                              p("Our team constructs an index that is used to understand the distribution of occupations in Appalachia. Our index identifies the skills that are the most prevalent in Appalachian communities. For each occupation (SOC), the 35 skills are assigned a value based on their importance and the total number of individuals employed in that position in a PUMA."),
+                                              p("The skill index that we construct can be interpreted as a measure of the prevalence of a skill in a community. Suppose the skill is very important to a very popular occupation in the community. In that case, workers in this community must have very high levels of proficiency in that skill, and it has a higher skill index. If a skill is not as essential and in an uncommon occupation, it is assigned a lower skill index. The skill prevalence index, therefore, represents the relative importance of skills within a PUMA. The index is used to compare and rank the skill content of PUMAs in Appalachia. It should not be used to answer the question 'by how much does one PUMA differ from another' but instead how prevalent in a community is the skill in question."),
+                                              h4(strong("A Simplified Example of the Index")),
+                                              p("Consider a community that has workers in two occupations—math teachers and coal miners. Each occupation requires only two skills—public speaking and manual labor rated the proficiency of the required skill is rated on a scale from zero to one. As displayed in Table 1, assume math teachers require proficiency in public speaking of 0.95 and manual labor of 0.3. Coal miners require public speaking skills of 0.1, and manual labor of 0.8.  "),
+                                              
+                                             
+                                              p("Without knowing the distribution (count) of coal miners and math teachers in a community, we conclude that public speaking is the most prevalent skill in this labor market. However, suppose this labor market has 100 coal miners and only 5 math teachers, then this assumption would be incorrect. If we consider the distribution of labor within occupations, we multiply each skill index for each occupation by the number of individuals employed in this occupation. For the hypothetical labor market, math teachers' weighted public speaking value is 0.95 x 5 = 4.75, and coal miners' weighted public speaking value is 0.1 x 100 = 10. Similarly, the weighted manual labor value for math teachers is 1.5, and for coal miners is 80. This community's raw public speaking skills index is 10 + 4.75 = 14.75, and the raw manual labor skills index is 81.5. The normalized or Public Speaking Skill Index is then 14.75/96.25 = .15, and for manual labor is 0.85.  For this community, the Skill indices show that manual labor with a value of 0.85 is much more prevalent than public speaking at 0.15 for this community."),
+                                              p("This simple illustration does not account for skill importance in an occupation. The skill prevalence index we construct does account for skill importance as well. Importance and proficiency are highly correlated in our data, but there are occupations where this differs. For example, consider a job that requires a low proficiency in typing even though typing is important because the employees must type a few things every week. We multiply the importance level by the proficiency necessary to compensate for some of these unusual occupations.  "),
+                                             h4("Table 1: An Illustration of Construction of Skill Index", align = "center"),
+                                              plotOutput("example_table"),
+                                               h4(strong("Technical Description of Index Creation")),
+                                              p("To understand the distribution of occupations, we examined occupational counts by PUMA. The data were grouped by PUMA and SOC, creating groups of unique PUMA and SOC combinations and the total number of workers in each occupation for each PUMA in Appalachia. "),
+                                              p("The SOC’s available from O*Net’s 2019 Skills rankings use the 2010 SOC classification. We used the O*Net 2010 to 2019 SOC crosswalk to transform all 2010 SOC’s to 2019 SOC’s. The Skills data is used to create a unique normalized ranking for each soc and skill combination. "),
+                                              p("To account for both skill importance and proficiency within an SOC code, a new index was created by taking the normalized values of the product of Importance and Proficiency. As outlined in the illustration table above, we weighted these measures by population in an occupation and normalized it to create a skill index ranging from 0 to 1. This index now accounts for the prevalence of an occupation and better represents the importance and level of a skill within a community. "),
+                                              p("To understand how the current skill content of Appalachian communities is suited to occupations of the future, we used the O*Net’s Bright Outlook Occupations. We merged these data by soc code in the ACS data. We then created a skill index limited to only these occupations creating what we refer to as “job skills of the future.” We then create an index for each of the skills in the manner described earlier.  We followed Autor et al. (199?) and grouped these skills into X categories: NAME THEM….. For the sake of exposition and brevity, we present only the most relevant skill in each of these categories here as measured by their importance and proficiency.  "),
+                                              p("We present the indices of the relative importance of skills of the future across Appalachian PUMAs, using a series of interactive maps were created. The color of each PUMA represents its respective index value for the user-chosen skill of the future. Popups for the PUMA allow the user to visualize the industry breakdown of each PUMA to understand the effects of the PUMAs industry makeup on its bright skills index value. The industry data came from the 2019 5-year ACS “Industry by Occupation for the Civilian Population” table at the PUMA level from the 2019 5-year ACS estimates. Pie Charts for the proportion of the population in each industry are also available in the pop-ups when you hover on a community. ")
+                                              
+                                     )
+                                     
+                                     
+                            ),
                             tabPanel("Data Sources",
                                      h3("", align = "center"),
                                      br(""),
-                                     column(4,
-                                            img(src = "data-hifld.png", style = "display: inline; float: left;", width = "100px"),
-                                            p(strong("Homeland Infrastructure Foundation-Level Data."), "Homeland Infrastructure Foundation-Level Data (HIFLD) is a collection of public
-                                              source datasets at property level provided by the Department of Homeland Security. Since 2002, this HIFLD has provided quarterly
-                                              updated layers on topics from education to energy, including on health care facilities. We used HIFLD emergency medical services
-                                              station data at the latitude and longitude geographic level in our analyses."),
-                                            br(""),
-                                            img(src = "data-gmaps.png", style = "display: inline; float: left;", width = "130px"),
-                                            p(strong("Google Maps."), "Google Maps is a comprehensive web mapping service created by Google. Its goal is to provide an interactive map
-                                              of all the geographical contents of the world. This resource has a variety of uses, ranging from examining all service locations within
-                                              a city to finding the quickest route between locations. It provides data at latitude and longitude level. We used Google Maps to locate
-                                              all supermarkets, convenience stores, and farmers’ markets in Patrick County, and subsequently employed the information in calculating
-                                              grocery access and coverage isochrones.")
-                                     ),
                                      column(4,
                                             img(src = "data-acs.png", style = "display: inline; float: left;", width = "200px"),
                                             p(strong("American Community Survey."), "The American Community Survey (ACS) is an ongoing yearly survey conducted by the U.S Census
@@ -387,28 +363,40 @@ ui <- navbarPage(title = "ALMV",
                                           individuals to understand food access in communities based on factors like age and socioeconomic status. We used the 2017 Food Access
                                           Research Atlas to examine Patrick County residents’ food access at multiple distance thresholds and by resident characteristics.")
                                      )
-                            ),
-                            tabPanel("Measures",
-                                     h3(strong(""), align = "center"),
-                                     p("Austin's index explanation. Updating."),
-                                     
-                                     fluidRow(style = "margin: 6px;",
-                                              h1(strong("Technical Creation of the Index"), align = "center"),
-                                              p("", style = "padding-top:10px;"),
-                                              
-                                              h4(strong("This is a title")),
-                                              p("To gain an understanding of the distribution of occupations in Appalachia, a grouped summary was performed to obtain occupational counts by PUMA . The data was grouped by PUMA and SOC, creating groups of unique PUMA and SOC combinations.  An SOC Frequency summary column was created from the sums of the Person Weights in each group, producing the desired occupational counts by PUMA table."),
-                                              p("The SOC’s available from O*Net’s 2019 Skills rankings use the 2010 SOC classification, which were largely incompatible with the SOC’s from the IPUMS data. To remedy this, the O*Net 2010 to 2019 SOC crosswalk was used to transform all 2010 SOC’s to 2019 SOC’s. The Skills data was then tidied using pivot_wider as to have each unique soc and skill combination take up one row in the Skills table and Importance and Level rankings were normalized on a 0 to 1 scale. "),
-                                              p("The team thought it most practical to associate one value with each soc and skill combination, seeking to create an index that takes into account both the Importance and Level of a skill to its associated SOC. Treating Importance as a proxy for the probability of an individual in the SOC having the skill, a new index was created, taking the product of the normalized values of Importance and Level. To account for the prevalence of an occupation and better represent the importance and level of a skill as it pertains to Appalachian PUMAS, a density index was created. To create this, the socs, skills and associated indices were inner-joined with the occupational counts. By taking the product of the soc frequency in each PUMA and the index value of each skill and SOC combination, a new density index was created for each soc in every PUMA. This density index was then normalized on a scale from 0 to 1."),
-                                              p("The Bright Outlook Occupations were read into R, and SOC codes were altered slightly to best fit the SOC codes of our skill index. The skill index was then limited to only include the SOC’s of those listed in the Bright Outlook Occupations, creating a “skills of the future” index table. To best rank these skills of the future, the table was grouped by skill name, and the indices summed, creating a new  importance index  for the skills of the future. Breaking these skills down into our categories, the team was able to identify the most relevant skills to the future in each skill category."),
-                                              p("To visualize the distribution of relative importance of skills of the future across Appalachian  PUMAs, interactive choropleth maps were created, with the color of each PUMA representing its respective index value of the skill of the future. Popups were then added to the map, allowing the user to visualize the industry breakdown of each PUMA and possibly better understand the effects of the PUMAs industry makeup on its index value of each skill of the future. To do this, the team utilized the “Industry by Occupation for the Civilian Population” table at the PUMA level from 2019 5-year ACS estimates. Pie Charts for the estimate of proportion of PUMA population in each industry were added to each PUMA using the Leafpop library’s addPopupGraph function. ")
-                                              
-                                     )
-                                     
-                                     
                             )
+                          
                           )
                  ),
+                 # Tab Skills-----------------------------------------------------------
+                 tabPanel("Skill Prevalence", value = "skills",
+                          
+                          fluidRow(style = "margin: 6px;",
+                                   h1(strong("Skills Prevalence of the Region"), align = "center"),
+                                   p("", style = "padding-top:10px;"),
+                                          p("Our dashboard presents the skill prevalence index for five skills that we identified as important to the future economy.  A skill prevalence index was created for all 35 skills, but we present only a subset for brevity. The skills we chose to show are needed in what is known as 'Bright Outlook Occupations,' defined as occupations that are 'projected to grow faster than average (employment increase of 5% or more)' and 'to have 100,000 or more job openings over the period 2019-2029 for the US nationwide'. The five skills that we present in the dashboard below are: Technology Design,   Reading Comprehension, Monitoring, Coordination, Active Listening. "),
+                                          p("The map for Technology Design displays the prevalence of this skill within each Appalachian PUMA. The legend shows that the Skill Prevalence Index for the entire region ranges between 0.006 to 0.009. This range suggests that for each PUMA in Appalachia, Technology Design skills are not the dominant skills needed for the occupations in that community relative to other skills in that community.  In other words there are very few jobs that require this skill in each PUMA. The highest prevalence of Technology Design skills is noted in PUMAs that contain large metro areas. For example, if you over over the yellow region on the map, a pop-up will show the Huntsville North and Madison East PUMA’s. This community has the highest prevalence of Technology Design Skills and it includes the city of Huntsville, AL which is the blue circle on the map. Huntsville is a city with a large number of high technology jobs due to space and aeronautics industry @@@ describe popup of industry histogram – not showing up on currently deployed website.  Discuss this nicely. "),
+                                          p("For Reading Comprehension, Monitoring, and Coordination, the index values suggest that these skills are prevalent within each community. Reading Comprehension exhibits the clustering pattern described for Technology. Skills such as Coordination and Monitoring do not appear to follow any typical pattern.   "),
+                                          p("final thought statement tbd"),
+                                  
+                                          ## Input: skills------------
+                                         selectInput("skills", "Select the Skill:", width = "100%", choices = c(
+                                                      "Technology Design"="TechnologyDesign",
+                                                      "Reading Comprehension"="ReadingComprehension",
+                                                       "Monitoring",
+                                                      "Coordination",
+                                                         "Active Listening"="ActiveListening")),
+                                               
+                                         ## Output: skillsoutput ------------------------
+                                          withSpinner(leafletOutput("skillsoutput")),
+                                         p(tags$small("Data Sources: Constructed by Authors")),
+
+                          
+                                   
+                                            )
+                     
+                          ),
+                 
+  
 
                  # Tab contact -----------------------------------------------------------
                  tabPanel("Meet the Team", value = "contact",
@@ -708,6 +696,25 @@ server <- function(input, output, session) {
     
     
   })
+  
+  #skills example  table ------------------------------------------------------------
+  output$example_table <- renderPlot({
+  
+    example_table <- matrix(data = NA, nrow = 3, ncol  =7)
+
+   colnames(example_table) <- c("Number of Workers", "Public Speaking Proficiency", "Labor Distribution \n Weighted Public Speaking \n Skill Prevalance Value", "Normalized Weighted\n Public Speaking Skill \n Prevalence Index", "Manuel Labor Proficiency","Labor Distribution \n Weighted Manual Labor \n Skill Prevalence Value", "Normalized Weighted \n Manual Labor \n Skill Prevalence Index") 
+  row.names(example_table) <- c("Teacher", "Coal Miner", "Community Skill Index")
+  example_table[1,] <- c(5, 0.95, 4.75, "  ", 0.3, 1.5, "  ")
+  example_table[2,] <- c(100, 0.1, 10, "  ", 0.8, 80, "  ")
+  example_table[3,] <- c(105, " ", 14.75, 0.15, " ", 81.5, 0.85)
+  example_table <- tableGrob(example_table)   
+  example_table <- as_ggplot(example_table)
+    example_table
+  },
+  height = 150
+  )
+  
+
   
   
   ############# END LABOR MARKET FILES, BEGIN SKILLS FILES
