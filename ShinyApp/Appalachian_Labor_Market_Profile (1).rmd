@@ -272,7 +272,7 @@ To provide a profile of Appalachia, I recommend doing an urban-rural comparison.
 appal2 <- readRDS("appal2.RDS")
 d <- appal2 %>%
   group_by(nonmetro.f) %>%
-  summarise_at(vars(age0_14, age15_64, age65plus, LT_HS, HS_Dip, SomeColl,Coll_Plus, OwnHome, Pct.HI, Pct.Unemp, Pct.Dis, PerCapInc, tt014,tt1529,tt3044,tt4559,tt60plus), funs(mean(., na.rm=TRUE)))
+  summarise_at(vars(age0_14, age15_64, age65plus, LT_HS, HS_Dip, SomeColl,Coll_Plus, OwnHome, Pct.HI, Pct.Unemp, Pct.Dis, PerCapInc, tt014,tt1529,tt3044,tt4559,tt60plus, HH.Pct.Broadband), funs(mean(., na.rm=TRUE)))
 
 vars <- names(d)
 library(gdata)
@@ -907,14 +907,16 @@ appal2$observation <- 1:nrow(appal2)
 
 d <- appal2 %>%
   group_by(nonmetro.f) %>%
-  summarise_at(vars(age0_14, age15_64, age65plus, LT_HS, HS_Dip, SomeColl,Coll_Plus, OwnHome, Pct.HI, Pct.Unemp, Pct.Dis, PerCapInc, tt014,tt1529,tt3044,tt4559,tt60plus), funs(mean(., na.rm=TRUE)))
+  summarise_at(vars(age0_14, age15_64, age65plus, LT_HS, HS_Dip, SomeColl,Coll_Plus, OwnHome, Pct.HI, Pct.Unemp, Pct.Dis, PerCapInc, tt014,tt1529,tt3044,tt4559,tt60plus, HH.Pct.BroadBand), funs(mean(., na.rm=TRUE)))
 
 vars <- names(d)
+
 library(gdata)
 g <- rename.vars(d, from=vars, to=paste0("M_", vars))
 g$nonmetro.f<- g$M_nonmetro.f
 
 appal2 <- Reduce(function(x, y) merge(x, y, all=TRUE), list(appal2,g))  
+saveRDS(g, "data/g.RDS")
 #str(appal3)
 
 ```

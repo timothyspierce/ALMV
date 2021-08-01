@@ -569,9 +569,9 @@ server <- function(input, output, session) {
     }
     
     else if(supplyvar() == "supply5"){
-      
-      Broadband <- ggplotly(ggplot(data = appal2, aes(x = observation, y = HH.Pct.BroadBand, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ",HH.Pct.BroadBand))) + 
-                                    geom_point()  +    geom_hline(data = g, aes(yintercept=M_Pct.HI, color= "black")) + facet_wrap( nonmetro.f~.)  + 
+
+      Broadband <- ggplotly(ggplot(data = appal2, aes(x = observation, y = HH.Pct.BroadBand, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", HH.Pct.BroadBand))) + 
+                                    geom_point()  +   geom_hline(data = g, aes(yintercept=M_HH.Pct.BroadBand, color= "black")) + facet_wrap(nonmetro.f~.)  + 
                                     theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
                                     xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
                                     ggtitle("% of Population: Broadband Coverage") + scale_color_viridis_d(), tooltip = "text")
