@@ -321,7 +321,8 @@ ui <- navbarPage(title = "ALMV",
                                               across time and space. We created a data extract from IPUMS USA at the Public Use Microdata 
                                               Area (PUMA) level using 2019 ACS 5-year sample information providing information on occupation and 
                                               location. To ensure consistency among Appalachian PUMAs, the 2000 to 2010 PUMAs crosswalk
-                                              was used.")
+                                              was used."),
+                                            a("Crosswalk at this page", href = "https://usa.ipums.org/usa/volii/pumas10.shtml")
                                      ),
                                      column(6,
                                             img(src = "data-onet.png", style = "display: inline; float: left;", width = "120px"),
@@ -329,11 +330,13 @@ ui <- navbarPage(title = "ALMV",
                                               descriptors on almost 1,000 occupations covering the entire U.S. economy. We used the O*Net's mapping of O*NET Standard Occupational Classification (SOC) codes,
                                               to Skill ratings from the 25.3 database. To ensure consistency among SOC codes from IMPUS and O*Net, the 2010 to 2019 SOC cross walk was used. 
                                               "), 
+                                            a("Crosswalk here", href = "https://www.onetcenter.org/taxonomy/2019/walk.html"),
                                             br(""), 
                                             img(src = "data-ers.png", style = "display: inline; float: left;", width = "120px"),
                                             p(strong("Economic Revenue Service."), 'The Economic Research Service is a component of the United States Department of Agriculture and a principal agency of the Federal Statistical System of the United States.
                                               Its mission is to "anticipate trends and emerging issues in agriculture, food, the environment, and rural America and to conduct high-quality, objective economic research to inform and enhance public and private decision making."
-                                              We used ERS Rural Urban Continuum (RUC) codes from 2013 to classify counties as metro or non-metro.')
+                                              We used ERS Rural Urban Continuum (RUC) codes from 2013 to classify counties as metro or non-metro.'),
+                                            a("RUC Codes here", href = "https://www.ers.usda.gov/data-products/rural-urban-continuum-codes.aspx")
                                      ),
                                      
                                     
