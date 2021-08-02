@@ -462,7 +462,7 @@ server <- function(input, output, session) {
     NAICS_piechart(as.character(app_pumas[i, ]))
   })
   
-  ## Add city points-----------------------------------------------------------
+  ###### Add city points, how to create-----------------------------------------------------------
   # cities_link <- "https://en.wikivoyage.org/wiki/Appalachia"
   # page <- read_html(cities_link)
   # city <- page %>%  html_nodes("ol li") %>% html_text()
@@ -482,6 +482,16 @@ server <- function(input, output, session) {
   #   rename(City = location )
   # city_info <- inner_join(city_info, city_coords, by = "City")
   # write_csv(city_info, "2019-Appalachian_cities_and_population")
+ # #######
+ #   app_cities <- mutate(Appalachian_cities, location = paste(City, State, sep = ", "))
+ #  app_cities <- mutate(app_cities, geocode(City))
+ #  View(app_cities)
+ #  
+ #  write.csv(app_cities, "geocoded_cities.csv")
+ #  
+ #  
+  
+  
   city_info <- read_csv(paste0(getwd(),"/data/2019-Appalachian_cities_and_population.csv"))
   labels = lapply(str_c("<strong>", city_info$City,"</strong>","<br/>", "Population: ", 
                         formatC(city_info$Population, format = "f", big.mark = ",", digits = 0)), 
