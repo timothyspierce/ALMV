@@ -186,7 +186,7 @@ ui <- navbarPage(title = "ALMV",
                                             tags$li("Age Distribution"),
                                             tags$li("Health and Disability"),
                                             tags$li("Health Insurance Availability"),
-                                            tags$li("Internet/Broadband and Computer Access (education)")
+                                            tags$li("Broadband Access")
                                           ),
                                           p("Through in-depth analysis of these factors, as it relates to Appalachia and similar regions, we can understand what the Appalachian workforce currently offers to a potentially emerging new labor market."),
                                           p("Additionally, we explored demand factors that will impact what new jobs and industries are potentially viable in the Appalachian region. Focusing on three main factors:"),
@@ -196,8 +196,7 @@ ui <- navbarPage(title = "ALMV",
                                             tags$li("Income Per Capita"),
                                             tags$li("Underlying Industrial Sectors")
                                           ),
-                                          p("These factors drive demand in the region for goods and services and give a better idea of what new jobs are possible to implement for the future growth of the Appalachian labor market."),
-                                          p("This dashboard compiles our findings and allows all interested parties to explore the information dynamically."),
+                                          p("These factors drive demand in the region for goods and services and give a better idea of what new jobs are possible to implement for the future growth of the Appalachian labor market. This dashboard compiles our findings and allows all interested parties to explore the information dynamically."),
                                           p(),
                                           p()
                                    )
@@ -212,64 +211,6 @@ ui <- navbarPage(title = "ALMV",
                           fluidRow(align = "center",
                                    p(tags$small(em('Last updated: August 2021'))))
                  ),
-                 # Tab Labor Market -----------------------------------------------------------
-                 tabPanel("Appalachian Labor Market", value = "labor",
-                          
-                          fluidRow(style = "margin: 6px;",
-                                   h1(strong("Appalachian Labor Market Charateristics"), align = "center"),
-                                   p("", style = "padding-top:10px;"),
-                                   column(6,
-                                          tabsetPanel(
-                                            tabPanel("Supply",
-                                                     p(""),
-                                                     ## Input: supply-----------------
-                                                     selectInput("supply", "", width = "100%",selected="Education", choices = c(
-                                                       "Education" = "supply1",
-                                                       "Age Distribution" = "supply2",
-                                                       "Disability Rates" = "supply3",
-                                                       "Health Insurance Coverage" = "supply4",
-                                                       "Internet Access" = "supply5",
-                                                       "Home Ownership" = "supply6"
-                                                     )),
-
-                                                     ## Output: 1-----------------
-                                                     withSpinner(plotlyOutput("supplyoutput")),
-                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
-                                            ),
-                                            tabPanel("Demand",
-                                                     p(""),
-                                                     ## Input: demand-----------------
-                                                     selectInput("demand", "", width = "100%",selected="Income per Capita", choices = c(
-                                                       "Income per Capita" = "demand1",
-                                                       "Unemployment" = "demand2", 
-                                                       "Industrial sectors" = "demand3"
-                                                     )),
-                                                     
-                                                     ## Output: 2-----------------
-                                                     withSpinner(plotlyOutput("demandoutput")),
-                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
-                                            )
-                                            
-                                          )
-                                   ),
-                                   column(6,
-                                          h4(strong("Supply Side Factors in the Appalachian Labor Market")),
-                                    
-                                          p(strong("Education:"),"These graphs display the percent of the population based on their highest level of schooling in metropolitan vs. nonmetropolitan areas throughout Appalachia. All states in the region appear to have metropolitan counties that score high at each education level and some that score low. Metropolitan counties in Appalachia have significantly more residents who have a college degree or higher than nonmetropolitan counties. The percent of people with a high school diploma and some college certificates is similar between metropolitan and nonmetropolitan areas. However, significantly more people hold less than a high school diploma in nonmetropolitan areas, while in contrast, more people have acquired a college degree or higher in metropolitan areas. It is worth noting that there is a spike in percent of the population in counties throughout Appalachia that house universities regardless of whether they are metropolitan or nonmetropolitan."),
-                                          p(strong("Age Distribution:"),"These interactive graphs display the percent of the population over sixty-five years of age in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Overall, nonmetropolitan counties in Appalachia have more residents over sixty-five years of age, while metropolitan counties have more residents between the ages of fifteen and sixty-four."),
-                                          p(strong("Disability:"),"This interactive graph displays the percent of the population with some form of disability in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in metropolitan counties are seen in some counties in Wester Virginia, Tennessee, and Kentucky, while negative spikes are noted in some counties in Georgia, North Carolina, Pennsylvania, and Virginia. In nonmetropolitan areas spikes, both positive and negative, are noted throughout the region, most significantly seen in negative spikes in some counties in Alabama, Georgia, Ohio, and Pennsylvania, and positives spikes in some counties in Kentucky, Tennessee, Virginia, and West Virginia. Overall, nonmetropolitan counties in Appalachia have significantly more residents who live with disabilities than metropolitan counties. "),
-                                          p(strong("Health Insurance Coverage:"),"This interactive graph displays the percent of the population who have health insurance coverage in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. Notably, in metropolitan areas, most of the counties in Alabama, Georgia, North Carolina, Virginia, and Tennessee, have lower rates of coverage than counties in Kentucky, New York, Pennsylvania, and West Virginia. This trend continues in nonmetropolitan counties in Appalachia with counties in Kentucky, Pennsylvania, and West Virginia, generally having higher rates of coverage than counties in Alabama, Georgia, North Carolina, Virginia, and Tennessee. While relatively small, on average the percent of the population that has health insurance coverage tends to be higher in metropolitan counties. "),
-                                          p(strong("Broadband Subscriptions:"),"This interactive graph displays the percent of the population with a broadband subscription in their home in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted. However, variation skews upward in metro areas and downward in nonmetro areas.  Overall, nonmetropolitan counties in Appalachia have fewer residents with broadband subscriptions than metropolitan counties."),
-                                          p(strong("Home Ownership:"), "This interactive graph displays the percent of the population who own their home in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. It is worth noting that negative spikes in homeownership are seen throughout Appalachia particularly in counties that house universities. Overall, nonmetropolitan counties in Appalachia have more residents who own their homes than metropolitan counties."),
-                                          h4(strong("Demand Side Factors in the Appalachian Labor Market")),
-                                          p(strong("Per Capita Income:"), "This interactive graph illustrates per capita income in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in per capita income in metropolitan areas are visible closer to population centers. Negative spikes in per capita income in nonmetropolitan areas that are farthest away from population centers. This indicates a potential connection between urbanicity and per capita income which can be seen as the average per capita income level between metropolitan and nonmetropolitan areas are quite significant. "),
-                                          p(strong("Unemployment:"), "This interactive graph presents the percent of the population that is unemployed in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in unemployment in metropolitan areas are seen in Alabama and West Virginia, while similar increases in nonmetropolitan areas are in Kentucky and West Virginia. While relatively small, on average the percent of the population that is unemployed tends to be higher in nonmetropolitan counties. "),
-                                          p(strong("Industrial Makeup:"), "This graph displays the percent of the market share that each industry in Appalachia holds overall, as well as, of that total percent, the quantity that is in both metropolitan and nonmetropolitan areas. Nonmetropolitan areas contain a higher percentage of each industry. Agriculture, mining, and manufacturing are the most prevalent industries within nonmetropolitan counties. Metropolitan counties, while overall behind nonmetropolitan areas, are most comparable in professional and wholesale trade industries.")
-                                   )
-                                  
-                          )
-                 ),
-                 
                  #Tab Data -----------------------------------------------------------
                  tabPanel("Data and Measures", value = "data",
                           fluidRow(style = "margin: 6px;",
@@ -291,12 +232,12 @@ ui <- navbarPage(title = "ALMV",
                                               h4(strong("A Simplified Example of the Index")),
                                               p("Consider a community that has workers in two occupations—math teachers and coal miners. Each occupation requires only two skills—public speaking and manual labor rated the proficiency of the required skill is rated on a scale from zero to one. As displayed in Table 1, assume math teachers require proficiency in public speaking of 0.95 and manual labor of 0.3. Coal miners require public speaking skills of 0.1, and manual labor of 0.8.  "),
                                               
-                                             
+                                              
                                               p("Without knowing the distribution (count) of coal miners and math teachers in a community, we conclude that public speaking is the most prevalent skill in this labor market. However, suppose this labor market has 100 coal miners and only 5 math teachers, then this assumption would be incorrect. If we consider the distribution of labor within occupations, we multiply each skill index for each occupation by the number of individuals employed in this occupation. For the hypothetical labor market, math teachers' weighted public speaking value is 0.95 x 5 = 4.75, and coal miners' weighted public speaking value is 0.1 x 100 = 10. Similarly, the weighted manual labor value for math teachers is 1.5, and for coal miners is 80. This community's raw public speaking skills index is 10 + 4.75 = 14.75, and the raw manual labor skills index is 81.5. The normalized or Public Speaking Skill Index is then 14.75/96.25 = .15, and for manual labor is 0.85.  For this community, the Skill indices show that manual labor with a value of 0.85 is much more prevalent than public speaking at 0.15 for this community."),
                                               p("This simple illustration does not account for skill importance in an occupation. The skill prevalence index we construct does account for skill importance as well. Importance and proficiency are highly correlated in our data, but there are occupations where this differs. For example, consider a job that requires a low proficiency in typing even though typing is important because the employees must type a few things every week. We multiply the importance level by the proficiency necessary to compensate for some of these unusual occupations.  "),
-                                             h4("Table 1: An Illustration of Construction of Skill Index", align = "center"),
+                                              h4("Table 1: An Illustration of Construction of Skill Index", align = "center"),
                                               plotOutput("example_table"),
-                                               h4(strong("Technical Description of Index Creation")),
+                                              h4(strong("Technical Description of Index Creation")),
                                               p("To understand the distribution of occupations, we examined occupational counts by PUMA. The data were grouped by PUMA and SOC, creating groups of unique PUMA and SOC combinations and the total number of workers in each occupation for each PUMA in Appalachia. "),
                                               p("The SOC’s available from O*Net’s 2019 Skills rankings use the 2010 SOC classification. We used the O*Net 2010 to 2019 SOC crosswalk to transform all 2010 SOC’s to 2019 SOC’s. The Skills data is used to create a unique normalized ranking for each soc and skill combination. "),
                                               p("To account for both skill importance and proficiency within an SOC code, a new index was created by taking the normalized values of the product of Importance and Proficiency. As outlined in the illustration table above, we weighted these measures by population in an occupation and normalized it to create a skill index ranging from 0 to 1. This index now accounts for the prevalence of an occupation and better represents the importance and level of a skill within a community. "),
@@ -336,11 +277,70 @@ ui <- navbarPage(title = "ALMV",
                                               We used ERS Rural Urban Continuum (RUC) codes from 2013 to classify counties as metro or non-metro.')
                                      ),
                                      
-                                    
+                                     
                             )
-                          
+                            
                           )
                  ),
+                 # Tab Labor Market -----------------------------------------------------------
+                 tabPanel("Appalachian Labor Market", value = "labor",
+                          
+                          fluidRow(style = "margin: 6px;",
+                                   h1(strong("Appalachian Labor Market Charateristics"), align = "center"),
+                                   p("", style = "padding-top:10px;"),
+                                   column(6,
+                                          tabsetPanel(
+                                            tabPanel("Supply",
+                                                     p(""),
+                                                     ## Input: supply-----------------
+                                                     selectInput("supply", "", width = "100%",selected="Education", choices = c(
+                                                       "Education" = "supply1",
+                                                       "Age Distribution" = "supply2",
+                                                       "Disability Rates" = "supply3",
+                                                       "Health Insurance Coverage" = "supply4",
+                                                       "Broadband Access" = "supply5",
+                                                       "Home Ownership" = "supply6"
+                                                     )),
+
+                                                     ## Output: 1-----------------
+                                                     withSpinner(plotlyOutput("supplyoutput")),
+                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
+                                            ),
+                                            tabPanel("Demand",
+                                                     p(""),
+                                                     ## Input: demand-----------------
+                                                     selectInput("demand", "", width = "100%",selected="Income per Capita", choices = c(
+                                                       "Income per Capita" = "demand1",
+                                                       "Unemployment" = "demand2", 
+                                                       "Industrial sectors" = "demand3"
+                                                     )),
+                                                     
+                                                     ## Output: 2-----------------
+                                                     withSpinner(plotlyOutput("demandoutput")),
+                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
+                                            )
+                                            
+                                          )
+                                   ),
+                                   column(6,
+                                          h4(strong("Supply Side Factors in the Appalachian Labor Market")),
+                                    
+                                          p(strong("Education:"),"These graphs display the percent of the population based on their highest level of schooling in metropolitan vs. nonmetropolitan areas throughout Appalachia. All states in the region appear to have metropolitan counties that score high at each education level and some that score low. Metropolitan counties in Appalachia have significantly more residents who have a college degree or higher than nonmetropolitan counties. The percent of people with a high school diploma and some college certificates is similar between metropolitan and nonmetropolitan areas. However, significantly more people hold less than a high school diploma in nonmetropolitan areas, while in contrast, more people have acquired a college degree or higher in metropolitan areas. It is worth noting that there is a spike in percent of the population in counties throughout Appalachia that house universities regardless of whether they are metropolitan or nonmetropolitan."),
+                                          p(strong("Age Distribution:"),"These interactive graphs display the percent of the population over sixty-five years of age in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Overall, nonmetropolitan counties in Appalachia have more residents over sixty-five years of age, while metropolitan counties have more residents between the ages of fifteen and sixty-four."),
+                                          p(strong("Disability:"),"This interactive graph displays the percent of the population with some form of disability in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in metropolitan counties are seen in some counties in West Virginia, Tennessee, and Kentucky, while negative spikes are noted in some counties in Georgia, North Carolina, Pennsylvania, and Virginia. In nonmetropolitan areas spikes, both positive and negative, are noted throughout the region, most significantly seen in negative spikes in some counties in Alabama, Georgia, Ohio, and Pennsylvania, and positives spikes in some counties in Kentucky, Tennessee, Virginia, and West Virginia. Overall, nonmetropolitan counties in Appalachia have significantly more residents who live with disabilities than metropolitan counties. "),
+                                          p(strong("Health Insurance Coverage:"),"This interactive graph displays the percent of the population who have health insurance coverage in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. Notably, in metropolitan areas, most of the counties in Alabama, Georgia, North Carolina, Virginia, and Tennessee, have lower rates of coverage than counties in Kentucky, New York, Pennsylvania, and West Virginia. This trend continues in nonmetropolitan counties in Appalachia with counties in Kentucky, Pennsylvania, and West Virginia, generally having higher rates of coverage than counties in Alabama, Georgia, North Carolina, Virginia, and Tennessee. While relatively small, on average the percent of the population that has health insurance coverage tends to be higher in metropolitan counties. "),
+                                          p(strong("Broadband Access:"),"This interactive graph displays the percent of the population with a broadband subscription in their home in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted. However, variation skews upward in metro areas and downward in nonmetro areas.  Overall, nonmetropolitan counties in Appalachia have fewer residents with broadband subscriptions than metropolitan counties."),
+                                          p(strong("Home Ownership:"), "This interactive graph displays the percent of the population who own their home in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, a large amount of variation is noted in metropolitan and nonmetropolitan areas of Appalachia. It is worth noting that negative spikes in homeownership are seen throughout Appalachia particularly in counties that house universities. Overall, nonmetropolitan counties in Appalachia have more residents who own their homes than metropolitan counties."),
+                                          h4(strong("Demand Side Factors in the Appalachian Labor Market")),
+                                          p(strong("Per Capita Income:"), "This interactive graph illustrates per capita income in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in per capita income in metropolitan areas are visible closer to population centers. Negative spikes in per capita income in nonmetropolitan areas that are farthest away from population centers. This indicates a potential connection between urbanicity and per capita income which can be seen as the average per capita income level between metropolitan and nonmetropolitan areas are quite significant. "),
+                                          p(strong("Unemployment:"), "This interactive graph presents the percent of the population that is unemployed in each county in metropolitan vs. nonmetropolitan areas throughout Appalachia. Grouped by state alphabetically from left to right, positive spikes in unemployment in metropolitan areas are seen in Alabama and West Virginia, while similar increases in nonmetropolitan areas are in Kentucky and West Virginia. While relatively small, on average the percent of the population that is unemployed tends to be higher in nonmetropolitan counties. "),
+                                          p(strong("Industrial Makeup:"), "This graph displays the percent of the market share that each industry in Appalachia holds overall, as well as, of that total percent, the quantity that is in both metropolitan and nonmetropolitan areas. Nonmetropolitan areas contain a higher percentage of each industry. Agriculture, mining, and manufacturing are the most prevalent industries within nonmetropolitan counties. Metropolitan counties, while overall behind nonmetropolitan areas, are most comparable in professional and wholesale trade industries.")
+                                   )
+                                  
+                          )
+                 ),
+                 
+
                  # Tab Skills-----------------------------------------------------------
                  tabPanel("Skill Prevalence", value = "skills",
                           
@@ -543,7 +543,7 @@ server <- function(input, output, session) {
                                                 axis.title.y = element_text(color="black", size=10, face="bold")) +
                               xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') +
                               ggtitle("% of Population: Age 65+") + scale_color_viridis_d(), tooltip = "text")
-                AgeUnder15
+                Age65Plus
     }
     #### Disability -----
     else if(supplyvar() == "supply3"){
@@ -574,7 +574,7 @@ server <- function(input, output, session) {
                                     geom_point()  +   geom_hline(data = g, aes(yintercept=M_HH.Pct.BroadBand, color= "black")) + facet_wrap(nonmetro.f~.)  + 
                                     theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
                                     xlab("County") + ylab("Percent in County (%)") + labs(color='County Classification') + 
-                                    ggtitle("% of Population: Broadband Coverage") + scale_color_viridis_d(), tooltip = "text")
+                                    ggtitle("% of Population: Broadband Subscriptions") + scale_color_viridis_d(), tooltip = "text")
      
       Broadband
     }
