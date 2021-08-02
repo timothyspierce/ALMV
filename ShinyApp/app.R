@@ -269,7 +269,7 @@ ui <- navbarPage(title = "ALMV",
                                             img(src = "data-onet.png", style = "display: inline; float: left;", width = "120px"),
                                             p(strong("O*Net."), "The O*NET database contains hundreds of standardized and occupation-specific
                                               descriptors on almost 1,000 occupations covering the entire U.S. economy. We used the O*Net's mapping of O*NET Standard Occupational Classification (SOC) codes,
-                                              to Skill ratings from the 25.3 database. To ensure consistency among SOC codes from IMPUS and O*Net, the 2010 to 2019 SOC cross walk was used. 
+                                              to Skill ratings from the 25.3 database. To ensure consistency among SOC codes from IMPUS and O*Net, the 2010 to 2019 SOC crosswalk was used. 
                                               "), 
                                             a("Crosswalk here", href = "https://www.onetcenter.org/taxonomy/2019/walk.html"),
                                             br(""), 
