@@ -663,15 +663,15 @@ server <- function(input, output, session) {
       industry_composition <- ggplot(data = industry, aes(x = Industry, 
                                                           y = PercentOfTotal, 
                                                           group = nonmetro.f, 
-                                                          fill = nonmetro.f)) +
+                                                          fill = nonmetro.f,
+                                                          text = str_c(nonmetro.f))) +
         geom_col() + theme_bw()+ theme(plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
         xlab("Industry") + ylab("Percent in Industry (%)") + labs(color='County Classification') + 
         ggtitle("% of Industry") + scale_fill_viridis_d(name = element_blank()) + 
         scale_y_continuous(expand = c(0,0), limits = c(0,20)) + 
         coord_flip()
       
-  
-      industry_composition
+      industry_composition <- ggplotly(industry_composition, tooltip = "text")
     }
   
     
