@@ -186,7 +186,8 @@ ui <- navbarPage(title = "ALMV",
                                             tags$li("Age Distribution"),
                                             tags$li("Health and Disability"),
                                             tags$li("Health Insurance Availability"),
-                                            tags$li("Broadband Access")
+                                            tags$li("Broadband Access"),
+                                            tags$li("Home Ownership")
                                           ),
                                           p("Through in-depth analysis of these factors, as it relates to Appalachia and similar regions, we can understand what the Appalachian workforce currently offers to a potentially emerging new labor market."),
                                           p("Additionally, we explored demand factors that will impact what new jobs and industries are potentially viable in the Appalachian region. Focusing on three main factors:"),
