@@ -11,23 +11,29 @@ library(leaflet)
 library(htmltools)
 library(leafpop)
 
+# Appalachian Skills------------------------------------------------------------
+# Process of obtaining 2019 IPUMS info for Appalachia
+# The following outlines how the IPUMS data was read in and turned
+# Into a csv that could be stored on github
 
-# Process of obtaining 2019 IPUMS info for Appalachia--------------------------
-# #Read in IPUMS data and PUMAs for Appalachia
+
+# Read in IPUMS data extract for Appalachia from large local files
 ddi <- read_ipums_ddi("usa_00007.xml")
 
 data <- read_ipums_micro(ddi)
+
+# Read in 2010 Appalachian PUMAs to Isolate IPUMS data to Appalachia
 app_pumas_2010 <- read_csv("2010_PUMAs_App.csv")
 app_pumas_2010 <- app_pumas_2010 %>%
   rename(PUMA = PUMACE10, STATEFIP = STATEFP10) %>%
   mutate(PUMA = as.numeric(PUMA), STATEFIP = as.numeric(STATEFIP))
 
-# semi-join to obtain only appalachian IPUMS info
+# Semi-join IPUMS info with PUMA info to obtain only Appalachian IPUMS 
 app_ipums <-
   semi_join(data, app_pumas_2010)
 
 
-# Filter out unemployed and exchange OCCSOC's
+# Filter out the unemployed and exchange OCCSOC's
 ## that have X's or Y's for 9's
 app_ipums <- app_ipums %>% filter(OCCSOC > 0)
 app_ipums <- app_ipums %>%
@@ -46,6 +52,7 @@ app_ipums <- app_ipums %>% mutate(STATEFIP = as.character(STATEFIP), PUMA = as.c
   select(YEAR, PUMA, OCCSOC, PERWT)
 
 
+# Write IMPUS info to csv to be stored on github 
 write_csv(app_ipums, "2019-Appalachian_IPUMS.csv")
 #-------------------------------------------------------------------------------
 
