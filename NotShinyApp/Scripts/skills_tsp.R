@@ -12,11 +12,25 @@ library(htmltools)
 library(leafpop)
 
 
+# Appalachian Skills------------------------------------------------------------
+## Process of obtaining 2019 IPUMS info for Appalachia ---------------------------------------------
 
-# Isolating 2010 PUMAs to Appalachia -------------------------------------------
+# The following outlines how the IPUMS data was read in and turned
+# Into a csv that could be stored on github
+
+
+# Read in IPUMS data extract for Appalachia from large local files
+ddi <- read_ipums_ddi("usa_00007.xml")
+
+data <- read_ipums_micro(ddi)
+
+### Process of Isolating 2010 PUMAs to Appalachia -------------------------------------------
+
+# The following outlines how 2000 Appalachian PUMA information was used to create
+# 2010 Appalachian PUMAs, which are the PUMAs used in the 2019 IPUMS data
 
 # Read in IPUMS data with APPAL (variable denotes if year 2000 PUMA is in Appalachia) 
-# and PUMA variables
+# and PUMA variables from large local file
 ipums_2009_data <- read_ipums_ddi("usa_00006.xml")
 ipums_2009 <- read_ipums_micro(ipums_2009_data)
 
@@ -26,7 +40,7 @@ app_data <- ipums_2009 %>% filter(APPAL != 0)
 # Create table of unique Appalachian PUMAs and edit to match format of crosswalk
 app_pumas <- app_data %>% group_by(STATEFIP, PUMA) %>% summarise() %>% ungroup()
 
-app_pumas <- app_pumas %>% mutate(PUMA00 = PUMA) %>% 
+app_pumas <- app_pumas %>% rename(PUMA00 = PUMA) %>% 
   mutate(PUMA00 = as.character(PUMA00)) %>% 
   mutate(PUMA00 = if_else(
     nchar(PUMA00) == 3, paste0("00", PUMA00), PUMA00)) %>% 
@@ -51,7 +65,7 @@ pumas_2010_app <- puma_crosswalk_app %>% group_by(State10, PUMA10) %>%
   summarise() %>% distinct()
 
 
-##  Map to check accuracy-------------------------------------------------------
+### Map to check accuracy-------------------------------------------------------
 
 # Obtain list of PUMA sfs for Appalchian states
 options(tigris_use_cache = TRUE)
@@ -73,7 +87,7 @@ pumas_2010_app <- pumas_2010_app %>%
   rename(STATEFP10 = State10, PUMACE10 = PUMA10)
 puma_app_geoms <- semi_join(as.data.frame(puma_geoms), pumas_2010_app)
 
-# Obtain ARC definition of Appalachian counties polygons
+# Obtain ARC definition of Appalachian county polygons
 
 #Obtain polygons of Appalachian states only 
 app_counties <- counties(state = state_list, cb = T)
@@ -98,19 +112,7 @@ ggplot() + geom_sf(data = st_as_sf(puma_app_geoms), fill = "coral2", color = "bl
   geom_sf(data = st_as_sf(app_counties), fill = "grey", color = NA) + 
   coord_sf(datum = NA)
 
-
-# Appalachian Skills------------------------------------------------------------
-## Obtaining Appalachian IPUMS info ---------------------------------------------
-
-# Process of obtaining 2019 IPUMS info for Appalachia
-# The following outlines how the IPUMS data was read in and turned
-# Into a csv that could be stored on github
-
-
-# Read in IPUMS data extract for Appalachia from large local files
-ddi <- read_ipums_ddi("usa_00007.xml")
-
-data <- read_ipums_micro(ddi)
+## Isolate IPUMS info to Appalachia--------------------------------------------------
 
 # Read in 2010 Appalachian PUMAs to Isolate IPUMS data to Appalachia
 app_pumas_2010 <- read_csv("2010_PUMAs_App.csv")
@@ -146,7 +148,7 @@ app_ipums <- app_ipums %>% mutate(STATEFIP = as.character(STATEFIP), PUMA = as.c
 # write_csv(app_ipums, "2019-Appalachian_IPUMS.csv")
 
 
-## Creating SOC Frequency Counts-------------------------------------------------
+## Create SOC Frequency Counts-------------------------------------------------
 
 # read in IPUMS data for Appalachia in 2019
 app_ipums <- read_csv("2019-Appalachian_IPUMS.csv")
@@ -161,7 +163,7 @@ socfreq_by_puma <- app_ipums %>%
 View(socfreq_by_puma)
 
 
-## Creating Useable Skills Information------------------------------------------ 
+## Creating Usable Skills Information------------------------------------------ 
 
 #Read and adjust skills data
 skills <- read_excel("Skills_Onet.xlsx")
@@ -243,7 +245,7 @@ altered_socs_freq_by_puma<- bind_rows(soc_not_na_by_PUMA, altered_na_socs_by_pum
 altered_socs_freq_by_puma <- read_csv("2019-Appalachian_Occupation_Breakdown.csv")
 
 
-# Index Creation ------------------------------------------------------------------
+## Index Creation ------------------------------------------------------------------
 
 # Read in skills data
 skills_wide <- read_csv("2019-ONet_Skills_Tidy.csv")
@@ -303,7 +305,7 @@ app_weighted_skills_by_PUMA <- skills_index_common_by_PUMA_weighted %>%
 
 
 
-# Skills of the Future ---------------------------------------------------------
+## Skills of the Future ---------------------------------------------------------
 
 # Read in jobs of future
 future_jobs <- read_excel(
@@ -410,7 +412,7 @@ layout <- rbind(c(1, 2), c(3, 4), c(5))
 # View plots and skills of the future to focus on 
 grid.arrange(grobs = app_skills_plots, layout_matrix = layout)
 
-# Map indices ------------------------------------------------------------------
+## Map indices ------------------------------------------------------------------
 
 # Obtain polygons to map onto leaflet for Appalachian PUMAs 
 counties<-read.csv("ALMV_counties_all.csv", header=T) %>%
@@ -434,7 +436,7 @@ puma_app_geoms <- semi_join(as.data.frame(puma_geoms), app_pumas)
 map_data <- left_join(app_weighted_skills_by_PUMA, puma_app_geoms) %>% 
   select(skillname, PUMA, `Normalized Index`, geometry, NAME10)
 
-## Map for technology-----------------------------------------------------
+### Map for technology-----------------------------------------------------
 
 TechDesign_map_data <- map_data %>% filter(skillname == "TechnologyDesign")
 
@@ -456,7 +458,7 @@ TechDesign_map <- TechDesign_map_data %>% leaflet() %>% addTiles() %>%
     highlightOptions = highlightOptions(fillOpacity = 1), group = "PUMAs") %>% 
   addLegend(pal = TechDesign_map_pal, values = ~`Normalized Index`, 
             title = "Index Value")
-## Map for Critical Thinking ------------------------------------------
+### Map for Critical Thinking ------------------------------------------
 ReadingComp_map_data <- map_data %>% filter(skillname == "ReadingComprehension")
 
 ReadingComp_map_data <- st_as_sf(ReadingComp_map_data) 
@@ -478,7 +480,7 @@ ReadingComp_map <- ReadingComp_map_data %>% leaflet() %>% addTiles() %>%
   addLegend(pal = ReadingComp_map_pal, values = ~`Normalized Index`, 
             title = "Index Value")
 
-## Map for Organization ------------------------------------------
+### Map for Organization ------------------------------------------
 Monitoring_map_data <- map_data %>% filter(skillname == "Monitoring")
 
 Monitoring_map_data <- st_as_sf(Monitoring_map_data) 
@@ -500,7 +502,7 @@ Monitoring_map <- Monitoring_map_data %>% leaflet() %>% addTiles() %>%
   addLegend(pal = Monitoring_map_pal, values = ~`Normalized Index`, 
             title = "Index Value")
 
-## Map for labor----------------------------------------------------
+### Map for Labor----------------------------------------------------
 Coordination_map_data <- map_data %>% filter(skillname == "Coordination")
 
 Coordination_map_data <- st_as_sf(Coordination_map_data) 
@@ -524,7 +526,7 @@ Coordination_map <- Coordination_map_data %>% leaflet() %>% addTiles() %>%
   addLegend(pal = Coordination_map_pal, values = ~`Normalized Index`, 
             title = "Index Value")
 
-## Communication map----------------------------------------------------
+### Map for Communication ----------------------------------------------------
 ActiveList_map_data <- map_data %>% filter(skillname == "ActiveListening")
 
 ActiveList_map_data <- st_as_sf(ActiveList_map_data) 
@@ -548,9 +550,9 @@ ActiveList_map <- ActiveList_map_data %>% leaflet() %>% addTiles() %>%
 
 # Creating ACS Demographics-----------------------------------------------------
 
-# Loading Data 
+## Loading in Data--------------------------------------------------------------
 
-#Create list of FIPS state and county
+# Create list of FIPS state and county
 
 counties<-read.csv("All_Mining.csv", header=T)
 
@@ -592,7 +594,7 @@ housing$OwnHome <- round(100* housing$Housing.OwnOcc/housing$Housing.Total)
 #keep to bind
 dff000 = subset(housing, select = c(NAME,OwnHome))
 
-#Use these numbers to calculate your own estimate
+#Use these numbers to calculate estimate
 SCounty.Pop <- almv_acs_var("B15003_001")  %>%  rename(SCountyPop2=estimate)
 Ed0 <- almv_acs_var("B15003_025")  %>%  rename(Ed.PhD=estimate)
 Ed1 <- almv_acs_var("B15003_024")  %>%  rename(Ed.Prof=estimate)
@@ -627,7 +629,7 @@ HH_NoInternet <- almv_acs_var("S2801_C02_019") %>%  rename(HH.Pct.Nointernet=est
 CountyMedianAge <- almv_acs_var("S0101_C01_032") %>%  rename(County.MedAge=estimate) 
 CountyMedianInc <- almv_acs_var("S1901_C01_013") %>%  rename(County.MedInc=estimate) 
 
-#Use these numbers to calculate your own estimate
+#Use these numbers to calculate estimate
 Age1  <- almv_acs_var("S0101_C02_002") %>%  rename(Pct.Under5=estimate) 
 Age2  <- almv_acs_var("S0101_C02_003") %>%  rename(Pct.Bet5_9=estimate) 
 Age3  <- almv_acs_var("S0101_C02_004") %>%  rename(Pct.Bet10_14=estimate) 
@@ -659,7 +661,7 @@ dff0 = subset(age, select = c(NAME,age0_14, age15_64, age65plus) )
 #LT2075K_NoInternet<- almv_acs_var("S2801_C02_027") %>%  rename(LT2075K.Pct.Nointernet=estimate)
 #GT75K_NoInternet<- almv_acs_var("S2801_C02_031") %>%  rename(GT75K.Pct.Nointernet=estimate)
 
-#Employment by industry. Use these numbers to calculate your own percent
+#Employment by industry. Use these numbers to calculate  percent
 TotEmp <- almv_acs_var("S2404_C01_001") %>%  rename(TotEmp=estimate)
 IndEmp1 <- almv_acs_var("S2404_C01_003") %>%  rename(AgEmp=estimate)
 IndEmp2 <- almv_acs_var("S2404_C01_004") %>%  rename(MiningEmp=estimate)
@@ -789,9 +791,9 @@ g <- readRDS("ShinyApp/data/g.RDS")
 industry <- readRDS("ShinyApp/data/industry.Rds")
 
 
-# Creating plots of ACS Data
+## Creating plots of ACS Data----------------------------------------------------
 
-# Chart for Unemployment  
+### Chart for Unemployment  ----------------------------------------------------
 unemployed <- ggplotly(ggplot(data = appal2, aes(x = observation,
                                                  y = Pct.Unemp, 
                                                  colour = nonmetro.f, 
@@ -805,7 +807,7 @@ unemployed <- ggplotly(ggplot(data = appal2, aes(x = observation,
 unemployed
 
 
-# Chart for Per Capita Income
+### Chart for Per Capita Income----------------------------------------------------
 
 PerCapitaIncome <- ggplotly(ggplot(data = appal2, aes(x = observation, y = PerCapInc, colour = nonmetro.f, names=NAME, text = str_c(NAME,": $", format(PerCapInc, big.mark = ",", scientific = F)))) + geom_point()  +  
                               geom_hline(data = g, aes(yintercept=M_PerCapInc, color="black")) + facet_wrap( nonmetro.f~.)  +
@@ -819,8 +821,8 @@ PerCapitaIncome <- ggplotly(ggplot(data = appal2, aes(x = observation, y = PerCa
 
 PerCapitaIncome
 
-# Age Charts 
-## Under 15
+### Age Charts ----------------------------------------------------
+#### Under 15----------------------------------------------------
 AgeUnder15 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age0_14, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age0_14))) + 
                          geom_point()  +  
                          geom_hline(data = g, aes(yintercept=M_age0_14, color= "black")) + 
@@ -832,7 +834,7 @@ AgeUnder15 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age0_14, c
                          scale_color_viridis_d(), tooltip = "text")
 AgeUnder15
 
-## 15 to 64
+#### 15 to 64----------------------------------------------------
 Age15_64<- p2 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age15_64, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age15_64))) + geom_point() +  
                             geom_hline(data = g, aes(yintercept=M_age15_64, color= "black")) + facet_wrap( nonmetro.f~.)  + 
                             theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                               axis.title.y = element_text(color="black", size=10, face="bold")) +
@@ -841,7 +843,7 @@ Age15_64<- p2 <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age15_6
                             scale_color_viridis_d(), tooltip = "text")
 Age15_64
 
-## 65 Plus 
+#### 65 Plus ---------------------------------------------------- 
 Age65Plus <- ggplotly(ggplot(data = appal2, aes(x = observation, y = age65plus, colour = nonmetro.f, names=NAME, text = str_c(NAME,": ", age15_64))) + geom_point()  +  
                         geom_hline(data = g, aes(yintercept=M_age65plus, color="black")) + facet_wrap( nonmetro.f~.)  + 
                         theme_bw()+ theme(axis.text.x = element_blank(), legend.position = "none", plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),
@@ -858,9 +860,9 @@ Age65Plus
 subplot(AgeUnder15, Age15_64, Age65Plus, nrows = 3,  shareY=FALSE, titleX = TRUE, titleY=TRUE)
 
 
-# Education 
+### Education Charts ----------------------------------------------------
 
-## LT HS
+#### LT HS ----------------------------------------------------
 EducationLTHS <- ggplotly(ggplot(data = appal2, aes(x = observation, y = LT_HS, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", LT_HS))) + 
                             geom_point()  +  
                             geom_hline(data = g, aes(yintercept=M_LT_HS, color= "black")) + 
@@ -871,7 +873,7 @@ EducationLTHS <- ggplotly(ggplot(data = appal2, aes(x = observation, y = LT_HS, 
                             ggtitle("% of Population: Less Than High School") + scale_color_viridis_d(), tooltip = "text")
 EducationLTHS
 
-## HS Diploma
+#### HS Diploma ----------------------------------------------------
 EducationHSDP <- ggplotly(ggplot(data = appal2, aes(x = observation, y = HS_Dip, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", HS_Dip))) + 
                             geom_point()  + 
                             geom_hline(data = g, aes(yintercept=M_HS_Dip, color="black")) + 
@@ -882,7 +884,7 @@ EducationHSDP <- ggplotly(ggplot(data = appal2, aes(x = observation, y = HS_Dip,
 EducationHSDP
 
 
-## College and above
+#### College and above ----------------------------------------------------
 EducationCollPlus <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Coll_Plus, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", Coll_Plus))) + geom_point()  + 
                                 geom_hline(data = g, aes(yintercept=M_Coll_Plus, color= "black")) + 
                                 facet_wrap( nonmetro.f~.)  + 
@@ -893,7 +895,7 @@ EducationCollPlus <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Col
 
 EducationCollPlus
 
-# Home Ownership
+### Home Ownership----------------------------------------------------
 HomeOwnership <- ggplotly(ggplot(data = appal2, aes(x = observation, y = OwnHome, colour = nonmetro.f, names=NAME, text = str_c(NAME, ": ", observation))) + 
                             geom_point()  +  geom_hline(data = g, aes(yintercept=M_OwnHome, color= "black")) + 
                             facet_wrap( nonmetro.f~.)  + theme_bw()+ 
@@ -902,7 +904,7 @@ HomeOwnership <- ggplotly(ggplot(data = appal2, aes(x = observation, y = OwnHome
                             ggtitle("% of Population: Owns a Home") + scale_color_viridis_d(), tooltip = "text")
 HomeOwnership
 
-#Disability & Health Insurance 
+### Disability & Health Insurance ----------------------------------------------------
 Disabled <- ggplotly(ggplot(data = appal2, aes(x = observation, y = Pct.Dis, colour = nonmetro.f, names=NAME, text = str_c (NAME, ": ", Pct.Dis))) +
                        geom_point()  +  
                        geom_hline(data = g, aes(yintercept=M_Pct.Dis, color="black")) + facet_wrap( nonmetro.f~.)  + 
@@ -924,7 +926,7 @@ HealthInsurance
 
 
 
-#Industry Data 
+## Industry Data  ----------------------------------------------------
 
 
 
@@ -953,7 +955,7 @@ View(industry)
 # SaveRDS
 # saveRDS(industry, "ShinyApp/data/industry.Rds")
 
-#Graph is here
+### Graph ----------------------------------------------------
 industry <- readRDS("ShinyApp/data/industry.Rds")
 industry_composition <- ggplot(data = industry, aes(x = Industry, 
                                                     y = PercentOfTotal, 
