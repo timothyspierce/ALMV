@@ -99,7 +99,7 @@ ggplot() + geom_sf(data = st_as_sf(puma_app_geoms), fill = "coral2", color = "bl
   coord_sf(datum = NA)
 
 
-# Appalachian Skills
+# Appalachian Skills------------------------------------------------------------
 ## Obtaining Appalachian IPUMS info ---------------------------------------------
 
 # Process of obtaining 2019 IPUMS info for Appalachia
