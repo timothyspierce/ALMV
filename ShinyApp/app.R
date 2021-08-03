@@ -224,7 +224,7 @@ ui <- navbarPage(title = "ALMV",
                                               h1(strong("The Skills Index"), align = "center"),
                                               p("", style = "padding-top:10px;"),
                                               h4(strong("The Skills Index")),
-                                              p("Our project creates measures of the current employment and skill prevalence for communities in Appalachia. We build on work by Autor, Levy, and Murname (2003) and Berger and Frye (2016) and use individual-level data to understand the occupations and industries of Appalachia. The most recently available national data is the American Community Survey (ACS) 2019-5 year data. Our analysis is conducted at the PUMA level, the lowest level of geographic identifier available in the ACS."),
+                                              p("Our project creates measures of the current employment and skill prevalence for communities in Appalachia. We build on work by Autor, Levy, and Murname (2003), Berger and Frye (2016), and Hershbein and Macaluso (2018) and use individual-level data to understand the occupations and industries of Appalachia. The most recently available national data is the American Community Survey (ACS) 2019-5 year data. Our analysis is conducted at the PUMA level, the lowest level of geographic identifier available in the ACS."),
                                               p("We use 6-digit SOC codes extracted from the ACS to obtain estimates of occupation prevalence in each area."),
                                               p("The project uses O*Net data to describe and quantify the skill content of Appalachian labor. The O*Net data lists 35 skills by order of importance and proficiency for 772 unique SOC occupation codes. Using 2019 skill rankings, we matched O*Net skills to the occupations found in Appalachia."),
                                               p("Our team constructs an index that is used to understand the distribution of occupations in Appalachia. Our index identifies the skills that are the most prevalent in Appalachian communities. For each occupation (SOC), the 35 skills are assigned a value based on their importance and the total number of individuals employed in that position in a PUMA."),
@@ -241,8 +241,16 @@ ui <- navbarPage(title = "ALMV",
                                               p("To understand the distribution of occupations, we examined occupational counts by PUMA. The data were grouped by PUMA and SOC, creating groups of unique PUMA and SOC combinations and the total number of workers in each occupation for each PUMA in Appalachia. "),
                                               p("The SOC’s available from O*Net’s 2019 Skills rankings use the 2010 SOC classification. We used the O*Net 2010 to 2019 SOC crosswalk to transform all 2010 SOC’s to 2019 SOC’s. The Skills data is used to create a unique normalized ranking for each soc and skill combination. "),
                                               p("To account for both skill importance and proficiency within an SOC code, a new index was created by taking the normalized values of the product of Importance and Proficiency. As outlined in the illustration table above, we weighted these measures by population in an occupation and normalized it to create a skill index ranging from 0 to 1. This index now accounts for the prevalence of an occupation and better represents the importance and level of a skill within a community. "),
-                                              p("To understand how the current skill content of Appalachian communities is suited to occupations of the future, we used the O*Net’s Bright Outlook Occupations. We merged these data by soc code in the ACS data. We then created a skill index limited to only these occupations creating what we refer to as “job skills of the future.” We then create an index for each of the skills in the manner described earlier.  We followed Autor et al. (199?) and grouped these skills into X categories: NAME THEM….. For the sake of exposition and brevity, we present only the most relevant skill in each of these categories here as measured by their importance and proficiency.  "),
-                                              p("We present the indices of the relative importance of skills of the future across Appalachian PUMAs, using a series of interactive maps were created. The color of each PUMA represents its respective index value for the user-chosen skill of the future. Popups for the PUMA allow the user to visualize the industry breakdown of each PUMA to understand the effects of the PUMAs industry makeup on its bright skills index value. The industry data came from the 2019 5-year ACS “Industry by Occupation for the Civilian Population” table at the PUMA level from the 2019 5-year ACS estimates. Pie Charts for the proportion of the population in each industry are also available in the pop-ups when you hover on a community. ")
+                                              p("To understand how the current skill content of Appalachian communities is suited to occupations of the future, 
+                                                we used the O*Net’s Bright Outlook Occupations. We merged these data by soc code in the ACS data.
+                                                We then created a skill index limited to only these occupations creating what we refer to as “job skills of the future.” 
+                                                We then create an index for each of the skills in the manner described earlier. 
+                                                To categorize skill prevalence in these communities, we draw on Autor, Levy, and Murnane (2003) and Hershbein and Macaluso (2018). We grouped the skills into 5 categories: Critical Thinking, Communication, Labor, Technology, and Management. For the sake of exposition and brevity, we present only the most relevant skill in each of these categories here as measured by their importance and proficiency."),
+                                              br(" "),
+                                              br(" "),
+                                              p(tags$small("Autor, David H., Frank Levy, Richard J. Murnane, 2003. 'The Skill Content of Recent Technological Change: An Empirical Exploration,' The Quarterly Journal of Economics, Vol.  118, Issue 4, Pages 1279–1333. https://doi.org/10.1162/003355303322552801")),
+                                              p(tags$small("Berger, Thor & Frey, Carl Benedikt, 2016. 'Did the Computer Revolution shift the fortunes of U.S. cities? Technology shocks and the geography of new jobs,' Regional Science and Urban Economics, Elsevier, vol. 57(C), pages 38-45.")),
+                                              p(tags$small("Macaluso, Claudia and Brad J. Hershbein, 2018. 'Labor Market Concentration and the Demand for Skills.' Working Paper."))
                                               
                                      )
                                      
@@ -252,7 +260,7 @@ ui <- navbarPage(title = "ALMV",
                                      h3("", align = "center"),
                                      br(""),
                                      column(6,
-                                            img(src = "data-acs.png", style = "display: inline; float: left;", width = "200px"),
+                                            img(src = "data-acs.png", style = "display: inline; float: left;", width = "120px"),
                                             p(strong("American Community Survey."), "The American Community Survey (ACS) is an ongoing yearly survey conducted by the U.S Census
                                             Bureau. ACS samples households to compile 1-year and 5-year datasets providing information on population sociodemographic and
                                             socioeconomic characteristics including employment, disability, and health insurance coverage. We used 2019 ACS 5-year datasets."),
@@ -263,21 +271,25 @@ ui <- navbarPage(title = "ALMV",
                                               Area (PUMA) level using 2019 ACS 5-year sample information providing information on occupation and 
                                               location. To ensure consistency among Appalachian PUMAs, the 2000 to 2010 PUMAs crosswalk
                                               was used."),
-                                            a("Crosswalk at this page", href = "https://usa.ipums.org/usa/volii/pumas10.shtml")
-                                     ),
-                                     column(6,
+                                            a("Crosswalk data can be found here.", href = "https://usa.ipums.org/usa/volii/pumas10.shtml"),
+                                            br(""),
+                                            br(""),
+                                     
+                                     
                                             img(src = "data-onet.png", style = "display: inline; float: left;", width = "120px"),
                                             p(strong("O*Net."), "The O*NET database contains hundreds of standardized and occupation-specific
                                               descriptors on almost 1,000 occupations covering the entire U.S. economy. We used the O*Net's mapping of O*NET Standard Occupational Classification (SOC) codes,
                                               to Skill ratings from the 25.3 database. To ensure consistency among SOC codes from IMPUS and O*Net, the 2010 to 2019 SOC crosswalk was used. 
                                               "), 
-                                            a("Crosswalk here", href = "https://www.onetcenter.org/taxonomy/2019/walk.html"),
-                                            br(""), 
+                                         
+                                            a("Crosswalk data can be found here.", href = "https://www.onetcenter.org/taxonomy/2019/walk.html"),
+                                            br(""),
+                                            br(""),
                                             img(src = "data-ers.png", style = "display: inline; float: left;", width = "120px"),
                                             p(strong("Economic Revenue Service."), 'The Economic Research Service is a component of the United States Department of Agriculture and a principal agency of the Federal Statistical System of the United States.
                                               Its mission is to "anticipate trends and emerging issues in agriculture, food, the environment, and rural America and to conduct high-quality, objective economic research to inform and enhance public and private decision making."
                                               We used ERS Rural Urban Continuum (RUC) codes from 2013 to classify counties as metro or non-metro.'),
-                                            a("RUC Codes here", href = "https://www.ers.usda.gov/data-products/rural-urban-continuum-codes.aspx")
+                                            a("RUC Codes can be found here.", href = "https://www.ers.usda.gov/data-products/rural-urban-continuum-codes.aspx")
                                      ),
                                      
                                      
@@ -307,7 +319,7 @@ ui <- navbarPage(title = "ALMV",
 
                                                      ## Output: 1-----------------
                                                      withSpinner(plotlyOutput("supplyoutput")),
-                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
+                                                     p(tags$small("Data Sources: 2019 American Community Survey 5-Year Estimates, tables S1810, S2701, S2301, S2502, B15003, S2801, S0101, and S2801."))
                                             ),
                                             tabPanel("Demand",
                                                      p(""),
@@ -320,7 +332,7 @@ ui <- navbarPage(title = "ALMV",
                                                      
                                                      ## Output: 2-----------------
                                                      withSpinner(plotlyOutput("demandoutput")),
-                                                     p(tags$small("Data Sources: Homeland Infrastructure Foundation-Level Data, 2010; CoreLogic, 2019; TravelTime API."))
+                                                     p(tags$small("Data Sources: 2019 American Community Survey 5-Year Estimates, tables S1810, S2701, S2301, S2502, B15003, S2801, S0101, and S2801."))
                                             )
                                             
                                           )
@@ -352,7 +364,7 @@ ui <- navbarPage(title = "ALMV",
                                    p("", style = "padding-top:10px;"),
                                           p("Our dashboard presents the skill prevalence index for five skills that we identified as important to the future economy.  A skill prevalence index was created for all 35 skills, but we present only a subset for brevity. The skills we chose to show are needed in what is known as 'Bright Outlook Occupations,' defined as occupations that are 'projected to grow faster than average (employment increase of 5% or more)' and 'to have 100,000 or more job openings over the period 2019-2029 for the US nationwide'. The five skills that we present in the dashboard below are: Technology Design,   Reading Comprehension, Monitoring, Coordination, Active Listening. "),
                                           p("The map for Technology Design displays the prevalence of this skill within each Appalachian PUMA. The legend shows that the Skill Prevalence Index for the entire region ranges between 0.55 to 0.85. This range suggests that for each PUMA in Appalachia, Technology Design skills are not the dominant skills needed for the occupations in that community relative to other skills in that community.  In other words there are very few jobs that require this skill in each PUMA. The highest prevalence of Technology Design skills is noted in PUMAs that contain large metro areas. For example, if you over over the yellow region on the map, a pop-up will show the Huntsville North and Madison East PUMA’s. This community has the highest prevalence of Technology Design Skills and it includes the city of Huntsville, AL which is the blue circle on the map. Huntsville is a city with a large number of high technology jobs due to space and aeronautics industry. "),
-                                          p("final thought statement tbd"),
+                                        
                                   
                                           ## Input: skills------------
                                          selectInput("skills", "Select the Skill:", width = "100%", choices = c(
@@ -408,14 +420,18 @@ ui <- navbarPage(title = "ALMV",
                                    ),                                  
                                    
                                    column(6, align = "center",
-                                          h4(strong("VT AAEC Team Members")),
+                                          h4(strong("VT Faculty Team Members")),
                                           img(src = "faculty-chen.jpg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
                                           img(src = "faculty-gupta.jpg", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
+                                          img(src = "faculty-katz.png", style = "display: inline; margin-right: 5px; border: 1px solid #C0C0C0;", width = "150px"),
                                           p(a(href = "https://aaec.vt.edu/people/faculty/chen-susan.html", 'Dr. Susan Chen', target = '_blank'),"(Virginia Tech, Department of Agricultural and Applied Economics);"),
-                                          p(a(href = "https://aaec.vt.edu/people/faculty/gupta-anubhab.html", 'Dr. Anubhab Gupta', target = '_blank'),"(Virginia Tech, Department of Agricultural and Applied Economics)."),
-
+                                          p(a(href = "https://aaec.vt.edu/people/faculty/gupta-anubhab.html", 'Dr. Anubhab Gupta', target = '_blank'),"(Virginia Tech, Department of Agricultural and Applied Economics);"),
+                                          p(a(href = "https://enge.vt.edu/People/researchfaculty/andrewkatz.html", 'Dr. Andrew Katz', target = '_blank'),"(Virginia Tech, Department of Engineering Education)."),
                                           p("", style = "padding-top:10px;")
-                                   )
+                                   ),
+                                   column(12, align = "left",
+                                          p(strong("Stakeholders")),
+                                          p("Dr. Matthew W. Hulver, Executive Director of the Fralin Life Sciences Institute at Virginia Tech"))
                           )
                       )
                  )
@@ -446,7 +462,7 @@ server <- function(input, output, session) {
     NAICS_piechart(as.character(app_pumas[i, ]))
   })
   
-  ## Add city points-----------------------------------------------------------
+  ###### Add city points, how to create-----------------------------------------------------------
   # cities_link <- "https://en.wikivoyage.org/wiki/Appalachia"
   # page <- read_html(cities_link)
   # city <- page %>%  html_nodes("ol li") %>% html_text()
@@ -466,6 +482,16 @@ server <- function(input, output, session) {
   #   rename(City = location )
   # city_info <- inner_join(city_info, city_coords, by = "City")
   # write_csv(city_info, "2019-Appalachian_cities_and_population")
+ # #######
+ #   app_cities <- mutate(Appalachian_cities, location = paste(City, State, sep = ", "))
+ #  app_cities <- mutate(app_cities, geocode(City))
+ #  View(app_cities)
+ #  
+ #  write.csv(app_cities, "geocoded_cities.csv")
+ #  
+ #  
+  
+  
   city_info <- read_csv(paste0(getwd(),"/data/2019-Appalachian_cities_and_population.csv"))
   labels = lapply(str_c("<strong>", city_info$City,"</strong>","<br/>", "Population: ", 
                         formatC(city_info$Population, format = "f", big.mark = ",", digits = 0)), 
@@ -637,15 +663,15 @@ server <- function(input, output, session) {
       industry_composition <- ggplot(data = industry, aes(x = Industry, 
                                                           y = PercentOfTotal, 
                                                           group = nonmetro.f, 
-                                                          fill = nonmetro.f)) +
-        geom_col() + theme_bw()+ theme(plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
+                                                          fill = nonmetro.f,
+                                                          text = str_c(nonmetro.f))) +
+        geom_col() + theme_bw()+ theme(plot.title = element_text(color="black", size=10, face="bold.italic", hjust = 0.5), legend.title = element_blank(),                                                                                                                                                                                                                                             axis.title.y = element_text(color="black", size=10, face="bold")) +
         xlab("Industry") + ylab("Percent in Industry (%)") + labs(color='County Classification') + 
         ggtitle("% of Industry") + scale_fill_viridis_d(name = element_blank()) + 
         scale_y_continuous(expand = c(0,0), limits = c(0,20)) + 
         coord_flip()
       
-  
-      industry_composition
+      industry_composition <- ggplotly(industry_composition, tooltip = "text")
     }
   
     
