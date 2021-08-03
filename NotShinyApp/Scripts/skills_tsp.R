@@ -65,7 +65,7 @@ pumas_2010_app <- puma_crosswalk_app %>% group_by(State10, PUMA10) %>%
   summarise() %>% distinct()
 
 
-### Map to check accuracy-------------------------------------------------------
+#### Map to check accuracy-------------------------------------------------------
 
 # Obtain list of PUMA sfs for Appalchian states
 options(tigris_use_cache = TRUE)
@@ -548,7 +548,7 @@ ActiveList_map <- ActiveList_map_data %>% leaflet() %>% addTiles() %>%
   addLegend(pal = ActiveList_map_pal, values = ~`Normalized Index`, 
             title = "Index Value")
 
-# Creating ACS Demographics-----------------------------------------------------
+# ACS Demographics-----------------------------------------------------
 
 ## Loading in Data--------------------------------------------------------------
 
