@@ -11,6 +11,7 @@ library(leaflet)
 library(htmltools)
 library(leafpop)
 
+# MUST SET WORKING DIRECTORY TO SCRIPTS IN NOTSHINYAPP
 
 # Appalachian Skills------------------------------------------------------------
 ## Process of obtaining 2019 IPUMS info for Appalachia ---------------------------------------------
