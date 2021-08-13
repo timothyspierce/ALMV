@@ -11,7 +11,11 @@ library(leaflet)
 library(htmltools)
 library(leafpop)
 
-# MUST SET WORKING DIRECTORY TO SCRIPTS IN NOTSHINYAPP
+# MUST SET WORKING DIRECTORY TO SCRIPTS IN NOTSHINYAPP TO RUN
+
+# Note: Code not runnable until line 160, data extracts from IPUMS too large 
+# to upload to github
+
 
 # Appalachian Skills------------------------------------------------------------
 ## Process of obtaining 2019 IPUMS info for Appalachia ---------------------------------------------
