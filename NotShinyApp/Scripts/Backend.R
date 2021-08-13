@@ -24,6 +24,7 @@ ddi <- read_ipums_ddi("usa_00007.xml")
 
 data <- read_ipums_micro(ddi)
 
+
 ### Process of Isolating 2010 PUMAs to Appalachia -------------------------------------------
 
 # The following outlines how 2000 Appalachian PUMA information was used to create
@@ -112,7 +113,9 @@ ggplot() + geom_sf(data = st_as_sf(puma_app_geoms), fill = "coral2", color = "bl
   geom_sf(data = st_as_sf(app_counties), fill = "grey", color = NA) + 
   coord_sf(datum = NA)
 
+
 ## Isolate IPUMS info to Appalachia--------------------------------------------------
+# write_csv(pumas_2010_app, "2010_PUMAS_App.csv")
 
 # Read in 2010 Appalachian PUMAs to Isolate IPUMS data to Appalachia
 app_pumas_2010 <- read_csv("2010_PUMAs_App.csv")
@@ -149,7 +152,7 @@ app_ipums <- app_ipums %>% mutate(STATEFIP = as.character(STATEFIP), PUMA = as.c
 
 
 ## Create SOC Frequency Counts-------------------------------------------------
-
+## Runnable portion starts here-----------------------------------------------
 # read in IPUMS data for Appalachia in 2019
 app_ipums <- read_csv("2019-Appalachian_IPUMS.csv")
 
